@@ -1,5 +1,7 @@
 # AzerothCore Character Hub
 
+**Setting up against existing Docker containers? Follow the [Quickstart](QUICKSTART.md).**
+
 ## Overview
 
 A read-only party dashboard for an AzerothCore WotLK 3.3.5a server. Compare quests across groups of

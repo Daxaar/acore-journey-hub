@@ -16,7 +16,7 @@ NAME='character-hub'
 VERSION='0.1.0'
 ARCHIVE_NAME='azerothcore-character-hub-v'+VERSION
 SOURCE_FILES=(
-    'connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',
+    'QUICKSTART.md','connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',
     'crafting.py','crafting_assessments.py','prepare_crafting_assets.py',
     'tests/crafting_browser_check.py',
     'gear_planner.py','gear_sources.py','gear_eligibility.py','prepare_gear_assets.py',
