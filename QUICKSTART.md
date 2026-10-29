@@ -21,12 +21,11 @@ Python must be **3.12 or newer**.
 gh auth login --hostname github.com --git-protocol https --web
 gh auth setup-git
 cd ~
-git clone --branch character-hub/generalise-v0.1.0 --single-branch https://github.com/Daxaar/acore.git acore-character-hub
+git clone --branch main --single-branch https://github.com/Daxaar/acore.git acore-character-hub
 cd ~/acore-character-hub/character-hub
 ```
 
-Follow the browser sign-in prompts using an account with repository access. The
-branch above contains Character Hub while its draft PR awaits merge. Use a new
+Follow the browser sign-in prompts using an account with repository access. Use a new
 folder; do not copy another installation's configuration or databases into it.
 
 ## 3. Select your existing containers

@@ -352,4 +352,4 @@ effect/loot resolution and server-side live support; these are not implemented c
 
 The workflow template in `.github/workflows/package.yml` is scoped to this application. To enable it
 in a monorepo, an owner must copy it to the repository root workflow directory. Private release ZIPs
-can also be downloaded from this application's `releases/` directory on the delivery branch.
+can also be downloaded from this application's `releases/` directory on `main`.
