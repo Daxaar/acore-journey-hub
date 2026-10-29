@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auctions · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/auctions.css">
+<script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/appearance.js"></script><script src="/auction-categories.js" defer></script><script src="/auctions.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+<nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Auctions</button>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav></header>
+<main class="auction-page"><h1 class="sr-only">The Auction Exchange</h1>
+<div id="exchange" class="exchange">
+<form id="search-form" class="exchange-search" aria-label="Search the auction house">
+<label class="house-label"><span class="sr-only">Auction house</span><select id="house"><option value="all">All auction houses</option><option value="alliance">Alliance</option><option value="horde">Horde</option><option value="neutral">Neutral</option></select></label>
+<button id="refresh" type="button" class="toolbar-icon" aria-label="Refresh market" title="Refresh market">↻</button><button id="fullscreen" type="button" class="toolbar-icon" aria-label="Use full screen" title="Use full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M3 15V21H9M15 21H21V15"/></svg></button>
+<label class="search-label"><span class="sr-only">Item name or ID</span><span class="search-glass" aria-hidden="true"></span><input id="search" type="search" placeholder="Search" maxlength="100" autocomplete="off"></label>
+<button id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters" class="metal-button">Filter <span aria-hidden="true">▸</span></button><button class="red-button" type="submit">Search</button>
+<div id="filters" class="exchange-filters" hidden><label>Minimum item level<input id="min-level" type="number" min="0" max="1000" placeholder="0"></label><label>Maximum item level<input id="max-level" type="number" min="0" max="1000" placeholder="1000"></label><label>Rarity<select id="quality"><option value="">Any rarity</option><option value="0">Poor</option><option value="1">Common</option><option value="2">Uncommon</option><option value="3">Rare</option><option value="4">Epic</option><option value="5">Legendary</option><option value="6">Artifact</option><option value="7">Heirloom</option></select></label><button id="reset" class="metal-button" type="button">Reset filters</button><p id="category-selection" role="status">All items</p></div></form>
+<div class="exchange-body"><aside class="category-sidebar"><h2 class="sr-only">Browse categories</h2><nav id="categories" aria-label="Item categories"></nav></aside>
+<section class="market-results" aria-label="Auction search results">
+<div class="results-toolbar"><span id="result-count" role="status">Loading the market…</span><label>Sort <select id="sort"><option value="price">Lowest price</option><option value="price_desc">Highest price</option><option value="name">Name A–Z</option><option value="name_desc">Name Z–A</option><option value="quantity">Most available</option><option value="quantity_asc">Least available</option><option value="auctions">Most auctions</option><option value="level">Highest item level</option><option value="level_asc">Lowest item level</option></select></label></div>
+<div id="market-error" class="auction-error" role="alert" hidden></div>
+<div class="results-scroll"><table class="market-table"><thead><tr><th scope="col" data-sort="price" aria-sort="ascending"><button type="button" data-sort="price">Price <span aria-hidden="true">↑</span></button></th><th scope="col" data-sort="name"><button type="button" data-sort="name">Name</button></th><th scope="col" data-sort="level"><button type="button" data-sort="level">iLvl</button></th><th scope="col" data-sort="quantity"><button type="button" data-sort="quantity">Available</button></th></tr></thead><tbody id="items"></tbody></table></div>
+<div id="empty" class="market-empty" hidden><h2>No auctions found</h2><p>Try another item, category or auction house.</p></div>
+<footer class="market-pagination"><button id="previous" type="button" class="metal-button" disabled>‹ Previous</button><span id="page-count">Page 1</span><button id="next" type="button" class="metal-button" disabled>Next ›</button></footer></section>
+<article id="detail" class="item-detail" aria-label="Selected item" aria-live="polite" hidden></article></div>
+<footer class="exchange-footer"><span><strong>Auction Exchange</strong> · WotLK 3.3.5a · <span id="updated" role="status">Waiting for auction data</span></span><span id="category-status" role="status">All items</span><span>Read only · Saved realm data · 10s cache</span></footer></div>
+<div id="item-tooltip" class="auction-tooltip" role="tooltip" hidden></div>
+</main></body></html>

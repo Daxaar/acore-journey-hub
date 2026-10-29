@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adventurers’ Journal · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/journal.css">
+<script src="/appearance.js"></script><script src="/journal.js" defer></script></head>
+<body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Journal</button>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header><main class="archive-main">
+<section class="archive-heading"><div><p class="eyebrow">THE GUILD’S PRIVATE ARCHIVE</p><h1>The Adventurers’ Journal</h1>
+<p class="archive-motto">A true and faithful account of journeys, misfortunes, and matters of considerable importance.</p></div>
+<button id="journal-new" class="gold-button" type="button">✒ Inscribe an entry</button></section>
+<div id="journal-error" class="error-banner" role="alert" hidden></div><p id="journal-status" class="archive-status" role="status"></p>
+<section class="archive-book" aria-label="Adventurers’ journal"><aside class="archive-index" aria-label="Chronicle index">
+<div class="index-heading"><span aria-hidden="true">✦</span><h2>Register of Chronicles</h2><p id="journal-count">Opening the register…</p></div>
+<form id="journal-filters"><label for="journal-search">Search the archives</label><input id="journal-search" type="search" maxlength="100" placeholder="A name, a place, a passage…">
+<label for="journal-character">Character</label><input id="journal-character" type="search" list="journal-character-options" maxlength="12" pattern="[A-Za-z]{2,12}|" placeholder="All characters" autocomplete="off"><datalist id="journal-character-options"></datalist><button id="journal-character-clear" class="subtle-button" type="button" hidden>Clear character filter</button>
+<label for="journal-category">Classification</label><select id="journal-category"><option value="">All chronicles</option></select>
+<label for="journal-order">Order of record</label><select id="journal-order"><option value="newest">Most recent first</option><option value="oldest">Earliest first</option></select>
+<button class="subtle-button">Search register</button></form>
+<div id="journal-list" aria-live="polite"></div><nav class="journal-pagination" aria-label="Journal pages"><button id="journal-prev" type="button">← Earlier page</button><span id="journal-page"></span><button id="journal-next" type="button">Next page →</button></nav>
+</aside><article id="journal-page-content" class="archive-parchment" aria-label="Selected journal entry" tabindex="0"><div class="archive-empty"><span aria-hidden="true">❧</span><h2>The first page awaits.</h2><p>Let no remarkable deed, unexpected inheritance, or regrettable explosion pass unrecorded.</p></div></article></section>
+<footer class="page-footer"><span>RECORDED IN INK. PRESERVED FOR POSTERITY.</span><span>A private chronicle, independent of the game’s records.</span></footer></main>
+<dialog id="journal-editor" aria-labelledby="editor-title"><form id="journal-form">
+<div class="editor-heading"><p class="eyebrow">FOR ENTRY INTO THE PERMANENT RECORD</p><h2 id="editor-title">Inscribe a chronicle</h2></div>
+<label for="entry-title">Title of the account</label><input id="entry-title" required maxlength="160" placeholder="Concerning a most unexpected inheritance…">
+<div class="journal-form-grid"><div><label for="entry-date">Date of the event</label><input id="entry-date" type="date" required min="0001-01-01" max="9999-12-31"></div>
+<div><label for="entry-category">Classification</label><select id="entry-category"></select></div></div>
+<label for="entry-date-label">In-world dating <span>(optional)</span></label><input id="entry-date-label" maxlength="120" placeholder="As reckoned by the scribes of Ironforge…">
+<div class="journal-form-grid"><div><label for="entry-location">Place of record <span>(optional)</span></label><input id="entry-location" maxlength="120" placeholder="Ironforge"></div>
+<div><label for="entry-people">Persons concerned <span>(optional)</span></label><input id="entry-people" maxlength="200" placeholder="Adventurers, relatives, witnesses…"></div></div>
+<fieldset class="journal-tag-editor"><legend>Characters &amp; groups tagged in this account</legend>
+<p class="editor-help">Click a character to tag them, or tag a whole group. Group tags remember the members present when tagged.</p>
+<div id="entry-tags" class="journal-tags" aria-label="Selected tags"></div>
+<div class="journal-tag-controls"><label for="entry-tag-group">Suggest characters from</label><select id="entry-tag-group"></select><button id="entry-tag-whole-group" class="subtle-button" type="button">Tag whole group</button></div>
+<div id="entry-tag-characters" class="journal-tags" aria-label="Suggested character tags"></div>
+<div id="entry-people-suggestions" class="journal-tags" aria-label="Names from Persons Concerned"></div>
+<div class="journal-tag-controls"><label for="entry-tag-name">Another character</label><select id="entry-tag-name"><option value="">Choose a character…</option></select><button id="entry-tag-add" class="subtle-button" type="button">Add character tag</button></div>
+<p id="entry-tag-status" class="editor-help" role="status"></p></fieldset>
+<label for="entry-story">The account, in full</label><textarea id="entry-story" required maxlength="30000" rows="14" placeholder="Be it known that…"></textarea>
+<p class="editor-help">Separate paragraphs with a blank line. Begin a quoted letter or testimony with &gt; on each quoted line.</p>
+<label for="entry-images">Illustrations &amp; photographic evidence</label><input id="entry-images" type="file" accept="image/png,image/jpeg" multiple>
+<p class="editor-help">Up to four PNG or JPEG screenshots, 5 MiB each. Images are kept with the journal.</p><div id="entry-existing-images"></div><div id="entry-pending-images"></div>
+<p id="editor-error" role="alert"></p><div class="editor-actions"><button id="entry-save" class="gold-button" type="submit">Seal into the record</button><button id="entry-cancel" class="subtle-button" type="button">Cancel</button></div>
+</form></dialog></body></html>

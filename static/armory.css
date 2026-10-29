@@ -1,0 +1,88 @@
+.character-picker { display:flex; align-items:center; gap:12px; padding:16px; margin:20px 0; flex-wrap:wrap; }
+.character-picker input { width:150px; padding:9px; background:var(--input,var(--bg)); color:var(--text); border:1px solid var(--border); border-radius:5px; }
+.character-shortcuts { display:flex; flex-wrap:wrap; gap:7px; margin-left:auto; }
+.character-shortcuts button { padding:7px 12px; color:var(--text); background:var(--panel); border:1px solid var(--border); border-radius:5px; }
+.character-shortcuts button.active { color:var(--gold); border-color:var(--gold); background:var(--panel-light); }
+.armory-layout { display:grid; grid-template-columns:minmax(540px, 1.6fr) minmax(260px, 1fr); gap:22px; align-items:start; }
+.character-pane { overflow:hidden; }
+.character-pane .panel-heading p { margin:5px 0 0; color:var(--muted); }
+.paperdoll { display:grid; grid-template-columns:minmax(155px,1fr) minmax(130px,1fr) minmax(155px,1fr); gap:12px; padding:22px; background:radial-gradient(ellipse at center,#8f733823,transparent 70%); }
+.equipment-column { display:flex; flex-direction:column; gap:9px; z-index:1; }
+.equipment-slot { display:flex; align-items:center; gap:9px; width:100%; color:var(--text); text-align:left; background:transparent; border:0; padding:0; min-width:0; }
+.equipment-slot .slot-copy { min-width:0; flex:1; }
+.slot-label { display:block; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; }
+.slot-name { display:block; font-size:11px; line-height:1.3; overflow-wrap:anywhere; }
+#equipment-right .equipment-slot { flex-direction:row-reverse; text-align:right; }
+.item-icon { width:45px; height:45px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(145deg,#242522,#0d0e0c); border:2px solid #655f4f; border-radius:5px; position:relative; box-shadow:inset 0 0 5px #000,0 1px 3px #0008; }
+.item-icon img { width:100%; height:100%; object-fit:cover; border-radius:2px; }
+.item-icon.empty { border-color:#4c4336; color:#86745c; box-shadow:inset 0 0 9px #000; font-size:18px; }
+.item-icon.quality-0 { border-color:#777; }.item-icon.quality-1 { border-color:#b4b6ae; }
+.item-icon.quality-2 { border-color:#45b444; }.item-icon.quality-3 { border-color:#388bd9; }
+.item-icon.quality-4 { border-color:#a766d1; }.item-icon.quality-5,.item-icon.quality-6,.item-icon.quality-7 { border-color:#dc9b35; }
+.quality-text-0 { color:#999; }.quality-text-1 { color:var(--text); }.quality-text-2 { color:#54b34e; }
+.quality-text-3 { color:#579fdf; }.quality-text-4 { color:#b67ee4; }.quality-text-5,.quality-text-6,.quality-text-7 { color:#d29a3e; }
+.character-figure { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-width:0; }
+.character-figure img { position:relative; width:100%; max-width:180px; height:330px; opacity:.65; }
+.figure-halo { position:absolute; width:100%; aspect-ratio:1; border:1px solid var(--border); border-radius:50%; box-shadow:0 0 45px #b4944020; }
+.figure-caption { color:var(--gold); font-size:9px; letter-spacing:2px; }.figure-note { font-size:11px; color:var(--muted); }
+.equipment-weapons { display:flex; gap:20px; justify-content:center; padding:0 22px 20px; }.equipment-weapons .equipment-slot { max-width:150px; }
+.appearance-data { padding:14px 22px; border-top:1px solid var(--border); color:var(--muted); font-size:11px; }
+.item-details { padding:24px; position:sticky; top:18px; min-height:250px; }.item-details h2 { margin:10px 0; font-size:24px; }
+.item-details .item-icon { width:60px; height:60px; }.item-details p { margin:7px 0; }.item-details .item-note { color:var(--muted); font-size:12px; }
+.item-details .item-stat { color:var(--green); }.item-details hr { border:0; border-top:1px solid var(--border); margin:17px 0; }
+.bags-section { margin-top:32px; }.bags-heading { display:flex; align-items:end; justify-content:space-between; gap:16px; }.bags-heading h2 { font-size:28px; margin:0; }.bags-heading>p { color:var(--gold); }
+.bags-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(246px,1fr)); gap:20px; align-items:start; }
+/* Original CSS leather frame, inspired by the game's inventory windows. */
+.bag-frame { background:linear-gradient(125deg,#4d3127,#281c18 45%,#39251d); border:3px solid #715741; border-radius:12px 12px 7px 7px; padding:13px; color:#e0d3b5; box-shadow:0 3px 10px #0005,inset 0 0 0 1px #b29a6660,inset 0 0 18px #100906; position:relative; }
+.bag-frame::before,.bag-frame::after { content:'◆'; position:absolute; top:4px; color:#b28e58; font-size:10px; text-shadow:0 1px #000; }.bag-frame::before { left:4px; }.bag-frame::after { right:4px; }
+.bag-header { display:flex; gap:10px; align-items:center; min-height:58px; padding:0 2px 12px; }.bag-header .item-icon { width:34px; height:34px; }
+.bag-header h3 { font-size:14px; margin:0; font-family:var(--heading-font); }.bag-header p { color:#bfa98e; font-size:11px; margin:3px 0 0; }
+.bag-lining { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px; background:#120f0c; border:1px dashed #78614a; border-radius:4px; box-shadow:inset 0 2px 12px #000; }
+.bag-cell { display:block; background:transparent; border:0; padding:0; aspect-ratio:1; min-width:0; }.bag-cell .item-icon { width:100%; height:100%; }
+.bag-cell:hover .item-icon,.equipment-slot:hover .item-icon { box-shadow:0 0 9px #e4c78b80; }.item-selected .item-icon { outline:2px solid var(--gold); outline-offset:2px; }
+.stack-count { position:absolute; right:2px; bottom:-1px; font-size:14px; line-height:1.2; font-weight:700; color:#fff; text-shadow:1px 1px 2px #000,-1px -1px 2px #000; }
+.empty-index { color:#5c5040; font-size:10px; }.bag-empty-message { font-size:12px; text-align:center; color:#bfa98e; padding:18px 3px; border:1px dashed #78614a; border-radius:4px; }
+.bag-footer { color:#c2ae8d; font-size:11px; margin:10px 1px 0; text-align:right; }.storage-note { color:var(--muted); font-size:12px; }#warnings { color:var(--amber); }
+@media(max-width:1000px) { .armory-layout { grid-template-columns:1fr; }.item-details { position:static; }.bags-grid { grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); } }
+@media(max-width:600px) { .paperdoll { padding:12px; gap:8px; grid-template-columns:1fr 62px 1fr; }.item-icon { width:38px; height:38px; }.slot-name { font-size:10px; }.slot-label { font-size:8px; letter-spacing:0; }.equipment-slot { gap:5px; }.figure-caption { font-size:8px; letter-spacing:0; }.figure-note { display:none; }.character-figure img { height:270px; }.equipment-weapons { gap:8px; padding:0 12px 15px; }.character-shortcuts { margin-left:0; }.bags-heading { align-items:start; flex-direction:column; }.bags-grid { grid-template-columns:1fr; }.bag-frame { max-width:360px; width:100%; justify-self:center; } }
+
+.bag-inspect { border:0; background:none; padding:0; display:flex; flex-shrink:0; }
+
+.bag-search-tools { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:18px 0; }
+.bag-search-tools label { color:var(--muted); }
+.bag-search-tools input { padding:9px 12px; min-width:180px; max-width:100%; flex:1; background:var(--input,var(--bg)); border:1px solid var(--border); border-radius:5px; color:var(--text); }
+#bag-search-status { flex-basis:100%; margin:0; font-size:12px; color:var(--muted); }
+.bag-cell.search-dimmed .item-icon { filter:grayscale(1); opacity:.22; }
+.bag-cell.search-dimmed:hover .item-icon,.bag-cell.search-dimmed:focus-visible .item-icon { opacity:.65; }
+.item-tooltip { position:fixed; z-index:1000; width:310px; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); overflow:auto; padding:16px 18px; border:2px solid #9c864e; border-radius:7px; background:linear-gradient(135deg,#171a30fa,#080b16fc); color:#f0ebdf; box-shadow:0 5px 28px #000a,inset 0 0 0 1px #e0c67924; font-family:var(--body-font); font-size:12px; line-height:1.45; }
+.item-tooltip h2 { margin:8px 0; font-size:18px; line-height:1.25; font-family:var(--heading-font); }
+.item-tooltip p { margin:6px 0; }.item-tooltip .item-icon { width:42px; height:42px; }
+.item-tooltip .item-note { color:#aaaebf; font-size:10px; }.item-tooltip .item-stat { color:#57d66c; }
+.item-tooltip .quality-text-1 { color:#fff; }.item-tooltip .quality-text-2 { color:#1eff00; }
+.item-tooltip .quality-text-3 { color:#419cff; }.item-tooltip .quality-text-4 { color:#c17cfb; }
+.item-tooltip hr { border:0; border-top:1px solid #414359; margin:12px 0; }
+@media (prefers-reduced-motion:no-preference) { .bag-cell .item-icon { transition:opacity .12s,filter .12s; } }
+
+#client-model { position:relative; width:100%; text-align:center; }
+#model-canvas { display:block; width:100%; height:330px; cursor:grab; touch-action:pan-y; }
+#model-canvas:active { cursor:grabbing; }.model-note { font-size:10px; color:var(--muted); }
+#model-reset { font-size:10px; padding:4px 7px; }
+.client-path-input { width:100%; padding:10px; background:var(--input,var(--bg)); border:1px solid var(--border); border-radius:5px; color:var(--text); }
+@media(max-width:600px) { #model-canvas { height:270px; }.model-note { font-size:8px; } }
+
+#model-weapon-view { font-size:10px; max-width:100%; min-width:0; padding:4px; margin-bottom:4px; }
+
+.storage-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.storage-tabs button { padding: 10px 18px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); color: var(--text); }
+.storage-tabs button[aria-selected="true"] { color: var(--gold); border-color: var(--gold); }
+.storage-tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+#character-quest-log { display: inline-block; margin: 12px 0 0; }
+
+.armory-group-picker { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:14px 16px; margin-top:20px; }
+.armory-group-picker select { max-width:100%; min-width:180px; }
+#armory-group-status { color:var(--muted); font-size:11px; }
+.character-shortcuts button { display:inline-flex; align-items:center; gap:7px; }
+.bag-space-pill { display:inline-block; min-width:24px; padding:1px 6px; border-radius:20px; background:var(--panel-light); border:1px solid var(--border); color:var(--green); font-size:10px; font-variant-numeric:tabular-nums; }
+.bag-space-pill.full { color:var(--amber); }
+.bag-space-pill.unknown { color:var(--muted); }

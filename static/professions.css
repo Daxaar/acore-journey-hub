@@ -1,0 +1,88 @@
+.game-skills-window, .profession-window { color:#f5dc63; background:radial-gradient(ellipse at 35% 55%,#332e2260,transparent 70%),#11130f; border:5px ridge #727369; border-radius:8px; padding:4px; box-shadow:inset 0 0 0 2px #161713,0 8px 22px #0005; }
+.game-window-heading { display:flex; gap:12px; align-items:center; min-height:55px; padding:8px 14px; border:3px ridge #68695e; background:linear-gradient(#343229,#181a16); }
+.game-window-heading h2 { flex:1; margin:0; text-align:center; color:#f1d753; font:24px Georgia,serif; text-shadow:1px 2px #000; }
+.game-window-emblem { display:grid; place-items:center; width:38px; height:38px; border:2px solid #a08d51; border-radius:50%; background:#252c25; color:#d7c277; font-size:24px; }
+.game-window-label { color:#c0c0ad; font-size:12px; }
+.game-skills-all { display:inline-block; margin:12px 14px 4px; padding:7px 17px; border:2px ridge #55594d; background:#151810; color:#ffe253; font:19px Georgia,serif; }
+.game-skills-list { min-height:250px; max-height:480px; overflow:auto; margin:8px; padding:10px 12px 14px; border:3px ridge #64695c; scrollbar-color:#76786b #171a14; }
+.game-skill-group { margin:0 0 12px; }
+.game-skill-group > summary { padding:5px 0; color:#e9e7df; font:21px Georgia,serif; cursor:pointer; }
+.game-skill-row { position:relative; display:flex; align-items:center; gap:10px; isolation:isolate; width:calc(100% - 14px); min-height:31px; margin:5px 0 5px 14px; padding:3px 10px; overflow:hidden; border:3px ridge #5c5f51; border-radius:5px; background:#0c0b26; color:#ffe65c; text-align:left; font:17px/1.4 Georgia,serif; }
+.game-skill-row.passive { background:linear-gradient(#52534a,#171a16); }
+.game-skill-fill { position:absolute; inset:0 auto 0 0; z-index:-1; background:linear-gradient(#192781,#11117a 50%,#070b4c); }
+.game-skill-row.passive .game-skill-fill { display:none; }
+.game-skill-row.selected { border-color:#bba45b; }
+.game-skill-name { flex:1; min-width:0; overflow-wrap:anywhere; }
+.game-skill-value { color:#fff; white-space:nowrap; text-shadow:1px 1px #000; }
+.game-skill-detail { margin:8px; min-height:150px; padding:15px; border:3px ridge #626559; background:#10130f; color:#d4d4c4; font:14px/1.6 var(--body-font); }
+.game-skill-detail h3 { margin:0 0 10px; font:20px Georgia,serif; color:#f5dd65; }
+.game-skill-detail a { color:#efd271; }
+.game-detail-note, .game-skills-note { color:#b7b7a6; font:11px/1.5 var(--body-font); }
+.game-skills-note { margin:12px 15px; }
+.game-empty { padding:20px; color:#bebfae; }
+.character-pane-tabs { display:flex; flex-wrap:wrap; gap:5px; padding:10px 16px; border-top:1px solid var(--border); }
+.character-pane-tabs button { padding:9px 20px; border:3px ridge #6a6b5c; border-radius:4px; background:linear-gradient(#39392d,#151710); color:#f1d753; font:16px Georgia,serif; }
+.character-pane-tabs button[aria-selected="true"] { color:#fff1ab; border-color:#bcaa6b; background:#282c20; }
+.profession-controls { padding:18px 20px; margin:20px 0; }
+.profession-controls-row, .profession-character-buttons { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.profession-controls-row { margin-bottom:12px; }
+.profession-character-buttons button { padding:8px 14px; border:1px solid var(--border); border-radius:4px; background:var(--panel-light); color:var(--text); }
+.profession-character-buttons button.active { border-color:var(--gold); color:var(--gold); }
+#profession-summary { padding:16px 20px; margin-bottom:22px; }
+#profession-summary > summary { color:var(--gold); cursor:pointer; font:18px var(--heading-font); }
+.profession-summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:18px; }
+.profession-summary-card { padding:14px; border:1px solid var(--border); border-radius:5px; background:var(--panel-light); min-width:0; }
+.profession-summary-card h3 { color:var(--gold); margin:0 0 10px; }
+.profession-summary-card .game-skill-row { width:100%; margin:6px 0; font-size:14px; }
+.profession-window { max-width:1100px; margin:0 auto; }
+.profession-rank { margin:12px 14px; }
+.profession-rank .game-skill-row { margin:0; width:100%; }
+.profession-filters { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:10px 14px; }
+.profession-filters select, .profession-filters input { color:#e8dec3; background:#151910; border:2px ridge #646658; padding:8px; max-width:100%; min-width:0; }
+.profession-filters input[type=search] { flex:1; min-width:140px; }
+.profession-filters label { display:flex; align-items:center; gap:6px; color:#e8d573; }
+.profession-content { display:grid; grid-template-columns:minmax(250px,.9fr) minmax(0,1.1fr); gap:8px; padding:8px; }
+.profession-recipe-list { min-height:440px; max-height:700px; overflow:auto; border:4px ridge #62675b; padding:10px 8px; background:#0e110ddd; scrollbar-color:#76786b #171a14; }
+.recipe-group { margin-bottom:12px; }
+.recipe-group > summary { cursor:pointer; color:#e5dcc6; font:20px Georgia,serif; padding:6px; }
+.recipe-row { display:flex; width:100%; gap:8px; align-items:center; border:1px solid transparent; background:none; color:#eddd81; padding:7px 8px 7px 22px; text-align:left; font:16px/1.4 Georgia,serif; }
+.recipe-row > span { flex:1; min-width:0; }
+.recipe-row small { color:#b7bba9; font:10px var(--body-font); white-space:nowrap; }
+.recipe-row[aria-pressed="true"] { background:linear-gradient(90deg,#316b28bb,#316b2822); border-color:#6e874133; color:#fff; }
+.recipe-row.orange { color:#ff9c48; }.recipe-row.yellow { color:#fff06b; }.recipe-row.green { color:#66d457; }.recipe-row.gray { color:#aaa; }.recipe-row.unlearned { color:#aaa598; }.recipe-row.unavailable { color:#ed8c79; }
+.profession-recipe-detail { min-width:0; min-height:440px; padding:20px; border:4px ridge #65695b; background:linear-gradient(130deg,#191b15,#0c0f0b); color:#dfdecd; font-size:14px; line-height:1.6; }
+.profession-recipe-detail h2 { font:24px/1.3 Georgia,serif; color:#f3dc67; margin:0; }
+.profession-recipe-detail h3 { font:19px Georgia,serif; color:#f4d869; margin:24px 0 12px; }
+.recipe-detail-title { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.recipe-icon { width:52px; height:52px; border:3px ridge #b4a662; border-radius:4px; flex-shrink:0; }
+.recipe-item { display:flex; align-items:center; gap:10px; border:1px solid #4b5041; background:#080b07; padding:9px; margin:8px 0; }
+.recipe-item .recipe-icon { width:42px; height:42px; }
+.recipe-item p { margin:0; }
+.recipe-reagent-missing { color:#e6957e; }.recipe-reagent-ready { color:#8ed780; }
+.profession-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-top:3px ridge #5f6356; color:#babbab; font-size:11px; }
+.profession-footer button { padding:7px 25px; background:linear-gradient(#6c180d,#310e09); border:3px ridge #7b6c4b; border-radius:4px; color:#e2c74f; font:17px Georgia,serif; }
+.profession-footer button:disabled { cursor:default; opacity:.6; }
+.profession-help { color:var(--muted); font-size:12px; line-height:1.6; }
+@media(max-width:800px) { .profession-content { grid-template-columns:minmax(0,1fr); } .profession-recipe-list { min-height:180px; max-height:330px; } .profession-recipe-detail { min-height:300px; } }
+@media(max-width:500px) { .game-window-heading { padding:8px; gap:8px; } .game-window-heading h2 { font-size:21px; } .game-window-label { font-size:10px; } .game-skill-row { font-size:14px; margin-left:6px; width:calc(100% - 6px); padding:3px 6px; } .game-skills-list { padding:8px; } .profession-recipe-detail { padding:15px; } .profession-summary-grid { grid-template-columns:minmax(0,1fr); } }
+
+.profession-filters button[aria-pressed="true"] { color:#f2db63; border-color:#a89a51; background:#343822; }
+
+/* Match the in-game trade window: recipe list above the reagent/detail pane. */
+.profession-window { max-width:860px; }
+.profession-content { grid-template-columns:minmax(0,1fr); }
+.profession-recipe-list { min-height:260px; max-height:380px; }
+.profession-recipe-detail { min-height:360px; }
+.recipe-row[aria-pressed="true"] { color:#fff; }
+.profession-summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.profession-summary-grid.short-summary { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+.profession-controls select, #prof-skill { max-width:100%; min-width:0; }
+@media(max-width:800px) { .profession-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:500px) { .profession-summary-grid, .profession-summary-grid.short-summary { grid-template-columns:minmax(0,1fr); } .profession-recipe-list { min-height:200px; max-height:320px; } }
+
+.game-window-emblem .recipe-icon { width:34px; height:34px; border:0; border-radius:50%; }
+
+.game-skill-group > summary, .recipe-group > summary { list-style:none; }
+.game-skill-group > summary::-webkit-details-marker, .recipe-group > summary::-webkit-details-marker { display:none; }
+.game-skill-group > summary::before, .recipe-group > summary::before { content:'+'; display:inline-grid; place-items:center; width:17px; height:17px; margin-right:9px; border:2px ridge #8f7d51; border-radius:4px; background:linear-gradient(#be2717,#620b06); color:#ffe65b; font:bold 16px/1 Georgia,serif; vertical-align:middle; }
+.game-skill-group[open] > summary::before, .recipe-group[open] > summary::before { content:'−'; }

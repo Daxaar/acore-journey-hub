@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quest Log · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/quest-log.css">
+<script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/appearance.js"></script><script src="/quest-log.js" defer></script></head>
+<body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Quest log</button>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+<main><section class="page-heading"><div><p class="eyebrow">EVERY ADVENTURE HAS A STORY</p><h1>The quest log.</h1>
+<p class="intro">Open your journal. Revisit an old adventure. Find the next one.</p></div>
+<div class="refresh-controls"><button id="quest-refresh" class="gold-button">↻ Refresh Now</button><p id="quest-refreshed" role="status">Waiting for saved quests</p></div></section>
+<aside class="save-note"><p><strong>Saved quest journal · view only.</strong> Character progress reflects database saves, normally every 15 minutes.
+Completed history records hand-ins, without historical counters or reward choices. World search uses the server's quest catalogue.</p></aside>
+<section class="quest-controls panel" aria-label="Quest browser controls">
+<div class="quest-group-controls"><label for="quest-group">Quest group</label><select id="quest-group" disabled aria-describedby="quest-group-status"><option>Loading groups…</option></select><span id="quest-group-status" role="status"></span></div>
+<form id="quest-character-form"><label for="quest-character">Character or bot</label>
+<input id="quest-character" list="quest-character-options" pattern="[A-Za-z]{2,12}" maxlength="12" required autocomplete="off" placeholder="Character name">
+<datalist id="quest-character-options"></datalist><button id="quest-open" class="gold-button">Open journal</button></form>
+<div id="quest-shortcuts" class="quest-shortcuts" aria-label="Character shortcuts"></div>
+<div class="quest-mode-tabs" role="tablist" aria-label="Quest view">
+<button id="mode-active" type="button" role="tab" aria-controls="quest-browser" aria-selected="true">Active quests</button>
+<button id="mode-completed" type="button" role="tab" aria-controls="quest-browser" aria-selected="false" tabindex="-1">Completed quests</button>
+<button id="mode-all" type="button" role="tab" aria-controls="quest-browser" aria-selected="false" tabindex="-1">All quests · world search</button></div>
+<form id="quest-search-form"><label for="quest-search">Search quests</label><input id="quest-search" maxlength="100" type="search" placeholder="Title, text or exact quest ID…">
+<label for="quest-class">Class</label><select id="quest-class" aria-describedby="quest-class-note"><option value="0">All classes</option><option value="1">Warrior</option><option value="2">Paladin</option><option value="3">Hunter</option><option value="4">Rogue</option><option value="5">Priest</option><option value="6">Death Knight</option><option value="7">Shaman</option><option value="8">Mage</option><option value="9">Warlock</option><option value="11">Druid</option></select>
+<button class="subtle-button">Search</button><button id="quest-search-clear" type="button" class="subtle-button">Clear</button></form>
+<p id="quest-class-note" class="quest-class-note">Selecting a class shows only quests restricted to that class. All classes shows the full catalogue.</p>
+<p id="quest-context" role="status"></p></section>
+<div id="quest-error" role="alert" class="error-banner" hidden></div>
+<section id="quest-browser" class="quest-window" role="tabpanel" aria-labelledby="mode-active">
+<header class="quest-window-title"><span class="quest-book" aria-hidden="true">✦</span><h2>Quest Log</h2><span id="quest-owner"></span></header>
+<div class="quest-window-toolbar"><strong id="quest-count">Quests: —</strong><span id="quest-view-label">Active quests</span></div>
+<div class="quest-pages"><aside class="quest-index" aria-label="Quest list"><div id="quest-list" aria-live="polite"><p class="quest-list-empty">Opening the journal…</p></div>
+<nav class="quest-pagination" aria-label="Quest result pages"><button id="quest-prev" type="button">← Previous</button><span id="quest-page" role="status"></span><button id="quest-next" type="button">Next →</button></nav></aside>
+<article id="quest-detail" class="quest-parchment" aria-label="Selected quest details" tabindex="0"><p class="quest-detail-empty">Select a quest to read its story.</p></article></div>
+<footer class="quest-window-footer"><span id="quest-selection">Select a quest from the journal</span><a href="/">Back to comparison</a></footer>
+</section><footer class="page-footer"><span>FOR THE STORY. FOR THE BAND.</span><span>Saved quest data · No gameplay actions</span></footer></main>
+<div id="quest-party-tooltip" class="quest-party-tooltip" role="tooltip" hidden></div><div id="reward-item-tooltip" class="game-item-tooltip" role="tooltip" hidden></div></body></html>

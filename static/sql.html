@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark"><title>Read-only SQL · AzerothCore Character Hub</title>
+  <link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css">
+  <script src="/appearance.js"></script>
+  <script src="/sql.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <button class="page-switch" type="button" disabled aria-current="page">SQL explorer</button>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+  <main>
+    <section class="page-heading"><div><p class="eyebrow">EXPLORE YOUR WORLD. LEAVE NO FOOTPRINT.</p>
+      <h1>The read-only SQL explorer.</h1>
+      <p class="intro">Ask questions of saved character and world data, right here in your browser.</p>
+    </div></section>
+    <aside class="save-note"><span class="note-icon">◇</span>
+      <p>One SELECT at a time. <strong id="sql-policy">200 rows · 3-second limit · base tables only.</strong>
+        Writes, server commands, file operations and privileged schemas are blocked. This page always reads MySQL.</p>
+    </aside>
+    <div class="sql-workspace">
+      <section class="panel sql-editor"><header class="panel-heading"><h2>Your query</h2>
+        <label for="sql-schema">Database <select id="sql-schema">
+          <option>acore_characters</option><option>acore_world</option></select></label></header>
+        <div class="query-examples"><label for="sql-example">Start with an example</label>
+          <select id="sql-example"><option value="characters">Party levels and online state</option>
+            <option value="quests">Active quest progress</option>
+            <option value="shared">Who shares which quests?</option>
+          </select></div>
+        <label class="sr-only" for="sql-query">SQL SELECT query</label>
+        <textarea id="sql-query" spellcheck="false" maxlength="16000" rows="12"></textarea>
+        <div class="query-actions"><button class="gold-button" id="sql-run">▷ Run SELECT</button>
+          <span>Ctrl + Enter to run · Queries are never auto-executed</span></div>
+        <p id="sql-status" role="status">Loading database catalog…</p>
+      </section>
+      <aside class="panel sql-catalog"><header class="panel-heading"><h2>Table index</h2></header>
+        <label class="search"><span>⌕</span><input id="table-search" placeholder="Find a table…" type="search"
+          aria-label="Filter table names"></label>
+        <div id="sql-tables" class="catalog-list"></div>
+        <p class="catalog-note">Select a table to prepare a query. Press Run SELECT when ready.</p>
+      </aside>
+    </div>
+    <section class="panel sql-result"><header class="panel-heading"><h2>Results</h2>
+      <span id="sql-result-meta" class="count-chip">No query yet</span></header>
+      <div id="sql-results" class="sql-results" tabindex="0" aria-label="Scrollable SQL results">
+        <p class="empty-state">Your results will appear here. Nothing is run until you ask.</p></div>
+    </section>
+    <footer class="page-footer"><span>KNOW YOUR WORLD. KEEP IT INTACT.</span>
+      <span>No account credentials in the browser · Saved data may lag gameplay</span></footer>
+  </main>
+</body>
+</html>

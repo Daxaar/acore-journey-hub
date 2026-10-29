@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light"><title>Settings · AzerothCore Character Hub</title>
+  <link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/armory.css">
+  <script src="/appearance.js"></script><script src="/settings.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Settings</button>
+    </nav>
+  </header>
+  <main>
+    <section class="page-heading"><div><p class="eyebrow">YOUR JOURNAL. YOUR PREFERENCES.</p>
+      <h1>Set the scene.</h1><p class="intro">Choose a look and control the optional SQL explorer limits.</p>
+    </div></section>
+    <form id="settings-form">
+      <div class="settings-grid">
+        <section class="panel settings-panel"><header class="panel-heading"><div>
+          <p class="eyebrow">COLOURS & TYPE</p><h2>Appearance</h2></div><span class="count-chip">Live preview</span>
+        </header>
+          <label class="setting-label" for="theme">Colour theme</label>
+          <select id="theme" name="theme"><option value="forest">Azeroth Forest · moss & gold</option>
+            <option value="frost">Icecrown · midnight blue & ice</option>
+            <option value="crimson">Horde Ember · charcoal & copper</option>
+            <option value="arcane">Arcane Dusk · violet & lavender</option>
+            <option value="parchment">Stormwind Parchment · light ivory & ink</option></select>
+          <label class="setting-label" for="font">Font preset</label>
+          <select id="font" name="font"><option value="classic">Classic · serif headings, clean body</option>
+            <option value="modern">Modern · clean sans serif throughout</option>
+            <option value="bookish">Storybook · serif throughout</option>
+            <option value="monospace">Tinker · monospace throughout</option></select>
+          <div class="theme-preview"><p class="eyebrow">A PAGE FROM YOUR JOURNAL</p>
+            <h2>No adventurer left behind.</h2><p>Six adventurers, a few unfinished quests, and another fine adventure.</p>
+            <div class="preview-tags"><span class="ready-text">✓ Objective complete</span>
+              <span class="amber-text">⚑ Time to catch up</span></div>
+          </div>
+          <p class="settings-note">Preview changes here immediately. Save to apply across pages and future visits.
+            Fonts use local system families; no external font downloads.</p>
+        </section>
+        <section class="panel settings-panel"><header class="panel-heading"><div>
+          <p class="eyebrow">OPTIONAL QUERY LIMITS</p><h2>SQL explorer</h2></div>
+          <span class="count-chip">Default: all on</span>
+        </header>
+          <label class="switch-row" for="base-tables"><span><strong>Base tables only</strong>
+            <small>On: base tables. Off: also allow views in acore_characters and acore_world.</small></span>
+            <input id="base-tables" type="checkbox" checked></label>
+          <label class="switch-row" for="query-timeout"><span><strong>Three-second execution limit</strong>
+            <small>Off: no dashboard/MySQL query deadline for explorer SELECTs.</small></span>
+            <input id="query-timeout" type="checkbox" checked></label>
+          <label class="switch-row" for="row-limit"><span><strong>200-row result limit</strong>
+            <small>Off: remove the automatic row cap. A LIMIT in your own query still applies.</small></span>
+            <input id="row-limit" type="checkbox" checked></label>
+          <div class="permanent-guard"><strong>Always read-only.</strong>
+            <p>Writes, commands, file access, unsafe functions and privileged schemas stay blocked.
+              The 2 MB result-size and 200-column bounds stay in place.</p></div>
+          <p class="settings-note">Changes apply to new explorer queries after saving. Existing queries keep
+            their original limits. The quest dashboard's own reads keep their normal bounds.</p>
+        </section>
+      </div>
+      <div class="settings-actions"><button id="settings-save" class="gold-button" type="submit" disabled>
+        Save settings</button><button id="settings-reset" class="subtle-button" type="button">Restore defaults</button>
+        <p id="settings-status" role="status">Loading saved settings…</p></div>
+    </form>
+    <form id="client-model-form" class="panel settings-panel">
+      <header class="panel-heading"><div><p class="eyebrow">LOCAL CLIENT ASSETS</p><h2>3D character preview</h2></div></header>
+      <label class="switch-row" for="models-enabled"><span><strong>Use local WoW client models</strong><small>Keep the paper-doll if assets or WebGL are unavailable.</small></span><input id="models-enabled" type="checkbox"></label>
+      <label class="setting-label" for="client-path">WoW 3.3.5a client folder</label>
+      <input id="client-path" class="client-path-input" type="text" maxlength="500" placeholder="C:\Games\WoW" autocomplete="off">
+      <p class="settings-note">Accepts a Windows drive path or a Linux path. Client archives are read only; preview caches stay in the dashboard. This preview shows saved equipment in a static standing pose. Unsupported assets use the paper-doll.</p>
+      <div class="settings-actions"><button id="client-model-save" class="gold-button" type="submit" disabled>Save client settings</button><p id="client-model-status" role="status">Loading client settings…</p></div>
+    </form>
+    <footer class="page-footer"><span>A LITTLE PERSONALITY. THE SAME ADVENTURE.</span>
+      <span>Settings stay in this dashboard · WoW server configuration stays unchanged</span></footer>
+  </main>
+</body>
+</html>

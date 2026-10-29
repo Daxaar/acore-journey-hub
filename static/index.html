@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="A private quest journal for the AzerothCore Character Hub.">
+  <title>AzerothCore Character Hub · Quest Dashboard</title>
+  <link rel="icon" href="/emblem.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/wowhead.js" defer></script><script src="/appearance.js"></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm" id="server-banner"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span><span id="server-identity" aria-live="polite">Realm loading…</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <button class="page-switch" type="button" disabled aria-current="page">Dashboard</button>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+  <main>
+    <section class="page-heading">
+      <div><p class="eyebrow">YOUR ADVENTURERS. ONE QUESTION: WHO'S STILL BEHIND?</p>
+        <h1>No adventurer left behind.</h1>
+        <p class="intro">Your party's quests, objectives and next hand-ins. All in one place.</p>
+      </div>
+      <div class="refresh-controls">
+        <div class="refresh-actions">
+          <label class="select-label" for="interval">Auto-refresh</label>
+          <select id="interval" aria-label="Auto-refresh interval">
+            <option value="10">Every 10s</option><option value="5">Every 5s</option><option value="0" selected>Paused</option>
+          </select>
+          <button class="gold-button" id="refresh"><span aria-hidden="true">↻</span> Refresh Now</button>
+        </div>
+        <p class="refresh-status" id="refresh-status" role="status">
+          <span class="dot"></span> Waiting for first refresh
+        </p>
+      </div>
+    </section>
+    <p id="change-status" class="refresh-status" role="status"></p>
+
+    <aside class="save-note">
+      <span class="note-icon" aria-hidden="true">◷</span>
+      <p id="source-note"><strong>A saved snapshot, a patient adventurer.</strong>
+        Characters save every <strong>15 minutes</strong>.
+        Refreshing checks the database; it cannot reveal unsaved gameplay.</p>
+      <span class="save-note-tag" id="source-tag">MySQL saved snapshots</span>
+    </aside>
+    <div id="error" class="error-banner" role="alert" hidden></div>
+
+    <section class="panel group-tools" aria-label="Saved character groups">
+      <div class="group-picker"><label for="group-select">Quest group</label>
+        <select id="group-select" disabled aria-describedby="group-status"></select>
+        <span>1–6 characters per group</span></div>
+      <details id="group-editor"><summary>Manage groups</summary>
+        <div class="group-editor-actions"><button id="group-new" type="button" class="subtle-button">New group</button>
+          <button id="group-edit" type="button" class="subtle-button">Edit selected group</button>
+          <button id="group-delete" type="button" class="subtle-button">Delete selected group</button></div>
+        <form id="group-form"><h3 id="group-editor-title">Create a group</h3>
+          <label for="group-name">Group name</label><input id="group-name" maxlength="60" required placeholder="e.g. Weekend adventurers">
+          <fieldset><legend>Characters · fill 1–6 slots in display order</legend>
+            <div id="group-members" class="group-members"></div>
+          </fieldset><datalist id="group-suggestions"></datalist>
+          <button id="group-save" type="submit" class="gold-button">Create group</button>
+        </form>
+      </details>
+      <p id="group-status" role="status">Groups are saved in this dashboard only.</p>
+    </section>
+    <div class="section-line">
+      <nav class="tabs" aria-label="Character group">
+        <button class="tab active" id="party-tab" aria-pressed="true">Your group <span>0</span></button>
+        <button class="tab" id="bots-tab" aria-pressed="false">Playerbot watch</button>
+      </nav>
+      <span class="section-hint" id="roster-hint">Select a character to open their quest journal</span>
+    </div>
+    <section id="bot-tools" class="bot-tools panel" hidden aria-label="Selected bot watch list">
+      <div><label for="bot-name">Add any character or bot</label>
+        <input id="bot-name" list="bot-suggestions" maxlength="12"
+          placeholder="Search by name…" autocomplete="off">
+        <datalist id="bot-suggestions"></datalist><button id="add-bot" class="gold-button">+ Add to watch list</button>
+      </div>
+      <div><label for="bot-detail">Individual journal</label><select id="bot-detail"></select>
+        <button id="remove-bot" class="subtle-button">Remove selected</button></div>
+      <p id="watch-status" role="status">Your watch list is saved in this dashboard only.</p>
+    </section>
+    <section id="roster" class="roster" aria-label="Character roster" aria-busy="true">
+      <div class="loading-card">Gathering the band…</div>
+    </section>
+
+    <section class="stats" aria-label="Quest overview">
+      <div><span class="stat-icon">▤</span>
+        <p><strong id="stat-active">—</strong><span>Active quest entries</span></p></div>
+      <div><span class="stat-icon">♧</span><p><strong id="stat-shared">—</strong><span>Shared quests</span></p></div>
+      <div><span class="stat-icon ready-text">✓</span>
+        <p><strong id="stat-ready">—</strong><span>Ready to hand in</span></p></div>
+      <div><span class="stat-icon amber-text">⚑</span>
+        <p><strong id="stat-behind">—</strong><span>Catch-up entries</span></p></div>
+    </section>
+
+    <details id="party-assistant" class="panel party-assistant" aria-labelledby="assistant-title" hidden>
+      <summary class="assistant-summary" id="assistant-title">What should we do next?</summary>
+      <p class="assistant-note">Suggested priorities from the displayed group's latest successful snapshot. Verify availability in game before travelling.</p>
+      <p id="planning-warning" role="status" class="assistant-note"></p>
+      <ol id="next-actions" class="next-actions"></ol>
+      <details class="assistant-section" id="more-actions"><summary>More suggestions</summary><ol id="remaining-actions" class="next-actions" start="7"></ol></details>
+      <details class="assistant-section" id="route-section"><summary>Suggested geographic stops</summary>
+        <div class="assistant-controls"><label for="route-start">Start near saved position of</label><select id="route-start"></select></div>
+        <p id="route-note" class="assistant-note"></p><ol id="route-stops" class="route-stops"></ol>
+        <div id="unknown-stops"></div><details><summary>Quest zones &amp; alternative locations</summary><div id="quest-locations"></div></details>
+      </details>
+      <details class="assistant-section" id="missing-section"><summary>Why is a quest missing?</summary>
+        <p class="assistant-note">Confirmed saved blockers are listed where supported. Passing these checks does not establish in-game eligibility.</p><div id="missing-reasons"></div>
+      </details>
+      <details class="assistant-section" id="activity-section"><summary>Activity history</summary>
+        <p class="assistant-note">Times show when a change was first observed, not when it happened in game. The first read establishes a baseline. Saves normally occur every 15 minutes; changes between observations can be missed. Recorded only when snapshots are refreshed. History starts when this feature is enabled. Changes first seen together have no known gameplay order.</p>
+        <div class="assistant-controls"><label for="activity-character">Character</label><select id="activity-character"><option value="">All displayed characters</option></select>
+        <label for="activity-kind">Activity</label><select id="activity-kind"><option value="">All changes</option><option value="level">Level changes</option><option value="entered">Entered log</option><option value="ready">Ready to hand in</option><option value="status">Status changes</option><option value="objective">Objective changes</option><option value="handin">Hand-in records</option><option value="left">Left log</option></select></div>
+        <p id="activity-status" role="status" class="assistant-note"></p><ol id="activity-events" class="activity-events"></ol>
+        <nav class="assistant-controls" aria-label="Activity pages"><button id="activity-newer" type="button" class="subtle-button">← Newer</button><span id="activity-page"></span><button id="activity-older" type="button" class="subtle-button">Older →</button></nav>
+      </details>
+    </details>
+
+    <div class="workspace">
+      <section class="comparison panel" aria-labelledby="comparison-title">
+        <header class="panel-heading">
+          <div><p class="eyebrow">THE BIG PICTURE</p><h2 id="comparison-title">Quest comparison</h2></div>
+          <span class="count-chip" id="quest-count">— quests</span>
+        </header>
+        <div class="filters">
+          <div class="filter-buttons" role="group" aria-label="Filter quests">
+            <button class="filter active" data-filter="all" aria-pressed="true">All quests</button>
+            <button class="filter" data-filter="shared" aria-pressed="false">Shared</button>
+            <button class="filter" data-filter="attention" aria-pressed="false">Catch up</button>
+            <button class="filter" data-filter="ready" aria-pressed="false">Hand-ins</button>
+          </div>
+          <label class="search"><span aria-hidden="true">⌕</span>
+            <input id="search" type="search" placeholder="Find a quest…" aria-label="Search quest title or objective">
+          </label>
+        </div>
+        <div id="table-wrap" class="table-wrap" tabindex="0" aria-label="Scrollable quest comparison">
+          <div class="empty-state">Reading the party's saved quest logs…</div>
+        </div>
+        <footer class="table-legend">
+          <span><i class="legend-dot green"></i> Complete objective</span>
+          <span><i class="legend-dot amber"></i> Unfinished objective</span>
+          <span><i class="legend-dot behind"></i> Behind a party member</span>
+          <span>— Not in quest log</span>
+        </footer>
+      </section>
+
+      <aside class="journal panel" aria-labelledby="journal-title">
+        <header class="panel-heading">
+          <div><p class="eyebrow">A CLOSER LOOK</p><h2 id="journal-title">Quest journal</h2></div>
+          <span aria-hidden="true" class="journal-symbol">✧</span>
+        </header>
+        <div id="journal-content"><p class="empty-state">Select an adventurer to inspect their quests.</p></div>
+      </aside>
+    </div>
+    <footer class="page-footer">
+      <span>FOR THE BAND. FOR THE LOOT. FOR THE NEXT ADVENTURE.</span>
+      <span>Private realm · Database snapshots · No changes to your world</span></footer>
+  </main>
+  <dialog id="watch-note-dialog" aria-labelledby="watch-note-title">
+    <form id="watch-note-form">
+      <h2 id="watch-note-title">Character note</h2><p id="watch-note-context" class="note-context"></p>
+      <label for="watch-note-text">Your note</label>
+      <textarea id="watch-note-text" maxlength="2000" rows="7" placeholder="Where you first saw this bot, their level, or anything you want to remember…" aria-describedby="watch-note-count watch-note-status"></textarea>
+      <p id="watch-note-count" class="note-context">0 / 2,000 characters</p><p id="watch-note-status" role="status"></p>
+      <div class="note-actions"><button id="watch-note-save" class="gold-button" type="submit">Save note</button>
+      <button id="watch-note-cancel" class="subtle-button" type="button">Cancel</button>
+      <button id="watch-note-clear" class="subtle-button" type="button">Clear text</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

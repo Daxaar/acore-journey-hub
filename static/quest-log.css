@@ -1,0 +1,75 @@
+.quest-controls { padding: 18px 20px; margin-bottom: 20px; }
+.quest-controls form, .quest-shortcuts, .quest-mode-tabs { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.quest-controls input { color: var(--text); background: var(--input); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; min-width: 0; max-width: 100%; }
+#quest-search { flex: 1; min-width: 170px; }
+.quest-shortcuts { margin: 12px 0; }
+.quest-shortcuts button, .quest-mode-tabs button { padding: 8px 14px; color: var(--text); background: var(--panel-light); border: 1px solid var(--border); border-radius: 4px; }
+.quest-shortcuts button.active, .quest-mode-tabs button[aria-selected="true"] { color: var(--gold); border-color: var(--gold); background: #cbb07815; }
+.quest-mode-tabs { margin: 16px 0; padding-top: 14px; border-top: 1px solid var(--border); }
+#quest-context { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
+.quest-window { background: #22201b; border: 5px ridge #6b7168; border-radius: 10px; padding: 4px; box-shadow: 0 8px 30px #0007, inset 0 0 0 2px #171917; }
+.quest-window-title { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border: 3px ridge #676963; background: linear-gradient(90deg,#1b1c19,#363127 50%,#1b1c19); color: #f2d45d; }
+.quest-window-title h2 { flex: 1; text-align: center; font: 25px Georgia, serif; color: #ffe269; text-shadow: 1px 2px #000; margin: 0; }
+.quest-book { display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid #aa924a; border-radius: 50%; background: #242838; color: #e4c66d; font-size: 25px; }
+#quest-owner { max-width: 35%; overflow-wrap: anywhere; font: 14px Georgia, serif; }
+.quest-window-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 14px 18px; color: #d4cbb5; background: linear-gradient(#35332d,#272824); font: 15px Georgia, serif; }
+#quest-count { color: #ffe269; border: 2px ridge #777b6f; background: #171a17; padding: 6px 12px; }
+.quest-pages { display: grid; grid-template-columns: minmax(240px, .85fr) minmax(0, 1.15fr); gap: 9px; }
+.quest-index { min-width: 0; min-height: 680px; display: flex; flex-direction: column; background: radial-gradient(ellipse at 45% 75%,#30291a88,transparent 70%),linear-gradient(100deg,#111410,#181913 55%,#0e110e); border: 4px ridge #62675e; }
+#quest-list { flex: 1; max-height: 850px; overflow-y: auto; padding: 12px 5px; scrollbar-color: #696c5b #161914; }
+.quest-category { margin: 0 0 14px; }
+.quest-category summary { cursor: pointer; padding: 7px 10px; font: 18px Georgia,serif; color: #c1c4b8; }
+.quest-entry { width: 100%; display: flex; gap: 10px; justify-content: space-between; text-align: left; border: 1px solid transparent; background: none; color: #edd748; padding: 10px 12px 10px 25px; font: 16px/1.4 Georgia,serif; }
+.quest-entry:hover { background: #99843325; }
+.quest-entry[aria-pressed="true"] { background: linear-gradient(90deg,#777b0f11,#93931c99 25%,#70720b77 85%,#4d541a22); color: #fff5bd; border-color: #a6a14266; }
+.quest-entry small { flex-shrink: 0; align-self: center; font: 11px/1.4 var(--body-font); color: #b1b5a8; }
+.quest-entry.ready small { color: #eceac2; }
+.quest-entry.failed { color: #ef9a82; }
+.quest-entry.completed small { color: #acd19b; }
+.quest-list-empty { padding: 18px; color: #b8bcad; }
+.quest-pagination { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; padding: 12px; border-top: 1px solid #4e5143; color: #c9c6b4; font-size: 11px; }
+.quest-pagination button { background: #32352b; color: #f3de93; border: 1px solid #6e715f; padding: 6px 8px; border-radius: 3px; }
+.quest-parchment { color-scheme: light; color: #352411; min-width: 0; min-height: 680px; max-height: 950px; overflow-y: auto; border: 5px ridge #726c53; padding: 26px 30px 36px; box-shadow: inset 0 0 35px #70411c88; background: radial-gradient(ellipse at 15% 25%,#fff0b480,transparent 55%),radial-gradient(ellipse at 85% 75%,#bd7f3266,transparent 55%),repeating-linear-gradient(4deg,#ffffff06 0 1px,#76441906 1px 3px),#d9b576; scrollbar-color: #8c7754 #d9b576; font: 17px/1.55 Georgia,serif; }
+.quest-parchment h2 { font: small-caps 30px/1.2 Georgia,serif; color: #291a0c; margin: 0 0 14px; overflow-wrap: anywhere; }
+.quest-parchment h3 { font: small-caps 23px/1.3 Georgia,serif; color: #33210d; margin: 26px 0 10px; border-bottom: 1px solid #78532266; padding-bottom: 6px; }
+.quest-parchment p { margin: 9px 0 16px; white-space: pre-line; overflow-wrap: anywhere; }
+.quest-parchment .quest-meta { font: 12px/1.6 var(--body-font); color: #5f4427; }
+.quest-state { display: inline-block; background: #6d54251a; border: 1px solid #896a3b; padding: 4px 10px; border-radius: 3px; font: 13px var(--body-font); }
+.quest-party-button { margin: 6px 0 6px 8px; border: 1px solid #896a3b; border-radius: 3px; background: #6d54251a; color: #352411; padding: 5px 10px; font: 13px var(--body-font); cursor: pointer; }
+.quest-party-tooltip { position: fixed; z-index: 1000; box-sizing: border-box; width: 340px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow-y: auto; padding: 14px; background: #101322f5; color: #eee9d7; border: 2px ridge #a29c88; border-radius: 5px; box-shadow: 0 5px 20px #0009; font: 13px/1.5 var(--body-font); }
+.quest-party-tooltip > strong { color: #f1d66a; font: 16px Georgia,serif; }
+.quest-party-member { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid #77776755; }
+.quest-party-tooltip small { display: block; color: #b9b9aa; font-size: 11px; margin-top: 4px; }
+.party-state.ready, .party-state.completed { color: #a9d89b; }
+.party-state.active { color: #f2d775; }
+.party-state.failed { color: #f19a87; }
+.party-state.ineligible_class { color: #c1b6a3; }
+.quest-party-tooltip .quest-party-restriction { color: #f2d775; margin: 8px 0; }
+.quest-objectives { padding-left: 22px; }
+.quest-objectives li { margin: 10px 0; }
+.quest-objectives .objective-done { color: #254c23; }
+.quest-objectives small { display: block; font: 12px/1.5 var(--body-font); color: #624c30; }
+.quest-reward-items { display: grid; gap: 9px; }
+.quest-reward-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #40290712; border: 1px solid #73552b66; font: 14px/1.5 var(--body-font); }
+.quest-reward-item img { width: 40px; height: 40px; border: 2px solid #796334; border-radius: 3px; }
+.quest-parchment details { margin-top: 22px; font-size: 15px; }
+.quest-parchment summary { cursor: pointer; color: #503619; }
+.quest-parchment a { color: #554011; text-decoration: underline; }
+.quest-window-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 14px 18px; color: #cfcaad; background: linear-gradient(#34362c,#22251e); font-size: 12px; }
+.quest-window-footer a { color: #f2d56a; }
+@media (max-width: 800px) { .quest-pages { grid-template-columns: minmax(0,1fr); } .quest-index { min-height: 0; } #quest-list { max-height: 330px; } .quest-parchment { min-height: 450px; max-height: none; padding: 22px; } }
+@media (max-width: 500px) { .quest-window { border-width: 3px; padding: 2px; } .quest-window-title { padding: 9px; gap: 8px; } .quest-window-title h2 { font-size: 22px; } .quest-parchment { padding: 20px 16px; font-size: 16px; } .quest-controls { padding: 16px; } .quest-controls form { align-items: stretch; } .quest-controls label { width: 100%; } #quest-character { flex: 1; width: 130px; } }
+
+.quest-group-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+#quest-group { max-width:100%; min-width:180px; padding:9px 12px; border:1px solid var(--border); border-radius:4px; color:var(--text); background:var(--panel-light); }
+#quest-group-status { color:var(--muted); font-size:12px; }
+@media(max-width:500px) { .quest-group-controls label { width:100%; } #quest-group { width:100%; min-width:0; } }
+
+#quest-class { color:var(--text); background:var(--panel-light); border:1px solid var(--border); border-radius:4px; padding:9px 12px; max-width:100%; }
+.quest-class-note { color:var(--muted); font-size:11px; margin:10px 0 0; }
+@media(max-width:500px) { #quest-class { width:100%; } }
+
+.quest-entry-title { min-width:0; overflow-wrap:anywhere; }
+.quest-faction-icon { display:inline-block; width:17px; height:20px; margin-left:7px; vertical-align:-4px; object-fit:contain; filter:drop-shadow(0 1px 1px #0008); }
+.quest-parchment .quest-wowhead-link { color:inherit; text-decoration:none; }
+.quest-parchment .quest-wowhead-link:hover { color:#644011; text-decoration:underline; text-underline-offset:4px; }

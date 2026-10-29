@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gear Planner · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/gear-planner.css">
+<script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/appearance.js"></script><script src="/gear-planner.js" defer></script></head><body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Gear Planner</button>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+<main class="planner-page"><section class="page-heading"><div><p class="eyebrow">THE NEXT WORTHWHILE ADVENTURE</p><h1>Better equipped. Together.</h1><p class="intro">Start with what you own. Find the next quest, craft or purchase worth pursuing.</p></div>
+<div class="refresh-controls"><button id="planner-refresh" class="gold-button" type="button">↻ Refresh saved gear</button><p id="planner-refreshed" role="status">Waiting for your group</p></div></section>
+<aside class="save-note"><p><strong>Saved equipment · read only.</strong> Gear, skills and quest progress can lag gameplay by the server’s save interval, normally 15 minutes. Roles are your intentions, saved only in this dashboard.</p></aside>
+<section class="panel planner-controls" aria-label="Planner group and filters"><div class="planner-control-row"><label for="planner-group">Quest group</label><select id="planner-group" disabled></select><span id="planner-group-status" role="status"></span></div>
+<div class="planner-control-row"><label for="planner-source">Obtain from</label><select id="planner-source"><option value="">All sources · owned first</option><option value="owned">Already owned</option><option value="quest">Quest rewards</option><option value="craft">Crafting</option><option value="vendor">Vendors</option></select>
+<label for="planner-availability">When</label><select id="planner-availability"><option value="">All opportunities</option><option value="now">Saved checks pass</option><option value="check">Requirements to check</option><option value="soon">Soon · up to 2 levels</option><option value="later">Later</option></select>
+<label for="planner-threshold">Minimum score gain</label><select id="planner-threshold"><option value="0">Any positive gain</option><option value="5" selected>5%</option><option value="10">10%</option><option value="20">20%</option></select></div></section>
+<div id="planner-error" class="error-banner" role="alert" hidden></div><div id="planner-warnings" class="planner-warnings" role="status"></div>
+<section id="planner-empty" class="panel planner-empty" hidden><h2>Your next adventure starts with a group.</h2><p>Create or select a group on the Dashboard, then return here. No characters or roles are preselected for a new installation.</p><a class="page-switch" href="/">Set up a group</a></section>
+<div id="planner-content" hidden><section class="planner-plan panel"><header class="panel-heading"><div><p class="eyebrow">USEFUL STEPS FOR YOUR GROUP</p><h2 id="planner-plan-title">The next worthwhile steps</h2></div><span class="planner-owned-note">Owned equipment comes first</span></header><div id="planner-activities" class="planner-activity-grid"></div></section>
+<div id="planner-members" class="planner-members"></div>
+<details class="panel planner-method"><summary>How scores, sources and priorities work</summary><p>These are transparent role-weighted comparisons, not a DPS simulator or a best-in-slot list. Item level does not decide the score. Each recommendation explains its stat gains and losses. Weights do not model talents, stat caps, combat encounters or full weapon-pair optimisation.</p><p>Two-handed replacements include the off-hand being lost. Illegal off-hand swaps and unique duplicates are rejected. Procs, use effects, set bonuses, scaling and unresolved random rolls are marked for review. A promising partial score is not a guaranteed upgrade.</p><p>Future items are limited to five levels above each character. Quest rewards must pass class, race, prerequisite-path and quest-giver/turn-in faction checks. Unverified class/faction paths are omitted. A quest not in the saved log still needs an availability check. Hostile vendors and vendors with unknown faction data are excluded for each character; neutral merchants remain available. Vendor reputation, stock, extended costs, guild permissions and crafting workstations can also need verification. Recipe materials are checked per craft and are not reserved across recommendations.</p><p>Items owned by opposite-faction characters are excluded, including account-bound items. Group plans count one best quest reward per character and each shared owned item once. Effort bands favour owned items, ready hand-ins, learned recipes with materials and affordable simple purchases; they are estimates, not travel times. Individual alternatives may compete for one item; they are not a simultaneous shopping list. Base reputation and spell/script conditions are not a complete eligibility simulation.</p><p id="planner-scope"></p><p id="planner-coverage"></p></details></div>
+<footer class="page-footer"><span>FOR THE BAND. FOR THE NEXT ADVENTURE.</span><span>Independent planner · No equipment or game changes</span></footer></main><div id="planner-item-tooltip" class="game-item-tooltip" role="tooltip" hidden></div></body></html>

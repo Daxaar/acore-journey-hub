@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crafting Rebalance · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/crafting.css">
+<script src="/appearance.js"></script><script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/crafting.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<nav class="page-nav" aria-label="Pages">
+<a class="page-switch" href="/">Dashboard</a><a class="page-switch" href="/armory">Armory &amp; bags</a><a class="page-switch" href="/gear-planner">Gear Planner</a><a class="page-switch" href="/quest-log">Quest log</a><a class="page-switch" href="/professions">Professions</a><button class="page-switch" disabled aria-current="page">Crafting Rebalance</button><a class="page-switch" href="/auctions">Auctions</a><a class="page-switch" href="/journal">Journal</a><a class="page-switch" href="/sql">SQL explorer</a><a class="page-switch" href="/settings">Settings</a>
+</nav></header>
+<main class="craft-page"><div class="craft-heading"><div><p class="eyebrow">CLASSIC · LEVELS 1–60</p><h1>The Crafting Ledger</h1><p class="craft-intro">A place for considered changes, and good reasons to leave things alone.</p></div><span class="craft-seal">BASELINE PRESERVED<br><strong>Review before rollout</strong></span></div>
+<p class="craft-notice">Catalogue and review decisions live in this dashboard. Equip level and realistic acquisition are shown separately. Screening findings are provisional; an approved review does not deploy an item.</p>
+<p id="craft-error" role="alert" hidden></p>
+<section class="craft-filters" aria-label="Catalogue filters"><form id="craft-filters">
+<label class="craft-search">Item name or ID<input name="q" type="search" maxlength="100" placeholder="Find a crafted item…"></label>
+<label>Profession<select name="profession"><option value="">All professions</option><option value="164">Blacksmithing</option><option value="165">Leatherworking</option><option value="197">Tailoring</option><option value="202">Engineering</option></select></label>
+<label>Equip level from<input name="min" type="number" min="1" max="60" value="1"></label><label>To<input name="max" type="number" min="1" max="60" value="60"></label>
+<label>Slot<select name="slot" id="craft-slot"><option value="">All slots</option></select></label>
+<label>Quality<select name="quality"><option value="">All qualities</option><option value="0">Poor</option><option value="1">Common</option><option value="2">Uncommon</option><option value="3">Rare</option><option value="4">Epic</option><option value="5">Legendary</option></select></label>
+<label>Item type<select name="type"><option value="">All types</option><option>weapon</option><option>cloth</option><option>leather</option><option>mail</option><option>plate</option><option>shield</option><option>other</option></select></label>
+<label>Assessment<select name="assessment"><option value="">All findings</option><option>manual review</option><option>competitive — leave unchanged</option><option>strong — leave unchanged</option><option>adjustment proposed</option></select></label>
+<label>Review decision<select name="review"><option value="">All decisions</option><option>not reviewed</option><option>approved</option><option>rejected</option><option>needs adjustment</option><option>deferred</option><option value="stale">Catalogue changed since review</option></select></label>
+<label>Candidate range<select name="scope"><option value="">Full catalogue</option><option value="initial">Initial · equip 1–30</option><option value="future">Future · equip 31–60</option><option value="endgame">Level-60 endgame</option></select></label>
+<label>Assessment panel<select name="panel"><option value="">All catalogue records</option><option value="focused">Focused 22-item panel</option></select></label>
+<button type="submit">Search ledger</button><button type="button" id="craft-reset">Reset</button>
+</form></section>
+<div class="craft-register-heading"><h2>Catalogue <span id="craft-count"></span></h2><span id="craft-summary"></span></div>
+<div id="craft-empty" hidden><h2>Your ledger is ready</h2><p>Prepare the local profession metadata, then run <code>python3 prepare_crafting_assets.py</code> to catalogue your server’s Classic crafting. No character group is required.</p></div>
+<div class="craft-layout"><section aria-label="Crafted items"><div class="craft-table-wrap"><table class="craft-table"><thead><tr><th>Crafted item</th><th>Equip / acquire</th><th>Finding / decision</th></tr></thead><tbody id="craft-rows"></tbody></table></div><div class="craft-pager"><button id="craft-prev">Previous</button><span id="craft-page" aria-live="polite"></span><button id="craft-next">Next</button></div></section>
+<section id="craft-detail" class="craft-detail" aria-label="Item assessment" tabindex="-1"><p class="eyebrow">THE REVIEW DESK</p><h2>Select an item</h2><p>Inspect its recipe access, realistic acquisition, alternatives and exact proposed differences. Keep a lasting decision alongside your reasoning.</p></section></div>
+<details class="craft-provenance"><summary>Data provenance &amp; assessment limits</summary><div id="craft-provenance"></div></details>
+</main><div id="craft-item-tooltip" class="game-item-tooltip" role="tooltip" hidden></div></body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Professions · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/professions.css">
+<script src="/wowhead.js" defer></script><script src="/appearance.js"></script><script src="/skills-ui.js" defer></script><script src="/professions.js" defer></script></head><body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <button class="page-switch" type="button" disabled aria-current="page">Professions</button>
+      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
+      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+<main><section class="page-heading"><div><p class="eyebrow">THE TOOLS OF YOUR TRADE</p><h1>Made by the band.</h1>
+<p class="intro">Your group's professions, learned recipes and the next things to master.</p></div>
+<div class="refresh-controls"><button id="prof-refresh" class="gold-button">↻ Refresh Now</button><p id="prof-refreshed" role="status">Waiting for saved skills</p></div></section>
+<aside class="save-note"><p><strong>Saved professions · view only.</strong> Skill levels and recipe knowledge reflect saved character data, normally saved every 15 minutes. Base skill values exclude equipment, racial and temporary bonuses.</p></aside>
+<section class="profession-controls panel" aria-label="Profession group and character"><div class="profession-controls-row">
+<label for="prof-group">Quest group</label><select id="prof-group" disabled></select><span id="prof-group-status" role="status" class="profession-help"></span></div>
+<div id="prof-characters" class="profession-character-buttons" aria-label="Group characters"></div></section>
+<details id="profession-summary" class="panel"><summary id="prof-summary-title">Group profession levels</summary><div id="prof-summary-grid" class="profession-summary-grid"></div></details>
+<div id="prof-error" class="error-banner" role="alert" hidden></div>
+<div class="profession-controls-row"><label for="prof-skill">Profession</label><select id="prof-skill" disabled></select><span id="prof-character-label" class="profession-help"></span></div>
+<section id="profession-window" class="profession-window" aria-labelledby="prof-title" hidden>
+<header class="game-window-heading"><span id="prof-emblem" class="game-window-emblem" aria-hidden="true">⚒</span><h2 id="prof-title">Professions</h2><span id="prof-owner" class="game-window-label"></span></header>
+<div id="prof-rank" class="profession-rank"></div>
+<div id="prof-gathering" class="game-empty" hidden><p id="prof-gathering-text"></p><button id="prof-smelting" type="button" class="subtle-button" hidden>Browse smelting recipes</button></div>
+<div id="prof-recipe-browser"><div class="profession-filters" role="group" aria-label="Recipe knowledge">
+<button id="recipes-learned" type="button" class="subtle-button" aria-pressed="true">Learned</button><button id="recipes-unlearned" type="button" class="subtle-button" aria-pressed="false">Unlearned</button><button id="recipes-all" type="button" class="subtle-button" aria-pressed="false">All recipes</button></div>
+<div class="profession-filters"><label for="prof-materials"><input id="prof-materials" type="checkbox">Have materials</label>
+<select id="prof-subclass" aria-label="Recipe category"><option value="">All subclasses</option></select>
+<select id="prof-slot" aria-label="Equipment slot"><option value="">All slots</option></select>
+<input id="prof-search" type="search" maxlength="100" placeholder="Search recipe, reagent or ID…" aria-label="Search recipes"></div>
+<p id="prof-recipe-count" class="game-skills-note" role="status"></p>
+<div class="profession-content"><div id="prof-recipes" class="profession-recipe-list" aria-label="Recipes"></div><article id="prof-detail" class="profession-recipe-detail" aria-label="Selected recipe details"><p>Select a recipe.</p></article></div></div>
+<footer class="profession-footer"><span>Saved materials in carried bags only · Tools, workstations, cooldowns and eligibility are not checked.</span><button type="button" disabled title="This dashboard is view only">Create</button></footer></section>
+<p class="profession-help">Unlearned is a catalogue, not a guarantee that a recipe is obtainable or learnable by this character. Automatically granted starter recipes are identified from saved skills and server acquisition rules.</p>
+<footer class="page-footer"><span>FOR THE BAND. FOR THE CRAFT.</span><span>No crafting or game changes</span></footer></main></body></html>
