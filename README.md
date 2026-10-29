@@ -350,6 +350,12 @@ Native Windows/macOS, MariaDB, other cores/schema revisions and a second indepen
 not been certified. Future work may add packaged containers, broader adapters, more complete planner
 effect/loot resolution and server-side live support; these are not implemented capabilities.
 
-The workflow template in `.github/workflows/package.yml` is scoped to this application. To enable it
-in a monorepo, an owner must copy it to the repository root workflow directory. Private release ZIPs
-can also be downloaded from this application's `releases/` directory on `main`.
+The standalone source repository is [Daxaar/acore-character-hub](https://github.com/Daxaar/acore-character-hub).
+Its root GitHub Actions workflow runs tests and uploads private ZIP/checksum build artifacts.
+Checked-in packages are also available in `releases/` on `main`.
+
+Keep the development checkout (for example `~/character-hub`) separate from the deployed app
+(for example `~/character-hub-live`). Build a release in the checkout and install that archive into
+the live folder. Live JSON configuration, SQLite databases, generated assets and dependencies stay
+in the deployed folder, outside Git. Editing or pulling the development checkout does not update the
+running application; see [deployment and updates](DEPLOYMENT.md#updates-and-backups).

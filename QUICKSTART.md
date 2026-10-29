@@ -3,7 +3,7 @@
 For **Ubuntu 24.04+ or Ubuntu 24.04+ in WSL2**, with an existing AzerothCore WotLK
 3.3.5a/MySQL 8 installation and working Docker access. Docker setup is assumed.
 Run these commands in your Linux/WSL terminal. You need internet access, `sudo`,
-and GitHub access to the private `Daxaar/acore` repository.
+and GitHub access to the private `Daxaar/acore-character-hub` repository.
 
 ## 1. Install Character Hub prerequisites
 
@@ -21,14 +21,28 @@ Python must be **3.12 or newer**.
 gh auth login --hostname github.com --git-protocol https --web
 gh auth setup-git
 cd ~
-git clone --branch main --single-branch https://github.com/Daxaar/acore.git acore-character-hub
-cd ~/acore-character-hub/character-hub
+git clone --branch main --single-branch https://github.com/Daxaar/acore-character-hub.git character-hub
+cd ~/character-hub
 ```
 
 Follow the browser sign-in prompts using an account with repository access. Use a new
 folder; do not copy another installation's configuration or databases into it.
 
-## 3. Select your existing containers
+## 3. Build and install a separate live copy
+
+Use a new, unused `~/character-hub-live` folder. The Git checkout stays in
+`~/character-hub`; only the built release is installed into the live folder.
+
+```bash
+python3 package_release.py
+HUB_STAGE=$(mktemp -d)
+python3 -m zipfile -e dist/azerothcore-character-hub-v0.1.0.zip "$HUB_STAGE"
+mv -T "$HUB_STAGE/character-hub" "$HOME/character-hub-live"
+rmdir "$HUB_STAGE"
+cd ~/character-hub-live
+```
+
+## 4. Select your existing containers
 
 ```bash
 docker ps --format 'table {{.Names}}\t{{.Image}}'
@@ -43,7 +57,7 @@ WORLD_CONTAINER='YOUR_WORLDSERVER_CONTAINER'
 
 For nonstandard database schemas or DBC paths, see [configuration](DEPLOYMENT.md#settings-reference).
 
-## 4. Configure and install
+## 5. Configure and install
 
 ```bash
 python3 deploy.py --db-container "$DB_CONTAINER" --world-container "$WORLD_CONTAINER"
@@ -54,7 +68,7 @@ installs the pinned dependency and builds metadata from your server. It reads ga
 data without changing your game containers.
 If it fails, correct the reported problem and rerun the same command.
 
-## 5. Start and use Character Hub
+## 6. Start and use Character Hub
 
 ```bash
 bash start.sh
@@ -70,7 +84,7 @@ watched bots or journal entries; add your own as needed.
 Press **Ctrl+C** to stop the app. To start it again:
 
 ```bash
-cd ~/acore-character-hub/character-hub
+cd ~/character-hub-live
 bash start.sh
 ```
 
@@ -78,3 +92,5 @@ bash start.sh
 run `.venv/bin/python prepare_crafting_assets.py`, then start it again. This downloads
 a pinned reference dataset. 3D previews require your own compatible game client;
 see the [full README](README.md). These are not required for basic character browsing.
+
+For later releases, follow [Updates and backups](DEPLOYMENT.md#updates-and-backups); keep live data out of the Git checkout.

@@ -3,9 +3,6 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   package:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: character-hub
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,5 +15,5 @@ jobs:
         with:
           name: azerothcore-character-hub-v0.1.0
           path: |
-            character-hub/dist/azerothcore-character-hub-v0.1.0.zip
-            character-hub/dist/azerothcore-character-hub-v0.1.0.zip.sha256
+            dist/azerothcore-character-hub-v0.1.0.zip
+            dist/azerothcore-character-hub-v0.1.0.zip.sha256

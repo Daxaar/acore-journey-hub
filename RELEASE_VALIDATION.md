@@ -46,4 +46,6 @@ is made that all external clients/server variants or unsaved in-world data were 
 Owner review of the proposed MIT licence, third-party notices and complete source/privacy review;
 independent realm compatibility testing; decisions on authentication/TLS and hosting; and explicit
 approval for any public repository, public release or container-registry publication remain necessary.
-The included monorepo workflow template needs owner installation at the repository root to enable CI.
+The standalone repository runs its workflow from the repository root. The private repository move
+preserves Character Hub-only history and excludes the parent repository’s unrelated files.
+Development and live deployment use separate directories; updates install an allowlisted release.

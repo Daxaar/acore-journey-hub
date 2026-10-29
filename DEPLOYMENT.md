@@ -83,11 +83,35 @@ Remote MySQL TLS settings follow the installed client's configuration; no TLS po
 
 ## Updates and backups
 
-Stop the app before updating. Back up local JSON, assets and all SQLite files, or capture each running
-SQLite database via its online backup API. The journal is independent of activity history and includes
-its screenshot bytes. Install a new archive separately, verify it, then transfer only your own local
-configuration/state to that installation. Never copy another realm's state. Retain the previous source
-and state backup for rollback. Do not replace state with empty files from a clean installation.
+Keep the Git checkout (`~/character-hub`) separate from the deployed application
+(`~/character-hub-live`, or a name you choose for your realm). The live folder has no `.git` directory.
+Build and test changes in the checkout; live code changes only when you install a release.
+
+1. In the checkout, run `git pull --ff-only` and `python3 package_release.py`.
+2. Stop the live app with Ctrl+C. Stop its optional package watcher with
+   `kill "$(cat ~/character-hub-live/.run/package-watch.pid)"` if that PID is still its watcher.
+3. Back up the entire live installation to a different directory. Include local JSON, `assets/`
+   and **every SQLite database**, especially the independent journal and its screenshot bytes.
+   With the app stopped, an ordinary file backup is safe; for any running SQLite database, use
+   SQLite's online backup API instead. Retain the old source and state for rollback.
+4. Verify the checksum and extract the new archive over the existing live folder:
+
+```bash
+cd ~/character-hub/dist
+sha256sum -c azerothcore-character-hub-v0.1.0.zip.sha256
+HUB_STAGE=$(mktemp -d)
+python3 -m zipfile -e azerothcore-character-hub-v0.1.0.zip "$HUB_STAGE"
+cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
+```
+
+5. In the live folder, run `bash setup.sh --skip-assets` to refresh dependencies, then
+   `bash start.sh`. Verify your groups, journal and equipment before retiring the backup.
+   Remove the temporary staging directory after checking the install.
+
+The allowlisted archive contains application files and examples only; it contains no live JSON,
+SQLite databases or generated assets, so extracting it preserves those existing files. Never use
+`git clean`, destructive synchronisation or another realm's state against a live installation.
+Adapt the live-folder path above if you use a different name. No update restarts game containers.
 
 ## Troubleshooting
 
