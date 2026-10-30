@@ -11,7 +11,7 @@ function hideProfessionTooltip(){professionTooltipAnchor?.removeAttribute('aria-
 function attachProfessionTooltip(target,item,recipe=null){
  const tip=$('profession-item-tooltip');
  const show=event=>{
-  hideProfessionTooltip();professionTooltipAnchor=target;
+  hideProfessionTooltip();hideTrainingTooltip();professionTooltipAnchor=target;
   ItemTooltip.render(tip,item,recipe);
   tip.hidden=false;target.setAttribute('aria-describedby',tip.id);ItemTooltip.position(tip,target,event?.type.startsWith('mouse')?event:null);
  };
@@ -22,15 +22,36 @@ function attachProfessionTooltip(target,item,recipe=null){
 }
 window.addEventListener('resize',hideProfessionTooltip);document.addEventListener('scroll',hideProfessionTooltip,true);
 document.addEventListener('keydown',event=>{if(event.key==='Escape')hideProfessionTooltip();});
+let trainingTooltipAnchor=null;
+function hideTrainingTooltip(){trainingTooltipAnchor?.removeAttribute('aria-describedby');trainingTooltipAnchor=null;$('profession-training-tooltip').hidden=true;}
+function attachTrainingTooltip(target,name,skills){
+ const tip=$('profession-training-tooltip');
+ const show=event=>{
+  hideProfessionTooltip();hideTrainingTooltip();trainingTooltipAnchor=target;
+  tip.replaceChildren(node('h3',name+' · Profession training','training-tooltip-heading'));
+  for(const skill of skills){
+   tip.append(node('p',skill.name+' · '+skill.training.rank,'tooltip-stat'),node('p',`${skill.value}/${skill.max} → cap ${skill.training.cap}`),node('p',`Requires skill ${skill.training.required_skill} · Level ${skill.training.required_level}`,'tooltip-requirement'));
+  }
+  tip.hidden=false;target.setAttribute('aria-describedby',tip.id);ItemTooltip.position(tip,target,event?.type.startsWith('mouse')?event:null);
+ };
+ target.addEventListener('mouseenter',show);target.addEventListener('focusin',show);
+ target.addEventListener('mousemove',event=>{if(tip.hidden||trainingTooltipAnchor!==target)show(event);else ItemTooltip.position(tip,target,event);});
+ target.addEventListener('mouseleave',hideTrainingTooltip);target.addEventListener('focusout',hideTrainingTooltip);
+}
+window.addEventListener('resize',hideTrainingTooltip);document.addEventListener('scroll',hideTrainingTooltip,true);
+document.addEventListener('keydown',event=>{if(event.key==='Escape')hideTrainingTooltip();});
 function group(){return groupConfig.groups.find(g=>g.id===groupConfig.selected);}
 function error(message){$('prof-error').textContent=message||'';$('prof-error').hidden=!message;}
 function character(){return recipeData?.characters[0]||summary?.characters.find(c=>c.name.toLowerCase()===currentName?.toLowerCase());}
 function saveURL(){const p=new URLSearchParams();if(currentName)p.set('name',currentName);if(currentSkill)p.set('skill',currentSkill);history.replaceState(null,'','/professions?'+p);}
 function icon(path){const img=node('img',null,'recipe-icon');img.alt='';img.width=52;img.height=52;img.src=path?'/icons/'+encodeURIComponent(path)+'.jpg':'/item-placeholder.svg';img.addEventListener('error',()=>{if(!img.src.endsWith('/item-placeholder.svg'))img.src='/item-placeholder.svg';});return img;}
 function renderGroup(){
+ hideTrainingTooltip();
  if(!group()){$('prof-group').disabled=true;$('prof-skill').disabled=true;$('prof-group-status').textContent='Create your first group on the Dashboard to browse professions.';return;}
  $('prof-group').replaceChildren(...groupConfig.groups.map(g=>{const o=node('option',g.name+' ('+g.members.length+')');o.value=g.id;return o;}));$('prof-group').value=groupConfig.selected;
- $('prof-characters').replaceChildren(...group().members.map(name=>{const b=node('button',name);b.type='button';b.disabled=groupBusy||!summary;b.classList.toggle('active',name.toLowerCase()===currentName?.toLowerCase());b.setAttribute('aria-pressed',String(name.toLowerCase()===currentName?.toLowerCase()));b.addEventListener('click',()=>chooseCharacter(name));return b;}));
+ $('prof-characters').replaceChildren(...group().members.map(name=>{const b=node('button',name);b.type='button';b.disabled=groupBusy||!summary;b.classList.toggle('active',name.toLowerCase()===currentName?.toLowerCase());b.setAttribute('aria-pressed',String(name.toLowerCase()===currentName?.toLowerCase()));const trainable=summary?.characters.find(c=>c.name.toLowerCase()===name.toLowerCase())?.skills.filter(s=>s.training)||[];
+ if(trainable.length){const text=trainable.map(window.CharacterHubSkills.trainingText).join('\n');const badge=node('span','⚒','profession-training-badge');badge.setAttribute('aria-hidden','true');b.append(badge);b.classList.add('has-profession-training');b.setAttribute('aria-label',name+'. '+text);attachTrainingTooltip(b,name,trainable);}
+ b.addEventListener('click',()=>chooseCharacter(name));return b;}));
  $('prof-group').disabled=groupBusy;
 }
 function renderSummary(){

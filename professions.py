@@ -16,11 +16,40 @@ SECONDARY={129,185,356}
 WEAPONS={0:'One-Handed Axes',1:'Two-Handed Axes',2:'Bows',3:'Guns',4:'One-Handed Maces',5:'Two-Handed Maces',6:'Polearms',7:'One-Handed Swords',8:'Two-Handed Swords',10:'Staves',13:'Fist Weapons',15:'Daggers',16:'Thrown',18:'Crossbows',19:'Wands',20:'Fishing Poles'}
 ARMOR={1:'Cloth',2:'Leather',3:'Mail',4:'Plate',6:'Shields'}
 
+# Trainer wrapper spells for the five rank upgrades, in cap order 75..375.
+# IDs from AzerothCore db_world/trainer_spell.sql; requirements come from the live server.
+PROFESSION_RANK_SPELLS = {
+    164:(2021,3539,9786,29845,51298), 165:(2154,3812,10663,32550,51301),
+    171:(2280,3465,11612,28597,51303), 182:(2373,3571,11994,28696,50301),
+    186:(2582,3568,10249,29355,50309), 197:(3912,3913,12181,26791,51308),
+    202:(4040,4041,12657,30351,61464), 333:(7415,7416,13921,28030,51312),
+    393:(8619,8620,10769,32679,50307), 755:(25246,28896,28899,28901,51310),
+    773:(45376,45377,45378,45379,45380), 129:(3280,54254,10847,54255,50299),
+    185:(3412,54257,18261,54256,51295), 356:(7734,54083,18249,54084,51293),
+}
+PROFESSION_CAPS = (75,150,225,300,375,450)
+PROFESSION_RANKS = ('Journeyman','Expert','Artisan','Master','Grand Master')
+
+
+def profession_training(skill, character, offers):
+    """Next cap upgrade, only when saved base skill and character level qualify."""
+    spells = PROFESSION_RANK_SPELLS.get(skill['id'])
+    if not spells or skill['max'] not in PROFESSION_CAPS[:-1]:return None
+    index = PROFESSION_CAPS.index(skill['max'])
+    for offer in offers:
+        if (offer['spell'] == spells[index] and offer['skill'] == skill['id']
+                and skill['value'] >= offer['required_skill']
+                and character.get('level',0) >= offer['required_level']):
+            return {'rank':PROFESSION_RANKS[index], 'cap':PROFESSION_CAPS[index+1],
+                    'required_skill':offer['required_skill'], 'required_level':offer['required_level']}
+    return None
+
 
 def skills_sql(names,recipes=False):
     if not isinstance(names,(list,tuple)) or not 1<=len(names)<=6:raise ValueError('Choose between 1 and 6 characters.')
     if any(not isinstance(n,str) for n in names):raise ValueError('Choose valid character names.')
     selected=name_filter('c',names)
+    rank_spells=','.join(str(spell) for spells in PROFESSION_RANK_SPELLS.values() for spell in spells)
     extra=''
     if recipes:
         if len(names)!=1:raise ValueError('Choose one character for recipes.')
@@ -46,6 +75,10 @@ FROM acore_characters.characters c WHERE {selected};
 SELECT JSON_OBJECT('kind','skill','guid',c.guid,'id',s.skill,'value',s.value,'max',s.max)
 FROM acore_characters.characters c JOIN acore_characters.character_skills s ON s.guid=c.guid
 WHERE {selected} ORDER BY c.guid,s.skill LIMIT 2001;
+SELECT JSON_OBJECT('kind','profession_training','spell',SpellId,'skill',ReqSkillLine,
+'required_skill',ReqSkillRank,'required_level',MIN(ReqLevel))
+FROM acore_world.trainer_spell WHERE SpellId IN ({rank_spells})
+GROUP BY SpellId,ReqSkillLine,ReqSkillRank LIMIT 201;
 {extra}
 COMMIT;
 """
@@ -54,6 +87,8 @@ COMMIT;
 def skill_records(rows,metadata,names):
     if sum(r['kind']=='skill' for r in rows)>=2001 or sum(r['kind']=='spell' for r in rows)>=20001 or sum(r['kind']=='material' for r in rows)>=2001:
         raise DatabaseError('Skill data exceeds the dashboard limit; no partial result was displayed.')
+    offers=[r for r in rows if r['kind']=='profession_training']
+    if len(offers)>=201:raise DatabaseError('Profession training data exceeds the dashboard limit.')
     found={r['name'].lower():r for r in rows if r['kind']=='character'};characters=[]
     for name in names:
         c=found.get(name.lower())
@@ -66,6 +101,7 @@ def skill_records(rows,metadata,names):
             skills.append({**row,'name':definition.get('name') or f"Skill #{row['id']}",
                            'description':definition.get('description',''),'category':category,'group':('Racial Skills' if 'racial' in definition.get('name','').lower() else CATEGORIES.get(category,'Other Skills')),
                            'profession':category==11 or row['id'] in SECONDARY,'gathering':row['id'] in GATHERING,'icon':definition.get('icon')})
+        for skill in skills:skill['training']=profession_training(skill,c,offers) if skill['profession'] else None
         skills.sort(key=lambda s:(list(CATEGORIES).index(s['category']) if s['category'] in CATEGORIES else 99,s['name'].casefold()))
         characters.append({**c,'found':True,'skills':skills})
     return characters

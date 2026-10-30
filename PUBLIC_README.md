@@ -96,7 +96,7 @@ excluding equipment/racial/temporary bonuses. Recipe browsing and material count
 
 ## Deploy to another machine or Docker environment
 
-Copy `dist/azerothcore-character-hub-v0.1.1.zip` to the target machine, unzip it into a **new directory**,
+Copy `dist/azerothcore-character-hub-v0.1.2.zip` to the target machine, unzip it into a **new directory**,
 and run the following there (Linux or WSL with access to that machine’s Docker daemon):
 
 ```sh
@@ -165,7 +165,7 @@ enabled; these are not user authentication. Do not expose it to the public inter
 python3 package_release.py
 ```
 
-Outputs are `dist/character-hub/`, `dist/azerothcore-character-hub-v0.1.1.zip` and its SHA-256 checksum. The builder
+Outputs are `dist/character-hub/`, `dist/azerothcore-character-hub-v0.1.2.zip` and its SHA-256 checksum. The builder
 uses an explicit source allowlist and fresh empty defaults; it never copies personal state or generated
 game assets. It includes a file hash manifest. Upload the **contents** of the clean source folder to your
 GitHub repository, rather than uploading a live installation directory.

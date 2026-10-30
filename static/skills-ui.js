@@ -1,10 +1,13 @@
 'use strict';
 window.CharacterHubSkills = (() => {
   const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;};
+  const trainingText=skill=>`${skill.name}: ${skill.training.rank} training available (${skill.value}/${skill.max} → cap ${skill.training.cap}; requires skill ${skill.training.required_skill}, level ${skill.training.required_level}).`;
   function bar(skill,interactive=true) {
     const row=node(interactive?'button':'div',null,'game-skill-row');if(interactive)row.type='button';
     const numeric=![7,8].includes(skill.category)&&skill.max>1;
     row.classList.toggle('passive',!numeric);
+    if(skill.training){row.classList.add('profession-trainable');row.title=trainingText(skill);}
+
     const fill=node('span',null,'game-skill-fill');fill.style.width=skill.max>0?Math.max(0,Math.min(100,skill.value/skill.max*100))+'%':'0%';
     const label=node('span',skill.name,'game-skill-name'),count=node('span',numeric?`${skill.value}/${skill.max}`:'','game-skill-value');
     row.append(fill,label,count);row.setAttribute('aria-label',`${skill.name}: ${skill.value}/${skill.max} saved base skill`);
@@ -33,5 +36,5 @@ window.CharacterHubSkills = (() => {
     frame.append(list,detail,node('p','Saved base skills · Equipment, racial and temporary bonuses are not calculated.','game-skills-note'));
     container.append(frame);
   }
-  return {bar,render};
+  return {bar,render,trainingText};
 })();

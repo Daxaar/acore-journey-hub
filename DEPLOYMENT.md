@@ -8,8 +8,8 @@ access to the existing server containers. macOS/native Windows have not been val
 
 ## Install the archive
 
-1. Verify `sha256sum -c azerothcore-character-hub-v0.1.1.zip.sha256` beside the ZIP.
-2. Extract into a new directory: `unzip azerothcore-character-hub-v0.1.1.zip` then `cd character-hub`.
+1. Verify `sha256sum -c azerothcore-character-hub-v0.1.2.zip.sha256` beside the ZIP.
+2. Extract into a new directory: `unzip azerothcore-character-hub-v0.1.2.zip` then `cd character-hub`.
 3. Run `bash setup.sh --skip-assets` to install SQLGlot in `.venv`.
 4. For direct MySQL, copy `examples/connection.env` to `.env`, edit all connection values and run
    `chmod 600 .env; set -a; . ./.env; set +a`. The app does not automatically source `.env`.
@@ -98,9 +98,9 @@ Build and test changes in the checkout; live code changes only when you install 
 
 ```bash
 cd ~/character-hub/dist
-sha256sum -c azerothcore-character-hub-v0.1.1.zip.sha256
+sha256sum -c azerothcore-character-hub-v0.1.2.zip.sha256
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e azerothcore-character-hub-v0.1.1.zip "$HUB_STAGE"
+python3 -m zipfile -e azerothcore-character-hub-v0.1.2.zip "$HUB_STAGE"
 cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
 ```
 

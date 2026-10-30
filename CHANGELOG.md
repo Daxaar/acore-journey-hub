@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 — 2026-10-30
+
+Added orange profession-rank training indicators and character badges, using server skill and character-level requirements through Grand Master. Character training tooltips now match item tooltip styling and support keyboard focus. Added an isolated preview script with port-conflict detection and source verification, plus agent instructions requiring a preview link and treating the live installation as read-only.
+
 ## 0.1.1 — 2026-10-30
 
 Decorative navigation tabs with consistent positions across pages; dedicated Inventory for carried bags, personal bank and guild bank; Auction House naming and shared content width. Includes What’s Training and shared server-backed item tooltips. Removed the retired Crafting Rebalance feature.

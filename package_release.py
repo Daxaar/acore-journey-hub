@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='character-hub'
-VERSION='0.1.1'
+VERSION='0.1.2'
 ARCHIVE_NAME='azerothcore-character-hub-v'+VERSION
 SOURCE_FILES=(
     'docs/screenshots/training.png','training.py','tests/training_browser_check.py','item_tooltips.py','spell_tooltips.py','prepare_tooltip_assets.py','QUICKSTART.md','connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',
@@ -23,7 +23,7 @@ SOURCE_FILES=(
     'equipment_models.py','groups.py','mysql_access.py','observed_changes.py','planning.py',
     'prepare_armory_assets.py','prepare_profession_assets.py','prepare_quest_assets.py',
     'professions.py','quest_log.py','settings.py','sql_console.py','watch_notes.py','journal.py',
-    'rested_xp.py','server_identity.py','deployment_config.py','deploy.py','package_release.py','requirements.txt','start.sh','setup.sh','enable-lan.ps1',
+    'rested_xp.py','server_identity.py','deployment_config.py','deploy.py','package_release.py','requirements.txt','preview.py','start.sh','setup.sh','enable-lan.ps1',
     'AGENTS.md','PUBLIC_README.md','.gitignore','.github/workflows/package.yml',
     'static/auction-condensed.ttf','third_party/RobotoCondensed-OFL.txt',
     'third_party/mpyq.py','third_party/MPYQ-LICENSE','third_party/README.md',

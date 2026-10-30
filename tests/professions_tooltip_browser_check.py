@@ -21,7 +21,7 @@ def main():
         def log_message(self,*args):pass
     server=ThreadingHTTPServer(('127.0.0.1',0),Static)
     threading.Thread(target=server.serve_forever,daemon=True).start()
-    skill={'id':773,'name':'Inscription','category':11,'value':1,'max':75,'profession':True,'icon':None}
+    skill={'id':773,'name':'Inscription','category':11,'value':50,'max':75,'training':{'rank':'Journeyman','cap':150,'required_skill':50,'required_level':10},'profession':True,'icon':None}
     character={'name':'Aster','found':True,'level':80,'skills':[skill]}
     def item(entry,name):return {'id':entry,'name':name,'icon':None,'quality':1,'level':40,'description':'Synthetic '+name+' description','sell_price':125,'class_names':['Shaman'],'glyph_type':'Major Glyph','max_stack':20,'required_level':15,'spell_effects':[{'label':'Use','text':'Permanently teaches you this glyph.'},{'label':'','text':'Increases Lightning Shield damage by 20%.'}]}
     ink={**item(1003,'Ethereal Ink'),'owned':0,'required':1}
@@ -57,6 +57,26 @@ def main():
             page.route('**/icons/**',lambda route:route.fulfill(path=str(ROOT/'static/item-placeholder.svg'),content_type='image/svg+xml'))
             page.goto(f'http://127.0.0.1:{server.server_port}/professions.html')
             page.get_by_role('button',name='Unlearned',exact=True).click()
+            assert page.locator('.profession-summary-card .profession-trainable').count()==1
+            bar=page.locator('.profession-summary-card .profession-trainable')
+            assert bar.evaluate('(e)=>getComputedStyle(e).borderTopColor')=='rgb(255, 150, 46)'
+            badge=page.locator('#prof-characters .profession-training-badge')
+            assert badge.count()==1
+            button=page.locator('#prof-characters button').first
+            assert button.get_attribute('title') is None
+            training_tip=page.locator('#profession-training-tooltip')
+            button.hover();training_tip.wait_for(state='visible')
+            assert all(text in training_tip.inner_text() for text in ['Aster','Inscription','Journeyman','cap 150','Requires skill 50','Level 10'])
+            assert training_tip.locator('a').count()==0
+            assert button.get_attribute('aria-describedby')=='profession-training-tooltip'
+            page.keyboard.press('Escape');assert training_tip.is_hidden()
+            button.focus();assert training_tip.is_visible()
+            page.locator('#prof-refresh').focus();assert training_tip.is_hidden()
+            page.set_viewport_size({'width':390,'height':844})
+            button.focus();assert training_tip.is_visible()
+            bounds=training_tip.bounding_box();assert bounds['x']>=0 and bounds['x']+bounds['width']<=390
+            page.set_viewport_size({'width':1400,'height':1000})
+            assert 'cap 150' in bar.get_attribute('title')
             tip=page.locator('#profession-item-tooltip')
             def check(target,name):
                 target.scroll_into_view_if_needed();page.evaluate('() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))');target.hover();tip.wait_for(state='visible')

@@ -86,3 +86,9 @@
 .game-skill-group > summary::-webkit-details-marker, .recipe-group > summary::-webkit-details-marker { display:none; }
 .game-skill-group > summary::before, .recipe-group > summary::before { content:'+'; display:inline-grid; place-items:center; width:17px; height:17px; margin-right:9px; border:2px ridge #8f7d51; border-radius:4px; background:linear-gradient(#be2717,#620b06); color:#ffe65b; font:bold 16px/1 Georgia,serif; vertical-align:middle; }
 .game-skill-group[open] > summary::before, .recipe-group[open] > summary::before { content:'−'; }
+
+.game-skill-row.profession-trainable { border-color:#ff962e; box-shadow:0 0 0 1px #ff962e; }
+.profession-character-buttons button.has-profession-training { position:relative; padding-right:24px; }
+.profession-training-badge { position:absolute; top:1px; right:3px; color:#ff962e; font:16px/1.1 Arial,sans-serif; pointer-events:none; }
+
+#profession-training-tooltip .training-tooltip-heading { color:#ff962e; margin-bottom:8px; }

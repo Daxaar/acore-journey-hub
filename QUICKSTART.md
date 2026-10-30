@@ -36,7 +36,7 @@ Use a new, unused `~/character-hub-live` folder. The Git checkout stays in
 ```bash
 python3 package_release.py
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e dist/azerothcore-character-hub-v0.1.1.zip "$HUB_STAGE"
+python3 -m zipfile -e dist/azerothcore-character-hub-v0.1.2.zip "$HUB_STAGE"
 mv -T "$HUB_STAGE/character-hub" "$HOME/character-hub-live"
 rmdir "$HUB_STAGE"
 cd ~/character-hub-live
