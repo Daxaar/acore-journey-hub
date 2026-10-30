@@ -37,10 +37,11 @@ from gear_planner import GearPlanner,PlannerPreferences
 from auctions import AuctionProvider
 from watch_notes import WatchNotes
 from professions import SkillsProvider
+from item_tooltips import ItemTooltipProvider
+from training import TrainingProvider
 from quest_log import QuestLogProvider
 from journal import JournalStore, JournalConflict, MAX_REQUEST
 from observed_changes import ObservedChanges
-from crafting import CraftingCatalogue, ReviewConflict
 from activity_history import ActivityHistory, EVENT_KINDS
 from planning import LocationProvider, enrich_view, load_metadata
 from client_models import ClientModels, APPEARANCE
@@ -258,9 +259,6 @@ ASSETS.update({'/settings': ('settings.html', 'text/html; charset=utf-8'),
                '/appearance.js': ('appearance.js', 'text/javascript; charset=utf-8')})
 
 ASSETS.update({
-    '/crafting': ('crafting.html', 'text/html; charset=utf-8'),
-    '/crafting.js': ('crafting.js', 'text/javascript; charset=utf-8'),
-    '/crafting.css': ('crafting.css', 'text/css; charset=utf-8'),
     '/gear-planner': ('gear-planner.html', 'text/html; charset=utf-8'),
     '/gear-planner.js': ('gear-planner.js', 'text/javascript; charset=utf-8'),
     '/gear-planner.css': ('gear-planner.css', 'text/css; charset=utf-8'),
@@ -272,6 +270,9 @@ ASSETS.update({
     '/journal': ('journal.html', 'text/html; charset=utf-8'),
     '/journal.js': ('journal.js', 'text/javascript; charset=utf-8'),
     '/journal.css': ('journal.css', 'text/css; charset=utf-8'),
+    '/training': ('training.html', 'text/html; charset=utf-8'),
+    '/training.js': ('training.js', 'text/javascript; charset=utf-8'),
+    '/training.css': ('training.css', 'text/css; charset=utf-8'),
     '/professions': ('professions.html', 'text/html; charset=utf-8'),
     '/professions.js': ('professions.js', 'text/javascript; charset=utf-8'),
     '/professions.css': ('professions.css', 'text/css; charset=utf-8'),
@@ -281,6 +282,7 @@ ASSETS.update({
     '/quest-log.css': ('quest-log.css', 'text/css; charset=utf-8'),
     '/quest-horde.svg': ('quest-horde.svg', 'image/svg+xml'),
     '/quest-alliance.svg': ('quest-alliance.svg', 'image/svg+xml'),
+    '/inventory': ('inventory.html', 'text/html; charset=utf-8'),
     '/armory': ('armory.html', 'text/html; charset=utf-8'),
     '/client-model.js': ('client-model.js', 'text/javascript; charset=utf-8'),
     '/item-tooltip.js': ('item-tooltip.js', 'text/javascript; charset=utf-8'),
@@ -291,7 +293,7 @@ ASSETS.update({
     '/item-placeholder.svg': ('item-placeholder.svg', 'image/svg+xml')})
 
 
-def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=None, planner=None, crafting=None):
+def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=None, planner=None):
     settings = settings or (console.settings if console is not None else SettingsStore())
     console = console or SqlConsole(settings=settings)
     console.settings = settings
@@ -299,10 +301,11 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     armory = ArmoryProvider()
     auctions = AuctionProvider()
     skills = SkillsProvider()
+    item_tooltips = ItemTooltipProvider()
+    training = TrainingProvider()
     quest_log = QuestLogProvider(objectives)
     models = ClientModels()
     journal = journal or JournalStore()
-    crafting = crafting or CraftingCatalogue()
     identity = ServerIdentity()
     token = secrets.token_urlsafe(32)
     class Handler(BaseHTTPRequestHandler):
@@ -365,9 +368,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 if not isinstance(payload, dict):
                     raise ValueError('Expected a JSON object.')
                 path = urlsplit(self.path).path
-                if path == '/api/crafting/review':
-                    self.json_response(200, {'ok':True,'review':crafting.save(payload)})
-                elif path == '/api/journal':
+                if path == '/api/journal':
                     if payload.get('action') == 'delete':
                         journal.delete(payload.get('id'),payload.get('revision'))
                         self.json_response(200, {'ok':True})
@@ -396,7 +397,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     self.json_response(200, {'ok': True, 'result': result})
                 else:
                     self.json_response(404, {'ok': False, 'error': 'Not found'})
-            except (JournalConflict, ReviewConflict) as exc:
+            except JournalConflict as exc:
                 self.json_response(409, {'ok':False,'error':str(exc)})
             except LookupError as exc:
                 self.json_response(404, {'ok':False,'error':str(exc)})
@@ -411,14 +412,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             if not self.allowed():
                 return
             path = urlsplit(self.path).path
-            if path == '/api/crafting':
-                try:
-                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
-                    self.json_response(200,{'ok':True,'result':crafting.get(params)})
-                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
-                except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
-                except (OSError,sqlite3.Error):self.json_response(503,{'ok':False,'error':'Crafting catalogue storage is unavailable.'})
-            elif path == '/api/journal' or path.startswith('/journal-images/'):
+            if path == '/api/journal' or path.startswith('/journal-images/'):
                 try:
                     if path.startswith('/journal-images/'):
                         mime,data=journal.image(path.removeprefix('/journal-images/'))
@@ -496,6 +490,24 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     self.json_response(404, {'ok':False, 'error':str(exc)})
                 except DatabaseError as exc:
                     self.json_response(503, {'ok':False, 'error':str(exc)})
+            elif path == '/api/training':
+                try:
+                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+                    if 'name' not in params or set(params)-{'name','q','level','mode'} or any(len(v)!=1 for v in params.values()):
+                        raise ValueError('Provide one character name and one value per filter.')
+                    result=training.get(params['name'][0],params.get('q',[''])[0],params.get('level',[''])[0],params.get('mode',['upcoming'])[0])
+                    self.json_response(200,{'ok':True,'result':result})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif path == '/api/item-tooltip':
+                try:
+                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+                    if set(params)!={'id'} or len(params['id'])!=1:raise ValueError('Provide one item ID.')
+                    self.json_response(200,{'ok':True,'item':item_tooltips.get(int(params['id'][0]))})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
             elif path in ('/api/skills','/api/professions'):
                 try:
                     params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)

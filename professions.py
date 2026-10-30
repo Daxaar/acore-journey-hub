@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 import threading
 import time
-from armory import read_inventory_sql
+from armory import read_inventory_sql, ITEM_TOOLTIP_FIELDS
 from mysql_access import name_filter,DatabaseError
+from item_tooltips import load_metadata
+from spell_tooltips import enrich_item,spell_text
 
 ROOT=Path(__file__).resolve().parent
 CATEGORIES={7:'Class Skills',11:'Professions',9:'Secondary Skills',6:'Weapon Skills',8:'Armor Proficiencies',10:'Languages',5:'Attributes',12:'Other Skills'}
@@ -84,11 +86,18 @@ def difficulty(value,ability,learned):
     return 'orange'
 
 
-def recipe_records(rows,metadata,character,skill_id):
+def recipe_records(rows,metadata,character,skill_id,tooltip_data=None):
+    tooltip_data=tooltip_data or {}
     skill=next((s for s in character['skills'] if s['id']==skill_id),None);value=skill['value'] if skill else 0
     known={r['id'] for r in rows if r['kind']=='spell'};counts={r['id']:r['count'] for r in rows if r['kind']=='material'}
-    items=metadata.get('items',{});recipes=[]
-    def item(entry):return items.get(str(entry),{'id':entry,'name':f'Item #{entry}','icon':None})
+    items={key:dict(value) for key,value in metadata.get('items',{}).items()};recipes=[]
+    for row in rows:
+        if row['kind']=='profession_item':
+            key=str(row['id']);items[key]={**items.get(key,{}),**{k:v for k,v in row.items() if k!='kind'}}
+    details={}
+    def item(entry):
+        if entry not in details:details[entry]=enrich_item(items.get(str(entry),{'id':entry,'name':f'Item #{entry}','icon':None}),tooltip_data)
+        return details[entry]
     for record in metadata.get('recipes',{}).get(str(skill_id),{}).values():
         matches=[a for a in record['abilities'] if applicable(a,character)]
         ability=min(matches or record['abilities'],key=lambda a:a['required'])
@@ -116,6 +125,8 @@ def recipe_records(rows,metadata,character,skill_id):
                         'tools':[item(i) for i in record['tools']],
                         'tool_categories':[metadata.get('tool_categories',{}).get(str(i),f'Tool category #{i}') for i in record['tool_categories']],
                         'focus':metadata.get('focuses',{}).get(str(record.get('focus')),f"Workstation #{record['focus']}" if record.get('focus') else ''),
+                        'cast_time_ms':tooltip_data.get('casts',{}).get(str(tooltip_data.get('spells',{}).get(str(record['id']),{}).get('cast'))),
+                        'tooltip_description':spell_text(record['id'],tooltip_data)[0],
                         'base':record.get('base',[])})
     recipes.sort(key=lambda r:(r['group']!='Other',r['group'],r['required_skill'],r['name'].casefold(),r['id']))
     return recipes
@@ -123,7 +134,7 @@ def recipe_records(rows,metadata,character,skill_id):
 
 class SkillsProvider:
     def __init__(self,root=ROOT,reader=read_inventory_sql):
-        self.reader=reader;self.lock=threading.Lock();self.cached={}
+        self.reader=reader;self.lock=threading.Lock();self.cached={};self.tooltip_metadata=load_metadata(root)
         try:self.metadata=json.loads((root/'assets'/'profession-metadata.json').read_text())
         except (OSError,ValueError):self.metadata={}
         if not isinstance(self.metadata,dict) or not all(isinstance(self.metadata.get(k),dict) for k in ('skills','recipes','items')):self.metadata={}
@@ -134,6 +145,24 @@ class SkillsProvider:
         if skill_id is not None:
             if type(skill_id) is not int or str(skill_id) not in self.metadata.get('skills',{}) or not (self.metadata['skills'][str(skill_id)]['category']==11 or skill_id in SECONDARY):
                 raise ValueError('Choose a supported profession.')
+        if skill_id is not None:
+            ids=set()
+            for recipe in self.metadata.get('recipes',{}).get(str(skill_id),{}).values():
+                ids.update(item['id'] for item in recipe.get('outputs',[]))
+                ids.update(item for item,count in recipe.get('reagents',[]))
+                ids.update(recipe.get('tools',[]))
+            if len(ids)>10000 or any(type(i) is not int or not 1<=i<=4294967295 for i in ids):
+                raise DatabaseError('Profession item catalogue exceeds the supported limit.')
+            if ids:
+                fields={field:field for field in ITEM_TOOLTIP_FIELDS}
+                fields.update({'id':'entry','name':'name','quality':'Quality','level':'ItemLevel',
+                               'required_level':'RequiredLevel','sell_price':'SellPrice','description':'description',
+                               'required_skill':'RequiredSkill','skill_rank':'RequiredSkillRank'})
+                fields.update({'max_stack':'stackable'})
+                fields.update({name+'_'+str(i):name+'_'+str(i) for name in ('spellid','spelltrigger') for i in range(1,6)})
+                columns=','.join(f"'{key}',t.{column}" for key,column in fields.items())
+                query=f"SELECT JSON_OBJECT('kind','profession_item',{columns}) FROM acore_world.item_template t WHERE t.entry IN ({','.join(map(str,sorted(ids)))}) LIMIT {len(ids)+1};\n"
+                sql=sql.replace('COMMIT;',query+'COMMIT;')
         key=(tuple(n.lower() for n in names),skill_id)
         with self.lock:
             cached=self.cached.get(key)
@@ -145,6 +174,6 @@ class SkillsProvider:
             data['professions'].sort(key=lambda s:(s['category']!=11,s['name']))
             if skill_id is not None:
                 if not characters[0]['found']:raise LookupError('No saved character found with that name.')
-                data['recipes']=recipe_records(rows,self.metadata,characters[0],skill_id);data['skill_id']=skill_id
+                data['recipes']=recipe_records(rows,self.metadata,characters[0],skill_id,self.tooltip_metadata);data['skill_id']=skill_id
             if len(self.cached)>=64:self.cached.pop(next(iter(self.cached)))
             self.cached[key]=(time.monotonic(),data);return data

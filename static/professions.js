@@ -6,6 +6,22 @@ const params=new URLSearchParams(location.search);
 let groupConfig=null,token=null,summary=null,recipeData=null,currentName=/^[A-Za-z]{2,12}$/.test(params.get('name')||'')?params.get('name'):null;
 let currentSkill=/^\d{1,5}$/.test(params.get('skill')||'')?Number(params.get('skill')):null;
 let mode='learned',selectedRecipe=null,groupBusy=false,groupRequest=0,recipeRequest=0,recipeController=null,browseMining=false;
+let professionTooltipAnchor=null;
+function hideProfessionTooltip(){professionTooltipAnchor?.removeAttribute('aria-describedby');professionTooltipAnchor=null;$('profession-item-tooltip').hidden=true;}
+function attachProfessionTooltip(target,item,recipe=null){
+ const tip=$('profession-item-tooltip');
+ const show=event=>{
+  hideProfessionTooltip();professionTooltipAnchor=target;
+  ItemTooltip.render(tip,item,recipe);
+  tip.hidden=false;target.setAttribute('aria-describedby',tip.id);ItemTooltip.position(tip,target,event?.type.startsWith('mouse')?event:null);
+ };
+ if(!target.matches('button,a,input,select'))target.tabIndex=0;
+ target.addEventListener('mouseenter',show);target.addEventListener('focusin',show);
+ target.addEventListener('mousemove',event=>{if(tip.hidden||professionTooltipAnchor!==target)show(event);else ItemTooltip.position(tip,target,event);});
+ target.addEventListener('mouseleave',hideProfessionTooltip);target.addEventListener('focusout',hideProfessionTooltip);
+}
+window.addEventListener('resize',hideProfessionTooltip);document.addEventListener('scroll',hideProfessionTooltip,true);
+document.addEventListener('keydown',event=>{if(event.key==='Escape')hideProfessionTooltip();});
 function group(){return groupConfig.groups.find(g=>g.id===groupConfig.selected);}
 function error(message){$('prof-error').textContent=message||'';$('prof-error').hidden=!message;}
 function character(){return recipeData?.characters[0]||summary?.characters.find(c=>c.name.toLowerCase()===currentName?.toLowerCase());}
@@ -61,6 +77,7 @@ async function loadGroup(reset=false){
  finally{clearTimeout(timeout);if(request===groupRequest)$('prof-refresh').disabled=false;}
 }
 async function loadRecipes(reset=false){
+ hideProfessionTooltip();
  if(!currentSkill||!currentName){$('profession-window').hidden=true;return;}
  const request=++recipeRequest;recipeController?.abort();const controller=new AbortController();recipeController=controller;
  const name=currentName,skill=currentSkill,timeout=setTimeout(()=>controller.abort(),15000);
@@ -95,6 +112,7 @@ function renderProfession(){
  renderRecipes();
 }
 function renderRecipes(){
+ hideProfessionTooltip();
  if(!recipeData)return;
  for(const key of ['learned','unlearned','all'])$('recipes-'+key).setAttribute('aria-pressed',String(mode===key));
  const terms=$('prof-search').value.trim().toLowerCase().split(/\s+/).filter(Boolean),category=$('prof-subclass').value,slot=$('prof-slot').value;
@@ -108,6 +126,7 @@ function renderRecipes(){
   const button=node('button',null,'recipe-row '+r.difficulty);button.type='button';button.dataset.recipe=r.id;button.setAttribute('aria-pressed',String(r.id===selectedRecipe));
   const count=r.material_count>0&&r.status==='learned'?' ['+r.material_count+']':'';
   button.append(node('span',r.name+(r.rank?' · '+r.rank:'')+count),node('small',r.status==='unlearned'?'Unlearned':r.status==='superseded'?'Replaced':String(r.required_skill)));
+  attachProfessionTooltip(button,r.outputs[0],r);
   button.addEventListener('click',()=>{selectedRecipe=r.id;list.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.recipe)===r.id)));renderRecipe(r);});const external=wowheadLink('↗','spell',r.id);external.classList.add('wowhead-shortcut');external.setAttribute('aria-label','View '+r.name+' on Wowhead');const row=node('div',null,'game-record-row');row.append(button,external);section.append(row);
  }
  if(!recipes.length)list.append(node('p','No recipes match this view. Try Unlearned, All recipes, or clear the search.','game-empty'));
@@ -115,17 +134,18 @@ function renderRecipes(){
 }
 function recipeTitle(recipe){const h=node('h2');h.append(wowheadLink(recipe.name,'spell',recipe.id));return h;}
 function renderRecipe(recipe){
+ hideProfessionTooltip();
  const detail=$('prof-detail');detail.replaceChildren();if(!recipe){detail.append(node('p','Select a recipe to inspect its materials.'));return;}
- const title=node('div',null,'recipe-detail-title');title.append(icon(recipe.icon),recipeTitle(recipe));detail.append(title);
+ const title=node('div',null,'recipe-detail-title');title.append(icon(recipe.icon),recipeTitle(recipe));attachProfessionTooltip(title,recipe.outputs[0],recipe);detail.append(title);
  const line=(text,cls)=>detail.append(node('p',text,cls));
  line((recipe.status==='unlearned'?'Unlearned':recipe.status==='superseded'?'Superseded by a learned rank':recipe.learning_source)+' · Requires skill '+recipe.required_skill,'game-detail-note');
  if(recipe.restricted)line('This recipe has class/race restrictions that do not match this character.','recipe-reagent-missing');
  if(recipe.description){const text=recipe.description.replace(/\$[bB]/g,'\n');line(text);if(/\$/.test(text))line('Some formula values in this server text require the live client.','game-detail-note');}
- if(recipe.outputs.length){detail.append(node('h3','Creates'));for(const out of recipe.outputs){const row=node('div',null,'recipe-item');row.append(icon(out.icon),wowheadLink(out.name+' ×'+(out.minimum===out.maximum?out.minimum:out.minimum+'–'+out.maximum),'item',out.id));detail.append(row);}}
+ if(recipe.outputs.length){detail.append(node('h3','Creates'));for(const out of recipe.outputs){const row=node('div',null,'recipe-item');row.append(icon(out.icon),wowheadLink(out.name+' ×'+(out.minimum===out.maximum?out.minimum:out.minimum+'–'+out.maximum),'item',out.id));attachProfessionTooltip(row,out);detail.append(row);}}
  detail.append(node('h3','Reagents'));
  if(!recipe.reagents.length)line('No counted reagents in the server definition.');
- for(const reagent of recipe.reagents){const row=node('div',null,'recipe-item');row.append(icon(reagent.icon));const copy=node('div');const name=node('p');name.append(wowheadLink(reagent.name,'item',reagent.id));copy.append(name,node('p',`${reagent.owned}/${reagent.required} in carried bags`,reagent.owned>=reagent.required?'recipe-reagent-ready':'recipe-reagent-missing'));row.append(copy);detail.append(row);}
- if(recipe.tools.length||recipe.tool_categories.length||recipe.focus){detail.append(node('h3','Tools & workstation'));for(const tool of recipe.tools){const p=node('p');p.append(wowheadLink(tool.name,'item',tool.id));detail.append(p);}for(const tool of recipe.tool_categories)line(tool);if(recipe.focus)line(recipe.focus);}
+ for(const reagent of recipe.reagents){const row=node('div',null,'recipe-item');row.append(icon(reagent.icon));const copy=node('div');const name=node('p');name.append(wowheadLink(reagent.name,'item',reagent.id));copy.append(name,node('p',`${reagent.owned}/${reagent.required} in carried bags`,reagent.owned>=reagent.required?'recipe-reagent-ready':'recipe-reagent-missing'));row.append(copy);attachProfessionTooltip(row,reagent);detail.append(row);}
+ if(recipe.tools.length||recipe.tool_categories.length||recipe.focus){detail.append(node('h3','Tools & workstation'));for(const tool of recipe.tools){const p=node('p');p.append(wowheadLink(tool.name,'item',tool.id));attachProfessionTooltip(p,tool);detail.append(p);}for(const tool of recipe.tool_categories)line(tool);if(recipe.focus)line(recipe.focus);}
  line('Recipe spell #'+recipe.id+' · Material counts do not check stations, tools, cooldowns, specializations or all learning requirements.','game-detail-note');
 }
 $('prof-smelting').addEventListener('click',()=>{browseMining=true;renderProfession();});

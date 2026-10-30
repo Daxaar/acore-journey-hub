@@ -36,7 +36,7 @@ Use a new, unused `~/character-hub-live` folder. The Git checkout stays in
 ```bash
 python3 package_release.py
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e dist/azerothcore-character-hub-v0.1.0.zip "$HUB_STAGE"
+python3 -m zipfile -e dist/azerothcore-character-hub-v0.1.1.zip "$HUB_STAGE"
 mv -T "$HUB_STAGE/character-hub" "$HOME/character-hub-live"
 rmdir "$HUB_STAGE"
 cd ~/character-hub-live
@@ -88,9 +88,6 @@ cd ~/character-hub-live
 bash start.sh
 ```
 
-**Optional:** Crafting Rebalance needs an additional catalogue. With the app stopped,
-run `.venv/bin/python prepare_crafting_assets.py`, then start it again. This downloads
-a pinned reference dataset. 3D previews require your own compatible game client;
-see the [full README](README.md). These are not required for basic character browsing.
+**Optional:** 3D previews require your own compatible game client; see the [full README](README.md).
 
 For later releases, follow [Updates and backups](DEPLOYMENT.md#updates-and-backups); keep live data out of the Git checkout.

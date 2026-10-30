@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What’s Training · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/training.css">
+<script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/appearance.js"></script><script src="/training.js" defer></script></head><body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training" aria-current="page">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+<main class="training-page">
+<section class="page-heading"><div><p class="eyebrow">THE NEXT LESSON IN YOUR SPELLBOOK</p><h1>What’s Training</h1><p class="intro">Your next abilities, every rank, and the level you can learn them.</p></div><div class="refresh-controls"><button id="training-refresh" class="gold-button" type="button">↻ Refresh saved training</button><p id="training-refreshed" role="status">Choose a character</p></div></section>
+<aside class="save-note"><p><strong>Saved spellbook · read only.</strong> Recently learned abilities may not appear until your character saves. This page never trains or spends gold.</p></aside>
+<section class="panel training-controls" aria-label="Training character and filters">
+<div class="training-control-row"><label for="training-group">Quest group</label><select id="training-group" disabled></select><span id="training-group-status" role="status"></span></div>
+<div id="training-characters" class="training-characters" aria-label="Group characters"></div>
+<form id="training-character-form" class="training-control-row"><label for="training-name">Character</label><input id="training-name" maxlength="12" autocomplete="off" placeholder="Existing character name" required><button class="subtle-button" type="submit">Open spellbook</button></form>
+<form id="training-filters" class="training-control-row"><label for="training-search">Ability name or ID</label><input id="training-search" type="search" maxlength="100" placeholder="e.g. Heroic Strike"><label for="training-level">Required level</label><input id="training-level" type="text" inputmode="numeric" maxlength="12" placeholder="Any, 14, or 14–20" aria-describedby="training-level-help"><label for="training-mode">Show</label><select id="training-mode"><option value="upcoming">Upcoming abilities</option><option value="unlearned">All unlearned</option><option value="available">Available now</option><option value="all">Include learned</option></select><button class="subtle-button" type="submit">Search</button><button id="training-reset" class="subtle-button" type="button">Clear filters</button></form>
+<p id="training-level-help" class="training-help">Filter by an exact required level or a range. Hover, focus or tap an ability for details.</p>
+</section>
+<div id="training-error" class="error-banner" role="alert" hidden></div>
+<section id="training-empty" class="panel training-empty"><h2>Open a character’s spellbook.</h2><p>Choose a saved group member or enter a character name above. No characters are preselected on a new installation.</p></section>
+<section id="training-book" class="training-book" aria-label="Class training spellbook" hidden><header class="training-book-header"><span aria-hidden="true">✦</span><div><h2 id="training-owner"></h2><p id="training-summary" role="status"></p></div></header><p id="training-warning" class="training-help" hidden></p><div id="training-list" class="training-list"></div></section>
+<details class="panel training-method"><summary>About this spellbook</summary><p>Coming Soon means one or two levels above your saved level; later ranks appear under Not Yet Available. All unlearned also includes missed training and unmet prerequisites. Prices are base trainer costs, before reputation discounts.</p><p>This lists class-trainer abilities defined by your server. Talent-only, quest-only and pet-training unlocks are not treated as guaranteed level rewards. Saved class, race, ranks, skills and prerequisites are checked where available; trainer location, script conditions and unsaved gameplay may still affect learning. Ability text uses base server values rather than talent or equipment simulations.</p></details>
+<footer class="page-footer"><span>FOR THE NEXT LESSON. FOR THE NEXT ADVENTURE.</span><span>Class trainers · Saved abilities · No game changes</span></footer>
+</main><div id="training-tooltip" class="game-item-tooltip training-tooltip" role="tooltip" hidden></div></body></html>

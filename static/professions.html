@@ -2,18 +2,19 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Professions · AzerothCore Character Hub</title><link rel="icon" href="/emblem.svg">
 <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/professions.css">
-<script src="/wowhead.js" defer></script><script src="/appearance.js"></script><script src="/skills-ui.js" defer></script><script src="/professions.js" defer></script></head><body><header class="topbar">
+<script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/appearance.js"></script><script src="/skills-ui.js" defer></script><script src="/professions.js" defer></script></head><body><header class="topbar">
     <a class="brand" href="/" aria-label="AzerothCore Character Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
       <span><strong>AzerothCore Character Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
     <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
     <nav class="page-nav" aria-label="Pages">
       <a class="page-switch" href="/">Dashboard</a>
-      <a class="page-switch" href="/armory">Armory &amp; bags</a>
+      <a class="page-switch" href="/armory">Armory</a>
       <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
       <a class="page-switch" href="/quest-log">Quest log</a>
-      <button class="page-switch" type="button" disabled aria-current="page">Professions</button>
-      <a class="page-switch" href="/crafting">Crafting Rebalance</a>
-      <a class="page-switch" href="/auctions">Auctions</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions" aria-current="page">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
       <a class="page-switch" href="/journal">Journal</a>
       <a class="page-switch" href="/sql">SQL explorer</a>
       <a class="page-switch" href="/settings">Settings</a>
@@ -43,4 +44,4 @@
 <div class="profession-content"><div id="prof-recipes" class="profession-recipe-list" aria-label="Recipes"></div><article id="prof-detail" class="profession-recipe-detail" aria-label="Selected recipe details"><p>Select a recipe.</p></article></div></div>
 <footer class="profession-footer"><span>Saved materials in carried bags only · Tools, workstations, cooldowns and eligibility are not checked.</span><button type="button" disabled title="This dashboard is view only">Create</button></footer></section>
 <p class="profession-help">Unlearned is a catalogue, not a guarantee that a recipe is obtainable or learnable by this character. Automatically granted starter recipes are identified from saved skills and server acquisition rules.</p>
-<footer class="page-footer"><span>FOR THE BAND. FOR THE CRAFT.</span><span>No crafting or game changes</span></footer></main></body></html>
+<footer class="page-footer"><span>FOR THE BAND. FOR THE CRAFT.</span><span>No crafting or game changes</span></footer></main><div id="profession-item-tooltip" class="game-item-tooltip" role="tooltip" hidden></div></body></html>

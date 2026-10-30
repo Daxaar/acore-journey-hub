@@ -19,7 +19,7 @@ source and synthetic test fixtures, with no exported game database or generated 
 
 ## Features and usage
 
-Use the page navigation to choose an area. **Armory & bags** is followed immediately by **Gear Planner**;
+Use the page navigation to choose an area. **Armory** is followed immediately by **Gear Planner**, then **Inventory**;
 **Settings** remains last. Shared saved groups determine the character shortcuts across pages. A fresh
 installation is empty, including Journal. Features read your own server or local records as listed below.
 
@@ -30,10 +30,11 @@ installation is empty, including Journal. Features read your own server or local
 | Party planning | Expand “What should we do next?” for hand-in priorities, shared objectives, catch-up actions, profession/material context and grouped routes | Current selected snapshot, quest dependencies/spawns/POIs; advisory routes, not navigation or bot commands |
 | Activity history | View locally observed changes and per-character progress; filter history | Local activity.sqlite3; starts when observed, cannot reconstruct previous sessions or unsaved gameplay |
 | Quest Log | Active, completed and All Quests world-search modes; text/ID/class filters, pagination, saved-group/watch selection; objectives, rewards, eligibility notes and roster status | Character quest status/reward tables and world quest catalogue; missing/ambiguous requirements are flagged |
-| Armory & bags | Select a character; inspect equipment, stat/item details, carried bags, personal bank, guild bank, bag capacity and skills; optional 3D appearance and equipment previews | Saved inventories, guild membership, world items and generated DBC metadata; previews require a locally supplied compatible client |
+| What’s Training | Browse upcoming class-trainer abilities and ranks; Coming Soon/later groups, available/unlearned/learned views, name/ID and exact-level/range filters, ability tooltips and character selection | Saved level/spellbook/skills plus server trainer and DBC definitions; base prices, not talent/quest/pet unlock guarantees |
+| Armory | Select a character; inspect equipment, stat/item details and skills; optional 3D appearance and equipment previews | Saved inventories, guild membership, world items and generated DBC metadata; previews require a locally supplied compatible client |
 | Gear Planner | Role selection, current equipment, owned/quest/crafted/vendor alternatives, score breakdowns, group activities and acquisition filters | Saved accounts/groups/guild banks, quest eligibility and metadata; read-only recommendations with unresolved effects flagged |
-| Professions | Browse saved skill progress, learned recipes, item/reagent/tool requirements, material counts and group crafting opportunities | Saved skills/spells/inventories plus generated profession catalogue; never crafts or trains |
-| Classic Crafting Rebalance | Global Classic-era equippable catalogue, filters, engineering panel, baseline/proposal comparisons, acquisition evidence, review decisions/notes and revisions | Generated local catalogue and crafting-reviews.sqlite3; engineering hypotheses, no game changes or deployment action |
+| Inventory | Browse carried bags, personal bank and guild bank, with item search and inspection | Saved inventory; view only |
+| Professions | Browse saved skill progress, learned recipes, item/reagent/tool requirements, hover/focus item tooltips, material counts and group crafting opportunities | Saved skills/spells/inventories plus generated profession catalogue; never crafts or trains |
 | Auction Exchange | House/category/quality/level filters, search and sorting, paginated listings, bid/buyout/stack information and current unit-price distribution | Realm saved auctionhouse/items; no bidding, purchases or historical price collection |
 | Adventurers’ Journal | Create/edit/delete chronicles with titles, dates/in-world chronology, classifications, persons/places, character/group tags and up to four PNG/JPEG screenshots; search/filter/sort/paginate; revision conflict protection | Independent local journal.sqlite3, no game connection needed; archive ships with zero records and zero screenshots |
 | SQL explorer | Browse permitted tables and run bounded single SELECT queries, results and duration; settings control row/time/base-table restrictions | Character/world schemas only; validated SQL AST, read-only transactions; never a general SQL command terminal |
@@ -47,12 +48,13 @@ to MySQL. No worldserver live module is bundled. See detailed feature notes belo
 
 ## Screenshots
 
-Screenshots in `docs/screenshots/` show a clean installation only; no private character or journal data.
+Screenshots in `docs/screenshots/` show empty setup states or explicitly synthetic examples; no private character or journal data.
 
 ![Empty Character Overview](docs/screenshots/overview.png)
 ![Empty Adventurers’ Journal](docs/screenshots/journal.png)
 ![Armory setup](docs/screenshots/armory.png)
 ![Gear Planner setup](docs/screenshots/planner.png)
+![What’s Training — synthetic warrior example](docs/screenshots/training.png)
 
 ## Requirements and compatibility
 
@@ -94,7 +96,7 @@ excluding equipment/racial/temporary bonuses. Recipe browsing and material count
 
 ## Deploy to another machine or Docker environment
 
-Copy `dist/azerothcore-character-hub-v0.1.0.zip` to the target machine, unzip it into a **new directory**,
+Copy `dist/azerothcore-character-hub-v0.1.1.zip` to the target machine, unzip it into a **new directory**,
 and run the following there (Linux or WSL with access to that machine’s Docker daemon):
 
 ```sh
@@ -130,7 +132,7 @@ daemon; the script does not create, restart or modify game containers. Direct TC
 ## Local data and updates
 
 Local state is stored beside the app in `groups.json`, `watchlist.json`, `watch-notes.json`, `settings.json`,
-`client-models.json`, `network.json`, `deployment.json`, `activity.sqlite3`, `journal.sqlite3` and `crafting-reviews.sqlite3`. These are ignored by Git and omitted from release
+`client-models.json`, `network.json`, `deployment.json`, `activity.sqlite3`, `journal.sqlite3` and any retained legacy `crafting-reviews.sqlite3` backup. These are ignored by Git and omitted from release
 builds, along with caches and logs. Back up your installation before updating. Stop the dashboard before
 copying SQLite, or use SQLite's online backup API for each database. `journal.sqlite3` contains both stories
 and screenshot bytes; preserve it independently of game-server backups and restores. Replace application source while retaining local state;
@@ -163,7 +165,7 @@ enabled; these are not user authentication. Do not expose it to the public inter
 python3 package_release.py
 ```
 
-Outputs are `dist/character-hub/`, `dist/azerothcore-character-hub-v0.1.0.zip` and its SHA-256 checksum. The builder
+Outputs are `dist/character-hub/`, `dist/azerothcore-character-hub-v0.1.1.zip` and its SHA-256 checksum. The builder
 uses an explicit source allowlist and fresh empty defaults; it never copies personal state or generated
 game assets. It includes a file hash manifest. Upload the **contents** of the clean source folder to your
 GitHub repository, rather than uploading a live installation directory.
@@ -249,56 +251,6 @@ is the dashboard OS hostname, not the remote Docker daemon's hostname.
 If the realm cannot be read, the header says so without blocking the dashboard.
 Neither option changes game-server configuration or saved dashboard data.
 
-## Classic Crafting Rebalance
-
-Open **Crafting Rebalance** for a global Classic-era equippable crafting catalogue, independent of character
-selection. Search by item name/ID and filter by profession, equip level, slot, quality, type, assessment,
-review decision and initial/future/endgame scope. A focused 22-item engineering assessment panel is available.
-New installations have no generated catalogue or review decisions; the page explains setup without needing a group.
-
-Prepare data from your own verified server targets:
-
-```sh
-python3 prepare_profession_assets.py
-python3 prepare_crafting_assets.py
-```
-
-Both tools use bounded read-only game queries. The second downloads a pinned, SHA256-verified public CMaNGOS
-Classic reference (about 13 MB) solely to establish positive item-era membership; it never imports that SQL.
-To use a previously downloaded archive, supply `--classic-reference /path/to/ClassicDB_1_12_1_z2815.sql.gz`.
-Generated files stay in `assets/` and are excluded from the public package. The Classic base reference can omit
-later additions; absent IDs remain excluded/unresolved. Baseline statistics come from your WotLK server,
-not reconstructed Vanilla values. Review the authored assessment guards if your server's baseline differs.
-
-Each item shows separate original/proposed templates, exact differences, recipe/training requirements,
-material and intermediate-craft evidence, acquisition scenarios and conditional comparators. Equip requirement
-is not an acquisition estimate. Self-sufficient level bands are calibration hypotheses; trading and higher-level
-support have separate assumptions. Loot references are traced with bounded source panels; their raw chances
-are not effective drop probabilities. Faction, quest chains, reputation, travel, rare sources, effects and
-material effort may require manual verification. Uncertainty is retained rather than replaced with a universal stat score.
-
-Three small authored proposals are hypotheses only. The Handstitched Leather Pants proposal is explicitly held
-from the initial 1–30 candidate set because its acquisition evidence is unresolved. Competitive/strong unchanged
-findings remain useful records. No catalogue action crafts, equips or deploys an item, and no migration SQL runs.
-
-Save **not reviewed**, **approved**, **rejected**, **needs adjustment** or **deferred**, with notes, at the review desk.
-Decisions and revision history persist in dashboard-only `crafting-reviews.sqlite3`. Concurrent edits are rejected;
-regenerating changed evidence preserves the previous decision and marks it stale. Approval is an item-review decision,
-not permission to deploy. Back up this database through SQLite's online backup API while running, alongside
-both existing databases. Never replace it with generated catalogue data.
-
-Engineering checks:
-
-```sh
-python3 -m unittest discover -s tests -v
-python3 package_release.py
-# Optional, with the existing local Playwright tooling and generated catalogue:
-PLAYWRIGHT_BROWSERS_PATH="$PWD/.qa-browsers" .qa-venv/bin/python tests/crafting_browser_check.py
-```
-
-Browser review tests use temporary storage and never write your saved decisions. Game-data pilots and production
-deployment are separate work requiring explicit authorization, verified isolation and reviewed migration/rollback evidence.
-
 ### Rested XP on character cards
 
 Cards show rested coverage as a percentage of the current level's full XP requirement. Hover the
@@ -359,3 +311,40 @@ Keep the development checkout (for example `~/character-hub`) separate from the 
 the live folder. Live JSON configuration, SQLite databases, generated assets and dependencies stay
 in the deployed folder, outside Git. Editing or pulling the development checkout does not update the
 running application; see [deployment and updates](DEPLOYMENT.md#updates-and-backups).
+
+### Shared item tooltips
+
+Item hovers and keyboard focus use one shared tooltip across Armory/bags/banks, Gear Planner,
+Inventory, Quest Log rewards, Professions and Auctions. Details come from the connected
+server's item templates and generated DBC/SQL spell metadata: requirements, equipment stats,
+use/equip/proc descriptions, glyph effects, gems, sockets, set-bonus descriptions, stack sizes and
+sell prices where defined. Recipe tooltips also show cast time, tools and reagents. Saved equipment
+enchantments, random-property labels and current durability are retained. These are descriptions
+and base values, not a combat simulation or a guarantee of active set/socket bonuses.
+
+Fresh setup generates the cache automatically. For an existing installation, after updating run
+`.venv/bin/python prepare_tooltip_assets.py` in the deployed folder, then restart Character Hub.
+Regenerate after changing server DBCs or spell overrides. The generated `assets/tooltip-metadata.json`
+is local and excluded from Git/releases. Lookups are read only and cached; no Wowhead scripts or
+scraped page text are used. Server customisations may differ from Wowhead. Unsupported client-only
+formulas are marked incomplete rather than guessed; existing details remain usable during an outage.
+
+### What’s Training
+
+Open **What’s Training**, select a saved group member or enter a character name, and browse class-trainer
+abilities by required level. Upcoming abilities is the default: **Coming Soon** means the next two
+levels; later ranks appear under **Not Yet Available**. Other views include missed training, abilities
+whose saved checks pass, and already learned ranks. Search names or IDs and enter an exact required
+level (`14`) or a range (`14–20`). Hover, keyboard-focus or tap a row for description, rank, passive
+status, power cost, cast time, range, cooldown, prerequisites and base training price where available.
+
+Data comes from AzerothCore's class `trainer`/`trainer_spell` definitions, rank chains, required spells,
+class/race skill rules and the character's saved spellbook/skills. The page neither reads nor depends
+on the installed What's Training addon. Quest-only, talent-only and pet-training unlocks are not
+represented as automatic level rewards. Scripts, discounts and unsaved gameplay can change learning
+availability; character-dependent spell values use explicit placeholders instead of guessed numbers.
+
+Fresh setup builds the catalogue automatically. After updating an existing deployment, run
+`.venv/bin/python prepare_tooltip_assets.py` in the live folder and restart Character Hub. The standard
+modern AzerothCore trainer schema is required; divergent legacy schemas need adaptation. New
+installations have no selected character or seeded training progress, and the journal remains empty.

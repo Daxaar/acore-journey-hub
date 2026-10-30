@@ -4,7 +4,7 @@
 
 - 226 Python unit/integration tests passed on Python 3.12, including HTTP endpoints, group/watch limits,
   source outages, SQL restrictions, history, quest eligibility, armory, professions, gear planning,
-  auction browsing, journal conflicts/screenshots/tags, settings, crafting reviews and release hygiene.
+  auction browsing, journal conflicts/screenshots/tags, settings, Inventory navigation and release hygiene.
 - Release ZIP extracted into a fresh disposable official Python 3.12 slim container, with no mounted
   game data, private configuration or credentials. Ran the documented `bash setup.sh --skip-assets`
   followed by `bash start.sh --port 18766`. SQLGlot 30.24.0 installed from the pinned manifest.

@@ -13,7 +13,7 @@ jobs:
       - run: python package_release.py
       - uses: actions/upload-artifact@v4
         with:
-          name: azerothcore-character-hub-v0.1.0
+          name: azerothcore-character-hub-v0.1.1
           path: |
-            dist/azerothcore-character-hub-v0.1.0.zip
-            dist/azerothcore-character-hub-v0.1.0.zip.sha256
+            dist/azerothcore-character-hub-v0.1.1.zip
+            dist/azerothcore-character-hub-v0.1.1.zip.sha256

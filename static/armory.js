@@ -1,4 +1,5 @@
 'use strict';
+const inventoryPage = location.pathname === '/inventory';
 const $ = id => document.getElementById(id);
 const races = {1:'Human',2:'Orc',3:'Dwarf',4:'Night Elf',5:'Undead',6:'Tauren',7:'Gnome',8:'Troll',10:'Blood Elf',11:'Draenei'};
 const classes = {1:'Warrior',2:'Paladin',3:'Hunter',4:'Rogue',5:'Priest',6:'Death Knight',7:'Shaman',8:'Mage',9:'Warlock',11:'Druid'};
@@ -28,6 +29,7 @@ function inspect(item, label, key) {
   renderItem($('item-detail'), item, label);
 }
 function renderItem(detail, item, label, tooltip = false) {
+  if(tooltip&&item){ItemTooltip.render(detail,{...item,id:item.entry,quality:item.Quality,level:item.ItemLevel,required_level:item.RequiredLevel});return;}
   detail.replaceChildren();
   if (!item) { const title = node('h2', 'Empty slot'); if (!tooltip) title.id = 'item-title'; detail.append(title, node('p', label)); return; }
   detail.append(icon(item));
@@ -49,7 +51,7 @@ function renderItem(detail, item, label, tooltip = false) {
   if (item.description) line(item.description);
   detail.append(node('hr'));
   line(`Item #${item.entry ?? '?'} · Display #${item.displayid ?? '?'}`, 'item-note');
-  line('Saved item details. Set bonuses, spell effects and final combat statistics are not calculated here.', 'item-note');
+  line('Saved instance details. Hover for server effects and requirements; final combat totals are not simulated.', 'item-note');
 }
 function slotButton(item, label, key, equipment = false, index = null) {
   const b = node('button', null, equipment ? 'equipment-slot' : 'bag-cell'); b.type = 'button';
@@ -91,13 +93,11 @@ function showTooltip(anchor, item, label) {
 function positionTooltip() {
   if (!tooltipAnchor) return;
   const tip = $('item-tooltip');
-  const rect = tooltipAnchor.getBoundingClientRect(), bounds = tip.getBoundingClientRect(), margin = 12;
+  const rect = tooltipAnchor.getBoundingClientRect();
   if (rect.bottom < 0 || rect.top > innerHeight) { hideTooltip(); return; }
-  const right = rect.right + margin;
-  const left = right + bounds.width <= innerWidth - margin ? right : rect.left - bounds.width - margin;
-  tip.style.left = Math.max(margin, Math.min(left, innerWidth - bounds.width - margin)) + 'px';
-  tip.style.top = Math.max(margin, Math.min(rect.top, innerHeight - bounds.height - margin)) + 'px';
+  ItemTooltip.position(tip,tooltipAnchor);
 }
+$('item-tooltip').addEventListener('item-tooltip-updated',positionTooltip);
 $('item-tooltip').addEventListener('mouseenter', () => clearTimeout(tooltipTimer));
 $('item-tooltip').addEventListener('mouseleave', () => {
   if (tooltipAnchor !== document.activeElement) hideTooltip();
@@ -117,8 +117,8 @@ function filterBags() {
   $('bag-search-status').textContent = terms.length ? `${matches} matching occupied ${matches === 1 ? 'slot' : 'slots'} · All bags shown` : 'All bags shown · Search by item name, description or ID';
   $('bag-search-clear').disabled = terms.length === 0;
 }
-$('bag-search').addEventListener('input', filterBags);
-$('bag-search-clear').addEventListener('click', () => { $('bag-search').value = ''; filterBags(); $('bag-search').focus(); });
+$('bag-search')?.addEventListener('input', filterBags);
+$('bag-search-clear')?.addEventListener('click', () => { $('bag-search').value = ''; filterBags(); $('bag-search').focus(); });
 function activeBags() { return storage === 'bank' ? data.bank : storage === 'guild' ? data.guild_bags : data.bags; }
 function renderStorage() {
   if (storage === 'guild' && !data.guild) storage = 'bags';
@@ -137,12 +137,12 @@ function renderStorage() {
 }
 for (const name of ['bags', 'bank', 'guild']) {
   const tab = $('tab-' + name);
-  tab.addEventListener('click', () => {
+  tab?.addEventListener('click', () => {
     storage = name; selectedItem = null; hideTooltip();
     $('item-detail').replaceChildren(node('h2', 'A closer look'), node('p', 'Select an item to inspect it.'));
     renderStorage();
   });
-  tab.addEventListener('keydown', event => {
+  tab?.addEventListener('keydown', event => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const tabs = [...document.querySelectorAll('.storage-tabs [role="tab"]')].filter(t => !t.hidden);
@@ -179,16 +179,20 @@ function render() {
   $('change-status').textContent = changes?.last_observed_change_at ? 'Last observed data change: ' + new Date(changes.last_observed_change_at).toLocaleString() : 'Last observed data change: none since monitoring began for this character';
   $('change-status').title = 'Compared with the previous successful inventory snapshot in this dashboard process; not a server save timestamp.';
   const c = data.character;
-  window.CharacterHubModel?.update(c,data.equipment);
   $('inventory').hidden = false; $('character-title').textContent = c.name;
   $('character-subtitle').textContent = `Level ${c.level} ${races[c.race] || 'Race #' + c.race} ${classes[c.class] || 'Class #' + c.class}`;
   $('character-quest-log').href = '/quest-log?name=' + encodeURIComponent(c.name);
-  $('equipped-count').textContent = `${data.equipment.filter(e => e.item).length}/19 equipped`;
-  $('appearance').textContent = `Race ${c.race} · Gender ${c.gender} · Skin ${c.skin} · Face ${c.face} · Hair style ${c.hairStyle} · Hair colour ${c.hairColor} · Facial style ${c.facialStyle}. These saved IDs select the optional equipped client model; the paper-doll is the fallback.`;
-  for (const [id, slots] of [['equipment-left',[0,1,2,14,4,3,18,8]],['equipment-right',[9,5,6,7,10,11,12,13]],['equipment-weapons',[15,16,17]]]) {
-    $(id).replaceChildren(...slots.map(i => { const e = data.equipment[i]; return slotButton(e.item, e.label, `equipment:${i}`, true); }));
+  if (!inventoryPage) {
+    window.CharacterHubModel?.update(c,data.equipment);
+    $('equipped-count').textContent = `${data.equipment.filter(e => e.item).length}/19 equipped`;
+    $('appearance').textContent = `Race ${c.race} · Gender ${c.gender} · Skin ${c.skin} · Face ${c.face} · Hair style ${c.hairStyle} · Hair colour ${c.hairColor} · Facial style ${c.facialStyle}. These saved IDs select the optional equipped client model; the paper-doll is the fallback.`;
+    for (const [id, slots] of [['equipment-left',[0,1,2,14,4,3,18,8]],['equipment-right',[9,5,6,7,10,11,12,13]],['equipment-weapons',[15,16,17]]]) {
+      $(id).replaceChildren(...slots.map(i => { const e = data.equipment[i]; return slotButton(e.item, e.label, `equipment:${i}`, true); }));
+    }
+
   }
-  $('warnings').textContent = data.warnings.join(' '); renderStorage();
+  $('warnings').textContent = data.warnings.join(' ');
+  if (inventoryPage) renderStorage();
   if (characterTab === 'skills') loadArmorySkills(true);
   // Keep the inspected item current after a refresh, including removed items.
   if (selectedItem) {
@@ -220,13 +224,13 @@ function openCharacter(name) {
   if (busy || groupBusy || !/^[A-Za-z]{2,12}$/.test(name)) return;
   if (name.toLowerCase() !== currentName.toLowerCase()) {
     ++skillsRequest; skillsController?.abort(); armorySkillsName = null;
-    $('armory-skills').replaceChildren(); $('armory-skills-status').textContent = '';
+    $('armory-skills')?.replaceChildren(); if ($('armory-skills-status')) $('armory-skills-status').textContent = '';
     data = null; storage = 'bags'; selectedItem = null; hideTooltip(); window.CharacterHubModel?.clear(); $('inventory').hidden = true;
     $('item-detail').replaceChildren(node('h2','A closer look'), node('p','Select an item to inspect it.'));
     $('refresh-status').textContent = 'Waiting for saved inventory';
     $('change-status').textContent = '';
   }
-  currentName = name; $('character-name').value = name; history.replaceState(null, '', '/armory?name=' + encodeURIComponent(name)); refresh();
+  currentName = name; $('character-name').value = name; history.replaceState(null, '', location.pathname + '?name=' + encodeURIComponent(name)); syncCharacterLinks(); refresh();
 }
 $('character-name').value = currentName;
 $('character-form').addEventListener('submit', event => { event.preventDefault(); openCharacter($('character-name').value.trim()); });
@@ -337,13 +341,21 @@ async function loadArmorySkills(force = false) {
   } catch (error) { if (request === skillsRequest) $('armory-skills-status').textContent = (error.name === 'AbortError' ? 'Skill request timed out.' : error.message) + (armorySkillsName ? ' Showing the last successful saved skills.' : ''); }
   finally { clearTimeout(timeout); }
 }
-$('character-tab').addEventListener('click',()=>showCharacterTab('character'));
-$('character-skills-tab').addEventListener('click',()=>showCharacterTab('skills'));
-for (const id of ['character-tab','character-skills-tab']) $(id).addEventListener('keydown',event=>{
+$('character-tab')?.addEventListener('click',()=>showCharacterTab('character'));
+$('character-skills-tab')?.addEventListener('click',()=>showCharacterTab('skills'));
+for (const id of ['character-tab','character-skills-tab']) $(id)?.addEventListener('keydown',event=>{
   if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return; event.preventDefault();
   const skills = event.key === 'End' || (event.key !== 'Home' && id === 'character-tab');
   showCharacterTab(skills ? 'skills' : 'character'); $(skills ? 'character-skills-tab' : 'character-tab').focus();
 });
+function syncCharacterLinks() {
+  document.querySelectorAll('.page-nav a').forEach(link => {
+    const url = new URL(link.href);
+    if (['/armory','/inventory'].includes(url.pathname)) {
+      link.href = url.pathname + (currentName ? '?name=' + encodeURIComponent(currentName) : '');
+    }
+  });
+}
 async function init() {
   try {
     const response = await fetch('/api/session', {cache:'no-store'});
@@ -354,6 +366,6 @@ async function init() {
     if (!/^[A-Za-z]{2,12}$/.test(requestedName || '')) currentName = selectedGroup()?.members[0]||'';
     $('character-name').value = currentName;
   } catch (_) { $('armory-group-status').textContent = 'Saved groups unavailable. You can still open a character by name.'; }
-  await refresh(); schedule();
+  syncCharacterLinks(); await refresh(); schedule();
 }
 init();

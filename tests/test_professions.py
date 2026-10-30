@@ -105,6 +105,32 @@ class ProfessionTests(unittest.TestCase):
             self.assertFalse(p.get(['Missing'])['characters'][0]['found'])
             with self.assertRaises(DatabaseError):SkillsProvider(Path(directory)/'missing').get(['Aster'])
 
+    def test_live_item_details_merge_without_losing_catalogue_icons_or_material_counts(self):
+        rows=ROWS+[{'kind':'profession_item','id':2835,'level':10,'quality':1,'sell_price':4,'description':'A stone'},
+                   {'kind':'profession_item','id':2862,'level':15,'armor':20,'sell_price':8}]
+        c=skill_records(rows,META,['Aster'])[0]
+        result=next(r for r in recipe_records(rows,META,c,164) if r['id']==1)
+        self.assertEqual(result['reagents'][0]['sell_price'],4)
+        self.assertEqual(result['reagents'][0]['owned'],5)
+        self.assertEqual(result['outputs'][0]['armor'],20)
+        self.assertIn('icon',result['outputs'][0])
+        self.assertNotIn('level',META['items']['2835'])
+
+    def test_item_details_query_is_scoped_read_only_and_cached(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'assets').mkdir()
+            (root/'assets/profession-metadata.json').write_text(json.dumps(META))
+            calls=[];provider=SkillsProvider(root,lambda sql:calls.append(sql) or ROWS)
+            provider.get(['Aster'],164);provider.get(['Aster'],164)
+            self.assertEqual(len(calls),1)
+            sql=calls[0]
+            self.assertIn("'kind','profession_item'",sql)
+            self.assertIn('t.entry IN (2835,2862) LIMIT 3',sql)
+            self.assertIn("'sell_price',t.SellPrice",sql)
+            self.assertLess(sql.index("'kind','profession_item'"),sql.index('COMMIT;'))
+            provider.get(['Aster'])
+            self.assertNotIn("'kind','profession_item'",calls[-1])
+
     def test_http_routes_and_explicit_assets(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);(root/'assets').mkdir();(root/'assets'/'profession-metadata.json').write_text(json.dumps(META))

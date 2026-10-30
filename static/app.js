@@ -253,12 +253,14 @@ function renderJournal(data) {
     person.append(el("p", "journal-xp", `Saved experience: ${c.xp.toLocaleString()} XP toward the next level`));
   }
   if (c.found) {
-    const armory = el("a", "page-switch", "Equipment & bags →");
+    const armory = el("a", "page-switch", "Equipment →");
     armory.href = "/armory?name=" + encodeURIComponent(c.name);
     const actions = el("div", "journal-actions");
     const journal = el("a", "page-switch", "Quest log →");
     journal.href = "/quest-log?name=" + encodeURIComponent(c.name);
-    actions.append(armory, journal); person.append(actions);
+    const inventory = el("a", "page-switch", "Inventory →");
+    inventory.href = "/inventory?name=" + encodeURIComponent(c.name);
+    actions.append(armory, inventory, journal); person.append(actions);
   }
   const list = el("ul", "journal-list");
   const quests = data.quests.filter((q) => ["active", "ready", "failed"].includes(q.progress[index].status));

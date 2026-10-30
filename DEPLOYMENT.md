@@ -8,8 +8,8 @@ access to the existing server containers. macOS/native Windows have not been val
 
 ## Install the archive
 
-1. Verify `sha256sum -c azerothcore-character-hub-v0.1.0.zip.sha256` beside the ZIP.
-2. Extract into a new directory: `unzip azerothcore-character-hub-v0.1.0.zip` then `cd character-hub`.
+1. Verify `sha256sum -c azerothcore-character-hub-v0.1.1.zip.sha256` beside the ZIP.
+2. Extract into a new directory: `unzip azerothcore-character-hub-v0.1.1.zip` then `cd character-hub`.
 3. Run `bash setup.sh --skip-assets` to install SQLGlot in `.venv`.
 4. For direct MySQL, copy `examples/connection.env` to `.env`, edit all connection values and run
    `chmod 600 .env; set -a; . ./.env; set +a`. The app does not automatically source `.env`.
@@ -98,9 +98,9 @@ Build and test changes in the checkout; live code changes only when you install 
 
 ```bash
 cd ~/character-hub/dist
-sha256sum -c azerothcore-character-hub-v0.1.0.zip.sha256
+sha256sum -c azerothcore-character-hub-v0.1.1.zip.sha256
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e azerothcore-character-hub-v0.1.0.zip "$HUB_STAGE"
+python3 -m zipfile -e azerothcore-character-hub-v0.1.1.zip "$HUB_STAGE"
 cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
 ```
 
@@ -120,7 +120,8 @@ Adapt the live-folder path above if you use a different name. No update restarts
 - Read-only database error: verify CLI/container access, password, SELECT grants, schema version and names.
   Root Docker mode needs MYSQL_ROOT_PASSWORD and the mysql client inside that container.
 - Missing catalogue: prepare armory/quest/profession/gear assets using setup against your world container.
-  Crafting Rebalance additionally needs `prepare_crafting_assets.py`; see the README's feature notes.
+- Missing spell/glyph tooltip details: run `.venv/bin/python prepare_tooltip_assets.py` in the deployed
+  folder and restart Character Hub. This builds local server metadata using read-only access.
 - Partial/stale gameplay: MySQL shows saved server state, not unsaved world memory. Refresh cannot force a save.
 - Realm unavailable: auth access is optional; check REALM_ID and SELECT on realmlist.
 - Address already in use: choose `--port`; for LAN use a concrete `--allow-host` IP and trusted firewall rules.
@@ -134,3 +135,11 @@ functions, Docker and Python 3.12 on Linux/WSL. Other schema revisions/cores nee
 is not needed for the standalone journal or ordinary character browsing; no universal live API module
 is bundled. Direct transport and custom schemas have automated command/query tests, not a second live
 server compatibility certification. The supplied validation report records actual tests and limitations.
+
+## What’s Training data
+
+Training uses standard `trainer` and `trainer_spell` class offers, `spell_ranks`, `spell_required`,
+`skilllineability_dbc` and `skillraceclassinfo_dbc`, with DBC fallbacks for spell text and eligibility.
+The live request reads only `characters`, `character_spell` and `character_skills` in a bounded
+read-only snapshot. Run `prepare_tooltip_assets.py` after upgrading to generate the training catalogue;
+restart the app to load it. No Windows files or installed addons are required.

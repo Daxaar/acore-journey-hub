@@ -86,3 +86,9 @@
 .bag-space-pill { display:inline-block; min-width:24px; padding:1px 6px; border-radius:20px; background:var(--panel-light); border:1px solid var(--border); color:var(--green); font-size:10px; font-variant-numeric:tabular-nums; }
 .bag-space-pill.full { color:var(--amber); }
 .bag-space-pill.unknown { color:var(--muted); }
+
+.inventory-character { padding: 18px 22px; margin-bottom: 18px; }
+.inventory-character .page-switch { display: inline-block; margin: 8px 0 0; }
+.inventory-layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 22px; align-items: start; }
+.inventory-layout .bags-section { margin-top: 0; min-width: 0; }
+@media(max-width:1000px) { .inventory-layout { grid-template-columns: minmax(0,1fr); } }
