@@ -1,0 +1,11 @@
+{
+  "db_mode": "direct",
+  "db_host": "127.0.0.1",
+  "db_port": 3306,
+  "db_user": "character_hub",
+  "db_password": "REPLACE_WITH_YOUR_PASSWORD",
+  "characters_schema": "acore_characters",
+  "world_schema": "acore_world",
+  "auth_schema": "acore_auth",
+  "dbc_path": "/home/YOUR_USER/azerothcore/data/dbc"
+}

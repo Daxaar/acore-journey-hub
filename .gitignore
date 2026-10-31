@@ -34,3 +34,4 @@ deployment.json
 
 connection.json
 .connection-*
+!examples/connection.json
