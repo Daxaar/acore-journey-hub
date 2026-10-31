@@ -16,6 +16,8 @@ NAME='character-hub'
 VERSION='0.1.4'
 ARCHIVE_NAME='azerothcore-character-hub-v'+VERSION
 SOURCE_FILES=(
+    'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',
+    'docs/screenshots/professions.png','docs/screenshots/auctions.png','docs/screenshots/sql.png',
     'docs/screenshots/training.png','training.py','tests/training_browser_check.py','item_tooltips.py','spell_tooltips.py','prepare_tooltip_assets.py','QUICKSTART.md','connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',
     'tests/professions_tooltip_browser_check.py','tests/inventory_browser_check.py',
     'gear_planner.py','gear_sources.py','gear_eligibility.py','prepare_gear_assets.py',
