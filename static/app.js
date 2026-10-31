@@ -34,20 +34,41 @@ function selectCharacter(name) {
   render();
 }
 
+let restedTooltipAnchor = null;
+function hideRestedTooltip() {
+  restedTooltipAnchor?.removeAttribute('aria-describedby');
+  restedTooltipAnchor = null;
+  $('rested-xp-tooltip').hidden = true;
+}
+function showRestedTooltip(indicator, anchor = indicator, event = null) {
+  hideRestedTooltip();
+  const tip = $('rested-xp-tooltip');
+  const lines = indicator.dataset.tooltipText.split('\n');
+  tip.replaceChildren(el('h3', 'tooltip-requirement', 'Rested XP'),
+    ...lines.map((text, index) => el('p', index === 0 || index === lines.length - 1 ? 'tooltip-note' : '', text)));
+  tip.hidden = false;
+  restedTooltipAnchor = anchor;
+  anchor.setAttribute('aria-describedby', tip.id);
+  ItemTooltip.position(tip, indicator, event);
+}
+window.addEventListener('resize', hideRestedTooltip);
+document.addEventListener('scroll', hideRestedTooltip, true);
+document.addEventListener('keydown', event => { if (event.key === 'Escape') hideRestedTooltip(); });
+
 function restedIndicator(c) {
   const r = c.rested;
   const indicator = el('span', 'rested-xp');
   if (!r || r.state === 'unavailable') {
     indicator.textContent = 'Rested —';
-    indicator.title = 'Rested XP data unavailable.';
+    indicator.dataset.tooltipText = 'Rested XP data unavailable.';
   } else if (r.state === 'max_level') {
     indicator.textContent = 'Max level';
-    indicator.title = 'Rested XP does not accumulate at the configured maximum level.';
+    indicator.dataset.tooltipText = 'Rested XP does not accumulate at the configured maximum level.';
   } else {
     const pct = n => n.toLocaleString(undefined, {maximumFractionDigits: 1});
     const xp = n => n.toLocaleString();
     indicator.textContent = `Rested ${r.estimated ? '≈' : ''}${pct(r.level_percent)}%`;
-    indicator.title = `${r.estimated ? 'Estimated including offline rest' : 'Latest saved rested XP'}
+    indicator.dataset.tooltipText = `${r.estimated ? 'Estimated including offline rest' : 'Latest saved rested XP'}
 `
       + `Rested coverage: ${xp(r.coverage_xp)} XP (${pct(r.level_percent)}% of the current level requirement).
 `
@@ -57,11 +78,19 @@ function restedIndicator(c) {
 `
       + 'Coverage uses current-level equivalents; subsequent levels require different amounts of XP.';
   }
-  indicator.setAttribute('aria-label', indicator.title);
+  indicator.setAttribute('aria-label', indicator.dataset.tooltipText);
+  indicator.classList.add('tooltip-trigger');
+  indicator.addEventListener('mouseenter', event => showRestedTooltip(indicator, indicator, event));
+  indicator.addEventListener('mousemove', event => {
+    if ($('rested-xp-tooltip').hidden || restedTooltipAnchor !== indicator) showRestedTooltip(indicator, indicator, event);
+    else ItemTooltip.position($('rested-xp-tooltip'), indicator, event);
+  });
+  indicator.addEventListener('mouseleave', hideRestedTooltip);
   return indicator;
 }
 
 function renderRoster(data) {
+  hideRestedTooltip();
   const roster = $("roster");
   const cards = data.characters.map((c) => {
     const selected = c.name === state.selected;
@@ -83,7 +112,11 @@ function renderRoster(data) {
     foot.append(active, ...(c.found ? [restedIndicator(c)] : []), el("span", c.ready ? "ready" : "",
       c.quest_state_available === false ? "Live state unavailable" : `${c.ready} ready`));
     if (c.found) {
-      const restedText = foot.querySelector('.rested-xp').title;
+      const indicator = foot.querySelector('.rested-xp');
+      const restedText = indicator.dataset.tooltipText;
+      card.addEventListener('focus', () => showRestedTooltip(indicator, card));
+      card.addEventListener('blur', hideRestedTooltip);
+      card.addEventListener('mouseleave', hideRestedTooltip);
       card.setAttribute('aria-label', card.getAttribute('aria-label') + '. ' + restedText);
     }
     card.append(meta, foot);
@@ -496,7 +529,7 @@ function renderGroups() {
   $('group-select').value = state.groups.selected;
   const selected = state.groups.groups.find(g => g.id === state.groups.selected);
   $('party-tab').replaceChildren(document.createTextNode((selected?.name || 'Your group') + ' '), el('span', '', selected?.members.length || 0));
-  if(!selected){$('group-editor').open=true;$('group-status').textContent='Create your first group with 1–6 character names to get started.';}
+  if(!selected){$('group-editor').open=true;$('group-status').textContent='Create your first group with 1–10 character names to get started.';}
   lockGroupControls();
 }
 function editGroup(group = null) {
@@ -534,7 +567,7 @@ async function changeGroup(payload) {
     renderGroups();
   } finally { state.groupBusy = false; lockGroupControls(); }
 }
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 10; i++) {
   const label = el('label', '', `Character ${i + 1}`), input = el('input');
   input.id = 'group-member-' + i; input.maxLength = 12;
   input.pattern = '[A-Za-z]{2,12}'; input.autocomplete = 'off'; input.setAttribute('list', 'group-suggestions');
@@ -559,7 +592,12 @@ for (let i = 0; i < 6; i++) {
 $('group-select').addEventListener('change', () => changeGroup({action: 'select', id: $('group-select').value}));
 $('group-new').addEventListener('click', () => { editGroup(); $('group-name').focus(); });
 $('group-edit').addEventListener('click', () => editGroup(state.groups.groups.find(g => g.id === state.groups.selected)));
-$('group-delete').addEventListener('click', () => changeGroup({action: 'delete', id: state.groups.selected}));
+$('group-delete').addEventListener('click', () => {
+  if (state.busy || state.groupBusy || !state.groups || state.groups.groups.length <= 1) return;
+  const group = state.groups.groups.find(g => g.id === state.groups.selected);
+  if (!group || !window.confirm(`Delete the group “${group.name}”? This cannot be undone. Character data will be kept.`)) return;
+  changeGroup({action: 'delete', id: group.id});
+});
 $('group-form').addEventListener('submit', event => {
   event.preventDefault();
   const members = [...document.querySelectorAll('#group-members input')].map(n => n.value.trim()).filter(Boolean);

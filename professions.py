@@ -46,7 +46,7 @@ def profession_training(skill, character, offers):
 
 
 def skills_sql(names,recipes=False):
-    if not isinstance(names,(list,tuple)) or not 1<=len(names)<=6:raise ValueError('Choose between 1 and 6 characters.')
+    if not isinstance(names,(list,tuple)) or not 1<=len(names)<=10:raise ValueError('Choose between 1 and 10 characters.')
     if any(not isinstance(n,str) for n in names):raise ValueError('Choose valid character names.')
     selected=name_filter('c',names)
     rank_spells=','.join(str(spell) for spells in PROFESSION_RANK_SPELLS.values() for spell in spells)

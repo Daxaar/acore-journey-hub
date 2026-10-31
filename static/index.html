@@ -9,6 +9,7 @@
   <link rel="icon" href="/emblem.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/wowhead.js" defer></script><script src="/appearance.js"></script>
+  <script src="/item-tooltip.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
@@ -63,14 +64,14 @@
     <section class="panel group-tools" aria-label="Saved character groups">
       <div class="group-picker"><label for="group-select">Quest group</label>
         <select id="group-select" disabled aria-describedby="group-status"></select>
-        <span>1–6 characters per group</span></div>
+        <span>1–10 characters per group</span></div>
       <details id="group-editor"><summary>Manage groups</summary>
         <div class="group-editor-actions"><button id="group-new" type="button" class="subtle-button">New group</button>
           <button id="group-edit" type="button" class="subtle-button">Edit selected group</button>
           <button id="group-delete" type="button" class="subtle-button">Delete selected group</button></div>
         <form id="group-form"><h3 id="group-editor-title">Create a group</h3>
           <label for="group-name">Group name</label><input id="group-name" maxlength="60" required placeholder="e.g. Weekend adventurers">
-          <fieldset><legend>Characters · fill 1–6 slots in display order</legend>
+          <fieldset><legend>Characters · fill 1–10 slots in display order</legend>
             <div id="group-members" class="group-members"></div>
           </fieldset><datalist id="group-suggestions"></datalist>
           <button id="group-save" type="submit" class="gold-button">Create group</button>
@@ -172,6 +173,7 @@
       <span>FOR THE BAND. FOR THE LOOT. FOR THE NEXT ADVENTURE.</span>
       <span>Private realm · Database snapshots · No changes to your world</span></footer>
   </main>
+  <div id="rested-xp-tooltip" class="game-item-tooltip" role="tooltip" hidden></div>
   <dialog id="watch-note-dialog" aria-labelledby="watch-note-title">
     <form id="watch-note-form">
       <h2 id="watch-note-title">Character note</h2><p id="watch-note-context" class="note-context"></p>

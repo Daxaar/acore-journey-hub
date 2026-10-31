@@ -26,10 +26,10 @@ def query(sql,reader=read_inventory_sql):return reader(PREFIX+sql+'\nCOMMIT;')
 
 
 def snapshot_sql(names,known_names):
-    if not isinstance(names,(list,tuple)) or not 1<=len(names)<=6:raise ValueError('Choose an existing group of 1–6 characters.')
+    if not isinstance(names,(list,tuple)) or not 1<=len(names)<=10:raise ValueError('Choose an existing group of 1–10 characters.')
     selected=name_filter('c',names)
     trusted=tuple(dict.fromkeys([*names,*known_names]))
-    if len(trusted)>224:raise ValueError('Configured character scope is too large.')
+    if len(trusted)>352:raise ValueError('Configured character scope is too large.')
     roster=name_filter('c',trusted)
     accounts=f'SELECT sc.account FROM acore_characters.characters sc WHERE {name_filter("sc",names)}'
     scope=f'c.deleteDate IS NULL AND (c.account IN ({accounts}) OR ({roster}))'

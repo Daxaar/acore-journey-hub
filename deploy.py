@@ -33,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db-container', required=True)
     parser.add_argument('--world-container', required=True)
-    parser.add_argument('--members', nargs='+', help='Optional exact roster of 1–6 names')
+    parser.add_argument('--members', nargs='+', help='Optional exact roster of 1–10 names')
     parser.add_argument('--group-name', default='Active Party')
     parser.add_argument('--guild-name', help='Optional exact guild membership check')
     parser.add_argument('--skip-assets', action='store_true', help='Install dependencies without generating server metadata')

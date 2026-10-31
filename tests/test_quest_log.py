@@ -39,7 +39,7 @@ class QuestLogTests(unittest.TestCase):
         p=QuestLogProvider(objectives,reader=lambda sql:calls.append(sql) or [])
         group={'id':'one','name':'One','members':['Aster']}
         p.party_status(group,413);sql=calls[0]
-        for clause in ['CONSISTENT SNAPSHOT, READ ONLY','MAX_EXECUTION_TIME=3000','LIMIT 6','s.quest=413','r.quest=413','0x4173746572']:
+        for clause in ['CONSISTENT SNAPSHOT, READ ONLY','MAX_EXECUTION_TIME=3000','LIMIT 10','s.quest=413','r.quest=413','0x4173746572']:
             self.assertIn(clause,sql)
         self.assertNotIn('r.active=',sql)
         for value in [0,-1,'413',True,2147483648]:

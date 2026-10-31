@@ -6,8 +6,8 @@ import uuid
 def validate_group(name, members):
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 60 or any(ord(c) < 32 for c in name):
         raise ValueError('Choose a group name of 1–60 characters.')
-    if not isinstance(members, list) or not 1 <= len(members) <= 6:
-        raise ValueError('Choose between 1 and 6 characters.')
+    if not isinstance(members, list) or not 1 <= len(members) <= 10:
+        raise ValueError('Choose between 1 and 10 characters.')
     normalized = []
     for member in members:
         if not isinstance(member, str) or not re.fullmatch(r'[A-Za-z]{2,12}', member.strip()):

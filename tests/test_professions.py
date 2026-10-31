@@ -83,7 +83,7 @@ class ProfessionTests(unittest.TestCase):
                        'v.slot BETWEEN 23 AND 38','b.item=v.bag','b.slot BETWEEN 19 AND 22','SUM(i.count)','0x4173746572','COMMIT;']:
             self.assertIn(clause,sql)
         self.assertNotIn('guild_bank',sql)
-        for names in [[],['Aster']*7,[None],["Aster';DROP"],'Aster']:
+        for names in [[],['Aster']*11,[None],["Aster';DROP"],'Aster']:
             with self.assertRaises(ValueError):skills_sql(names)
         with self.assertRaises(ValueError):skills_sql(['Aster','Bran'],True)
 

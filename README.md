@@ -5,7 +5,7 @@
 ## Overview
 
 A read-only party dashboard for an AzerothCore WotLK 3.3.5a server. Compare quests across groups of
-1–6 characters, browse quest logs and completed history, inspect equipment, carried bags, banks and guild
+1–10 characters, browse quest logs and completed history, inspect equipment, carried bags, banks and guild
 banks, browse professions and recipes, and track watched playerbots with notes. Includes group planning,
 observed progress history and a restricted SQL explorer.
 
@@ -25,7 +25,7 @@ installation is empty, including Journal. Features read your own server or local
 
 | Area | Implemented controls and information | Source / limits |
 | --- | --- | --- |
-| Character Overview | Create, edit and select named groups; compare character levels, classes, zones, online status, active/shared/catch-up quests and ready hand-ins; manual/automatic refresh and compact character detail | Saved character/world database; 1–6 members per group, up to 32 groups; no fixed guild/account roster |
+| Character Overview | Create, edit and select named groups; compare character levels, classes, zones, online status, active/shared/catch-up quests and ready hand-ins; manual/automatic refresh and compact character detail | Saved character/world database; 1–10 members per group, up to 32 groups; no fixed guild/account roster |
 | Playerbot Watch | Search names, add/remove watched characters, open individual quest details, keep watch notes | Character database plus local watchlist/notes; up to 32 names, works for ordinary characters too |
 | Party planning | Expand “What should we do next?” for hand-in priorities, shared objectives, catch-up actions, profession/material context and grouped routes | Current selected snapshot, quest dependencies/spawns/POIs; advisory routes, not navigation or bot commands |
 | Activity history | View locally observed changes and per-character progress; filter history | Local activity.sqlite3; starts when observed, cannot reconstruct previous sessions or unsaved gameplay |
@@ -86,7 +86,7 @@ from **your** server. Preserve these environment variables when starting with di
 For app-only setup without Docker/assets, `./setup.sh --skip-assets` installs dependencies; generate metadata
 later by rerunning setup. Professions require their generated catalogue; client previews are optional.
 
-Open **http://localhost:8765**, expand the group setup area and create a named group using 1–6 of your
+Open **http://localhost:8765**, expand the group setup area and create a named group using 1–10 of your
 character names. Add bots separately under **Playerbot watch**. No database read is needed just to start
 the empty dashboard. Stop it with Ctrl+C; no game services are stopped.
 
