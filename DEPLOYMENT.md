@@ -6,32 +6,41 @@ PyPI is required for initial dependency installation. Python 3.12+, venv and pip
 Direct connections additionally need the MySQL 8 client on PATH; Docker mode needs the Docker CLI and
 access to the existing server containers. macOS/native Windows have not been validated.
 
-## Install the archive
+## Connection file
 
-1. Verify `sha256sum -c azerothcore-character-hub-v0.1.3.zip.sha256` beside the ZIP.
-2. Extract into a new directory: `unzip azerothcore-character-hub-v0.1.3.zip` then `cd character-hub`.
-3. Run `bash setup.sh --skip-assets` to install SQLGlot in `.venv`.
-4. For direct MySQL, copy `examples/connection.env` to `.env`, edit all connection values and run
-   `chmod 600 .env; set -a; . ./.env; set +a`. The app does not automatically source `.env`.
-5. For Docker mode instead, run `python3 deploy.py --db-container YOUR_DATABASE_CONTAINER --world-container YOUR_WORLDSERVER_CONTAINER`.
-   This saves local `deployment.json`, installs dependencies and prepares metadata. Optional
-   `--members Characterone Charactertwo --group-name 'My party' --guild-name 'My guild'`
-   verifies an explicit roster; omit `--guild-name` for unguilded characters. Existing groups are retained.
-6. Run `bash start.sh` and open http://localhost:8765. Create a group or open Journal immediately.
-   No journal, character roster, watched bots, screenshots or history are supplied.
-7. Stop with Ctrl+C. The package watcher can be stopped with `kill "$(cat .run/package-watch.pid)"`.
+Start with the [single installation guide](README.md#install). Both server types use `python3 deploy.py`; existing `--db-container` / `--world-container` commands still work.
 
-Docker metadata preparation reads the worldserver DBC directory and database overrides. Direct-mode
-users may use Docker only for DBC access, with the direct database settings still exported. Without
-metadata, the app starts and describes unavailable catalogues; profession, planner and appearance
-features require their respective generated metadata. There is no published image. A Docker Compose
-stack is not supplied: the current metadata workflow requires an existing world's Docker CLI access,
-and host deployment avoids exposing a Docker socket to an additional application container.
+The Hub automatically reads private `connection.json` from its own directory. Setup writes it with owner-only permissions. It is ignored by Git, excluded from public archives, and never sent to the browser. No `.env` sourcing or repeated exports are needed for file-based setup.
+
+For unattended/direct setup, copy `examples/connection.json` to a private location, edit it with your server details, then run:
+
+```bash
+chmod 600 /path/to/my-hub-connection.json
+python3 deploy.py --config /path/to/my-hub-connection.json
+```
+
+Setup saves a private copy as `connection.json`; the original file is not needed at runtime. If you place the example at `connection.json` yourself, setup also applies owner-only permissions. Use absolute paths for `dbc_path`. JSON strings containing Windows-style backslashes must escape them; WSL filesystem paths are simpler.
+
+Direct-mode keys are `db_mode` (`direct`), `db_host`, `db_port`, `db_user`, `db_password`, `characters_schema`, `world_schema`, `auth_schema` and `dbc_path`. Standard schema names and port 3306 are defaults. `realm_id` and `host_name` are optional. The password is passed to the MySQL client through `MYSQL_PWD`, never a command-line argument. Use a dedicated SELECT-only account.
+
+A Docker file instead uses `db_mode: "docker"`, `db_container` and `world_container`; `dbc_path` optionally overrides the path **inside** the worldserver container. Existing `deployment.json` files remain supported without conversion. Running `python3 deploy.py` again reuses the saved connection and reruns setup, preserving groups and local state.
+
+The same environment variables listed below remain supported, with precedence **CHARACTER_HUB_ → legacy LEMMINGS_ → connection.json → existing deployment/default settings**. Setup rejects conflicting overrides to avoid preparing metadata against another server. Runtime environment overrides still work. The legacy `examples/connection.env` is an advanced alternative; the Hub does not automatically execute shell files.
+
+Edit the existing `connection.json` to rotate its password or correct a path; keep it private and restart the Hub. A different realm belongs in a fresh installation directory to avoid mixing saved history. Importing a different connection over saved settings is refused.
+
+## Server metadata
+
+Setup generates metadata automatically from the world database and extracted server DBCs. In **direct** mode, `dbc_path` is a readable local directory on the Hub machine, normally the server's `DataDir/dbc` (or a copied directory for a remote server). No Docker CLI or running container is needed. Database reachability and SELECT grants are still required.
+
+In **docker** mode, DBCs default to `/azerothcore/env/dist/data/dbc` in the selected worldserver container. For a mixed installation, `dbc_source` can explicitly be `local` or `docker`, independently of the database mode. The equivalent environment override is `CHARACTER_HUB_DBC_SOURCE`.
+
+After server DBC/spell changes, rerun `python3 deploy.py` and restart the **Hub**. It never changes or restarts game containers. `--skip-assets` installs dependencies without metadata for journal-only/offline use; metadata-dependent catalogues remain unavailable until setup is rerun without it. A fresh Hub still starts with no seeded characters or journal entries.
 
 ## Settings reference
 
 All names below have the prefix `CHARACTER_HUB_`; legacy `LEMMINGS_` names remain fallback aliases.
-New names win when both are set. Environment overrides saved container settings.
+New names win when both are set. Environment overrides the saved connection file.
 
 | Setting | Default / purpose |
 | --- | --- |
@@ -40,7 +49,8 @@ New names win when both are set. Environment overrides saved container settings.
 | DB_USER / DB_PASSWORD | `character_hub` / unset; password passed through MYSQL_PWD, never CLI arguments |
 | DB_CONTAINER / WORLD_CONTAINER | `database` / `worldserver`; or values saved by deploy.py |
 | CHARACTERS_SCHEMA / WORLD_SCHEMA / AUTH_SCHEMA | `acore_characters` / `acore_world` / `acore_auth`; SQL identifiers only |
-| DBC_PATH | `/azerothcore/env/dist/data/dbc` inside the world container |
+| DBC_PATH | Local DBC directory for direct mode; `/azerothcore/env/dist/data/dbc` inside the world container for Docker mode |
+| DBC_SOURCE | `local` for direct mode, `docker` for Docker mode; can override metadata location independently |
 | REALM_ID | unset; choose a positive realm ID for multi-realm auth databases |
 | HOST_NAME | dashboard OS hostname; optional friendly label |
 | LIVE_TOKEN | optional Bearer token for a configured live quest endpoint |
@@ -51,7 +61,7 @@ New names win when both are set. Environment overrides saved container settings.
 
 Use `python3 dashboard.py --help` for listen/port, watch names, MySQL/live source, live URL and check mode.
 `network.json` controls the IPv4 listener and allowed hosts; `examples/network.json` is loopback-only.
-UI Settings control refresh, appearance, query display policy and save-interval annotation; these do not
+Dashboard refresh controls and UI appearance/query preferences do not
 change worldserver settings. Group membership, watch notes, model paths and gear roles remain local.
 Client models use an optional locally supplied 3.3.5a client; no client assets ship in the package.
 
@@ -87,7 +97,7 @@ Keep the Git checkout (`~/character-hub`) separate from the deployed application
 (`~/character-hub-live`, or a name you choose for your realm). The live folder has no `.git` directory.
 Build and test changes in the checkout; live code changes only when you install a release.
 
-1. In the checkout, run `git pull --ff-only` and `python3 package_release.py`.
+1. Download the new deployment ZIP and checksum from [GitHub Releases](https://github.com/Daxaar/acore-character-hub/releases). No Git checkout is required.
 2. Stop the live app with Ctrl+C. Stop its optional package watcher with
    `kill "$(cat ~/character-hub-live/.run/package-watch.pid)"` if that PID is still its watcher.
 3. Back up the entire live installation to a different directory. Include local JSON, `assets/`
@@ -97,10 +107,10 @@ Build and test changes in the checkout; live code changes only when you install 
 4. Verify the checksum and extract the new archive over the existing live folder:
 
 ```bash
-cd ~/character-hub/dist
-sha256sum -c azerothcore-character-hub-v0.1.3.zip.sha256
+cd /path/to/downloads
+sha256sum -c azerothcore-character-hub-v0.1.4.zip.sha256
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e azerothcore-character-hub-v0.1.3.zip "$HUB_STAGE"
+python3 -m zipfile -e azerothcore-character-hub-v0.1.4.zip "$HUB_STAGE"
 cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
 ```
 
@@ -109,7 +119,7 @@ cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
    Remove the temporary staging directory after checking the install.
 
 The allowlisted archive contains application files and examples only; it contains no live JSON,
-SQLite databases or generated assets, so extracting it preserves those existing files. Never use
+SQLite databases or generated assets, so extracting it preserves those existing files, including `connection.json`. Never use
 `git clean`, destructive synchronisation or another realm's state against a live installation.
 Adapt the live-folder path above if you use a different name. No update restarts game containers.
 
@@ -119,7 +129,7 @@ Adapt the live-folder path above if you use a different name. No update restarts
 - Empty first page: normal; create a group. The Journal should have zero entries on first startup.
 - Read-only database error: verify CLI/container access, password, SELECT grants, schema version and names.
   Root Docker mode needs MYSQL_ROOT_PASSWORD and the mysql client inside that container.
-- Missing catalogue: prepare armory/quest/profession/gear assets using setup against your world container.
+- Missing catalogue: rerun `python3 deploy.py`; check the configured local DBC directory or worldserver container.
 - Missing spell/glyph tooltip details: run `.venv/bin/python prepare_tooltip_assets.py` in the deployed
   folder and restart Character Hub. This builds local server metadata using read-only access.
 - Partial/stale gameplay: MySQL shows saved server state, not unsaved world memory. Refresh cannot force a save.
@@ -143,3 +153,13 @@ Training uses standard `trainer` and `trainer_spell` class offers, `spell_ranks`
 The live request reads only `characters`, `character_spell` and `character_skills` in a bounded
 read-only snapshot. Run `prepare_tooltip_assets.py` after upgrading to generate the training catalogue;
 restart the app to load it. No Windows files or installed addons are required.
+
+## Local data, network access and development
+
+Keep `connection.json`, `deployment.json`, `groups.json`, `watchlist.json`, `watch-notes.json`, `settings.json`, `client-models.json`, `gear-planner.json`, `network.json`, `assets/` and **all** SQLite databases in your backup. In particular, independent `journal.sqlite3` stores stories and screenshot bytes; `activity.sqlite3` stores observed history. Preserve retained legacy databases too. Never overwrite these with another installation's state.
+
+Startup is loopback-only. Optional `network.json` can set `{"listen":"0.0.0.0","allowed_hosts":["YOUR_LAN_IP"]}`. For WSL2 forwarding, the supplied `enable-lan.ps1` accepts `-LanAddress` and `-Distribution`; use the correct local addresses and host firewall. There is no HTTP login or TLS; reachable clients share local data and controls. Use only a trusted private network.
+
+Development stays separate from deployed applications. After installing dependencies with `bash setup.sh --skip-assets`, run `.venv/bin/python -m unittest discover -s tests`, then `python3 package_release.py`. The clean ZIP is built from an explicit source allowlist. `PUBLIC_README.md` becomes the release `README.md`; maintain both source copies together. Generated metadata, private connection settings, logs and backups are never release sources.
+
+`bash start.sh` rebuilds the clean package if source changes and starts the package watcher. Stop the app with Ctrl+C; the optional watcher PID is in `.run/package-watch.pid`. `preview.py` builds a disposable localhost:8766 installation using copies and online SQLite backups of a specified existing installation; it never deploys to that source. See `AGENTS.md` for the maintainer workflow.

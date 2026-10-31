@@ -78,7 +78,7 @@ class PackageTests(unittest.TestCase):
                 self.assertIsNone(bundle.testzip())
                 names={name.removeprefix('character-hub/') for name in bundle.namelist()}
                 for name in ['groups.json','watchlist.json','watch-notes.json','settings.json','network.json',
-                             'client-models.json','deployment.json','gear-planner.json','activity.sqlite3','journal.sqlite3','README.local.md','VALIDATION.md']:
+                             'client-models.json','connection.json','deployment.json','gear-planner.json','activity.sqlite3','journal.sqlite3','README.local.md','VALIDATION.md']:
                     self.assertNotIn(name,names)
                 self.assertFalse(any(name.startswith(('assets/','vendor/','backups/','.run/','.qa','.git/')) for name in names))
                 manifest=json.loads(bundle.read('character-hub/release-manifest.json'))

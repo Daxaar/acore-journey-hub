@@ -3,17 +3,12 @@
 import json
 import re
 import struct
-import subprocess
-import os
-from deployment_config import container
-from connection import env
+from dbc_source import read_dbc_bytes
 from pathlib import Path
 
 
 def dbc(filename, field):
-    data = subprocess.run(['docker', 'exec', container('world_container'), 'cat',
-                           env('DBC_PATH', '/azerothcore/env/dist/data/dbc').rstrip('/') + '/' + filename + '.dbc'],
-                          capture_output=True, check=True, timeout=20).stdout
+    data = read_dbc_bytes(filename)
     magic, count, fields, size, strings = struct.unpack_from('<4s4I', data)
     if magic != b'WDBC' or size != fields * 4 or fields <= field or len(data) != 20 + count * size + strings:
         raise ValueError('Unexpected DBC layout')
