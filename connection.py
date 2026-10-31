@@ -2,10 +2,11 @@
 import os
 import re
 from deployment_config import container
+from connection_config import load
 
 
 def env(name, default=None):
-    return os.environ.get('CHARACTER_HUB_' + name, os.environ.get('LEMMINGS_' + name, default))
+    return os.environ.get('CHARACTER_HUB_' + name, os.environ.get('LEMMINGS_' + name, load().get(name.lower(), default)))
 
 
 def schema(name):

@@ -31,3 +31,6 @@ assets/
 gear-planner.json
 
 deployment.json
+
+connection.json
+.connection-*

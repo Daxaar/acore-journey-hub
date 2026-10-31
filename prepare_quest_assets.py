@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
-"""Cache small quest DBC lookup tables from the existing world container, read only."""
+"""Cache small quest DBC lookup tables from the configured server DBC directory, read only."""
 import json
 from pathlib import Path
 import struct
-import subprocess
-import os
-from deployment_config import container
-from connection import env
+from dbc_source import read_dbc_bytes
 
 
 def read_dbc(name):
-    data = subprocess.run(['docker', 'exec', container('world_container'), 'cat',
-        env('DBC_PATH', '/azerothcore/env/dist/data/dbc').rstrip('/') + '/' + name + '.dbc'], capture_output=True, check=True, timeout=20).stdout
+    data = read_dbc_bytes(name)
     magic, count, fields, size, strings = struct.unpack_from('<4s4I', data)
     if magic != b'WDBC' or size != fields*4 or len(data) != 20+count*size+strings or count > 100000:
         raise ValueError('Unexpected DBC layout')

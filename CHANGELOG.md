@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 — 2026-10-31
+
+Groups support ten characters across roster-backed pages, deletion asks for confirmation, and rested XP uses item-style tooltips. Setup now guides Docker and native-server users through a saved private connection file; direct MySQL metadata reads local server DBCs without Docker. Installation has one canonical release-first guide, with current feature usage in separate FEATURES.md. Existing container configuration and environment overrides remain supported.
+
 ## 0.1.3 — 2026-10-31
 
 Added an optional Wrath of the Lich King theme with original frozen-citadel artwork, icy blue accents, steel panels and matching navigation states. Quest objective, quest-starting and provided-item links now use shared item tooltips while preserving Wowhead navigation. Existing themes and preferences are preserved. The clean deployment archive includes deploy.py, setup.sh, start.sh and the isolated preview.py script.
