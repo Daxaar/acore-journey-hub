@@ -1,7 +1,7 @@
 "use strict";
 
 (() => {
-  const themes = ["forest", "frost", "crimson", "arcane", "parchment"];
+  const themes = ["forest", "wrath", "frost", "crimson", "arcane", "parchment"];
   const fonts = ["classic", "modern", "bookish", "monospace"];
   const cacheKey = "lemmings-dashboard-settings-v1";
   function preview(appearance) {

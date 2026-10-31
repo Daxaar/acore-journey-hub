@@ -158,10 +158,16 @@ function hideRewardTooltip(){rewardTooltipAnchor?.removeAttribute('aria-describe
 function attachRewardTooltip(target,item){
  const tip=$('reward-item-tooltip');
  const show=event=>{hideRewardTooltip();rewardTooltipAnchor=target;ItemTooltip.render(tip,item);tip.hidden=false;target.setAttribute('aria-describedby',tip.id);ItemTooltip.position(tip,target,event&&event.type!=='focus'?event:null);};
- target.tabIndex=0;target.setAttribute('aria-label','Item details: '+item.name);
+ target.tabIndex=0;target.setAttribute('aria-label','Item details: '+(item.name||target.textContent||('#'+item.id)));
  target.addEventListener('mouseenter',show);target.addEventListener('focus',show);
  target.addEventListener('mousemove',event=>{if(tip.hidden)show(event);else ItemTooltip.position(tip,target,event);});
  target.addEventListener('mouseleave',hideRewardTooltip);target.addEventListener('blur',hideRewardTooltip);
+}
+// Keep Wowhead navigation on item references while sharing reward item tooltips.
+function questItemLink(label,id,name){
+ const link=wowheadLink(label,'item',id);
+ if(Number.isSafeInteger(Number(id))&&Number(id)>0)attachRewardTooltip(link,{id:Number(id),name:name||undefined});
+ return link;
 }
 window.addEventListener('resize',hideRewardTooltip);document.addEventListener('scroll',hideRewardTooltip,true);
 document.addEventListener('keydown',event=>{if(event.key==='Escape')hideRewardTooltip();});
@@ -188,7 +194,7 @@ function renderDetail(result) {
     const done=numeric&&obj.current>=obj.required;
     const label=obj.kind==='money'?`${money(obj.required)} required${numeric?' · '+money(obj.current)+' saved':''}`
       :gameText(obj.label,c)+(numeric?` — ${obj.current}/${obj.required}`:obj.kind==='event'||obj.kind==='timer'?'':` — ${obj.required} required`);
-    const li=node('li',null,done?'objective-done':'');let type,id;if(obj.key.startsWith('target')){id=q['target'+obj.key.slice(6)];type=id<0?'object':'npc';id=Math.abs(id);}else if(obj.key.startsWith('item')){id=q['item_id'+obj.key.slice(4)];type='item';}else if(obj.kind==='reputation'){id=obj.key==='reputation2'?q.RequiredFactionId2:q.faction;type='faction';}li.append(wowheadLink(`${done?'✓ ':''}${label}`,type,id));
+    const li=node('li',null,done?'objective-done':'');let type,id;if(obj.key.startsWith('target')){id=q['target'+obj.key.slice(6)];type=id<0?'object':'npc';id=Math.abs(id);}else if(obj.key.startsWith('item')){id=q['item_id'+obj.key.slice(4)];type='item';}else if(obj.kind==='reputation'){id=obj.key==='reputation2'?q.RequiredFactionId2:q.faction;type='faction';}const text=`${done?'✓ ':''}${label}`;li.append(type==='item'?questItemLink(text,id,q['item_name'+obj.key.slice(4)]):wowheadLink(text,type,id));
     if(obj.note) li.append(node('small',obj.note));objectives.append(li);
   }
   pane.append(objectives);
@@ -222,7 +228,7 @@ function renderDetail(result) {
     heading('Quest givers');
     for(const role of ['Starts','Ends']) {
       const entries=contacts.filter(n=>n.role===role);
-      if(entries.length){const p=node('p',role+': ');entries.forEach((n,i)=>{if(i)p.append(document.createTextNode('; '));p.append(wowheadLink(n.name,{NPC:'npc',Object:'object',Item:'item'}[n.type],n.id),document.createTextNode(' ('+n.type+' #'+n.id+')'));});pane.append(p);}
+      if(entries.length){const p=node('p',role+': ');entries.forEach((n,i)=>{if(i)p.append(document.createTextNode('; '));p.append(n.type==='Item'?questItemLink(n.name,n.id,n.name):wowheadLink(n.name,{NPC:'npc',Object:'object'}[n.type],n.id),document.createTextNode(' ('+n.type+' #'+n.id+')'));});pane.append(p);}
     }
     if(result.contacts_truncated) line('This quest has more contacts than the display limit.','quest-meta');
   }
@@ -235,7 +241,7 @@ function renderDetail(result) {
   const extra=node('details');extra.append(node('summary','Quest requirements & references'));
   const add=text=>extra.append(node('p',text));
   if(q.Flags&4096)add('Daily quest');if(q.Flags&32768)add('Weekly quest');if(q.special_flags&1)add('Repeatable quest');
-  if(q.StartItem){const p=node('p');p.append(wowheadLink('Provided quest item #'+q.StartItem,'item',q.StartItem));extra.append(p);}
+  if(q.StartItem){const p=node('p');p.append(questItemLink('Provided quest item #'+q.StartItem,q.StartItem));extra.append(p);}
   if(q.required_skill)add(`Required skill #${q.required_skill} · ${q.required_skill_points} points`);
   if(q.QuestInfoID)add(`Quest type #${q.QuestInfoID}`);
   if(q.AllowableRaces)add(`Allowed race mask: ${q.AllowableRaces}`);

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" fill="none">
+  <!-- Original decorative artwork: a frozen northern citadel, no game assets. -->
+  <defs>
+    <linearGradient id="ice" x2="0" y2="1"><stop stop-color="#80c8e2" stop-opacity=".32"/><stop offset="1" stop-color="#101f30" stop-opacity="0"/></linearGradient>
+    <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#203b50"/><stop offset="1" stop-color="#080f19"/></linearGradient>
+    <radialGradient id="moon"><stop stop-color="#b5efff" stop-opacity=".16"/><stop offset="1" stop-color="#7bcfff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="1180" cy="170" rx="400" ry="260" fill="url(#moon)"/>
+  <path d="M0 430 100 290 140 325 270 130 340 290 400 230 530 410 620 300 730 450 900 280 1020 430 1140 300 1230 370 1370 130 1440 280 1500 235 1600 390V600H0Z" fill="url(#ice)"/>
+  <path d="m270 130-52 170 52-55 70 45Zm1100 0-60 165 60-60 70 45Z" fill="#91d4ef" opacity=".12"/>
+  <path d="M1020 510V345l25-55 25 55v55h34V260l22-70 22 70v90h30V185l22-125 22 125v165h30v-90l22-70 22 70v140h34v-55l25-55 25 55v165Z" fill="url(#stone)" stroke="#5c92ac" stroke-opacity=".4"/>
+  <path d="m1178 185 22-125 22 125-22-28Zm-74 75 22-70 22 70-22-16Zm148 0 22-70 22 70-22-16Z" fill="#77c8e3" opacity=".28"/>
+  <path d="M1188 294v55m24-55v55m-96-34v28m168-28v28m-96 68v72m24-72v72" stroke="#80dfff" stroke-width="4" opacity=".5"/>
+  <path d="m0 550 180-85 130 55 210-30 160 70 210-65 180 55 180-40 180 35 170-50v105H0Z" fill="#080f19"/>
+  <g fill="#c6f0ff" opacity=".3"><circle cx="120" cy="110" r="1.5"/><circle cx="420" cy="160" r="1"/><circle cx="760" cy="80" r="1.5"/><circle cx="980" cy="180" r="1"/><circle cx="1350" cy="60" r="1.5"/><circle cx="1480" cy="150" r="1"/></g>
+</svg>

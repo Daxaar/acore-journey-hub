@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import threading
 
-THEMES = ('forest', 'frost', 'crimson', 'arcane', 'parchment')
+THEMES = ('forest', 'wrath', 'frost', 'crimson', 'arcane', 'parchment')
 FONTS = ('classic', 'modern', 'bookish', 'monospace')
 DEFAULTS = {'sql': {'base_tables_only': True, 'execution_timeout': True, 'row_limit': True},
             'appearance': {'theme': 'forest', 'font': 'classic'}}

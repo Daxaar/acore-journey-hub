@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 — 2026-10-31
+
+Added an optional Wrath of the Lich King theme with original frozen-citadel artwork, icy blue accents, steel panels and matching navigation states. Quest objective, quest-starting and provided-item links now use shared item tooltips while preserving Wowhead navigation. Existing themes and preferences are preserved. The clean deployment archive includes deploy.py, setup.sh, start.sh and the isolated preview.py script.
+
 ## 0.1.2 — 2026-10-30
 
 Added orange profession-rank training indicators and character badges, using server skill and character-level requirements through Grand Master. Character training tooltips now match item tooltip styling and support keyboard focus. Added an isolated preview script with port-conflict detection and source verification, plus agent instructions requiring a preview link and treating the live installation as read-only.
