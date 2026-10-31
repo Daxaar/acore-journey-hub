@@ -38,9 +38,9 @@ class NativeInstallTests(unittest.TestCase):
                 self.assertNotIn(config['db_password'], ' '.join(args))
                 self.assertEqual(database_environment()['MYSQL_PWD'], config['db_password'])
                 self.assertIn('realm_characters.characters', database_sql('SELECT * FROM acore_characters.characters'))
-                with patch.dict(os.environ, {'LEMMINGS_DB_HOST':'legacy.invalid', 'CHARACTER_HUB_DB_HOST':'new.invalid'}):
+                with patch.dict(os.environ, {'LEMMINGS_DB_HOST':'legacy.invalid', 'JOURNEY_HUB_DB_HOST':'new.invalid'}):
                     self.assertEqual(env('DB_HOST'), 'new.invalid')
-                    del os.environ['CHARACTER_HUB_DB_HOST']
+                    del os.environ['JOURNEY_HUB_DB_HOST']
                     self.assertEqual(env('DB_HOST'), 'legacy.invalid')
 
     def test_validation_rejects_bad_settings_without_echoing_values(self):
@@ -72,7 +72,7 @@ class NativeInstallTests(unittest.TestCase):
             data = struct.pack('<4s4I2I', b'WDBC', 1, 2, 8, 8, 7, 1) + b'\0Sample\0'
             source = root / 'Fixture.dbc'
             source.write_bytes(data)
-            settings = {'CHARACTER_HUB_DB_MODE':'direct','CHARACTER_HUB_DBC_PATH':folder}
+            settings = {'JOURNEY_HUB_DB_MODE':'direct','JOURNEY_HUB_DBC_PATH':folder}
             with patch.dict(os.environ, settings, clear=True), patch('dbc_source.subprocess.run') as docker:
                 rows, text = read_dbc('Fixture')
                 self.assertEqual(rows, [(7, 1)])
@@ -85,8 +85,8 @@ class NativeInstallTests(unittest.TestCase):
 
     def test_docker_and_mixed_dbc_access_are_retained(self):
         for mode in ('docker', 'direct'):
-            settings = {'CHARACTER_HUB_DB_MODE':mode,'CHARACTER_HUB_DBC_SOURCE':'docker',
-                        'CHARACTER_HUB_WORLD_CONTAINER':'test-world', 'CHARACTER_HUB_DBC_PATH':'/data/dbc'}
+            settings = {'JOURNEY_HUB_DB_MODE':mode,'JOURNEY_HUB_DBC_SOURCE':'docker',
+                        'JOURNEY_HUB_WORLD_CONTAINER':'test-world', 'JOURNEY_HUB_DBC_PATH':'/data/dbc'}
             with patch.dict(os.environ, settings, clear=True), patch('dbc_source.subprocess.run', return_value=Mock(stdout=b'DBC')) as run:
                 self.assertEqual(read_dbc_bytes('Spell'), b'DBC')
                 self.assertEqual(run.call_args.args[0], ['docker','exec','test-world','cat','/data/dbc/Spell.dbc'])
@@ -126,7 +126,7 @@ class NativeInstallTests(unittest.TestCase):
             with self.assertRaises(ValueError):deploy.preflight(connection_config.validate(config))
             for name in ('Spell','ItemDisplayInfo'):(Path(folder)/(name+'.dbc')).write_bytes(b'fixture')
             deploy.preflight(connection_config.validate(config))
-            with patch.dict(os.environ, {'CHARACTER_HUB_DB_HOST':'other.invalid'}, clear=True):
+            with patch.dict(os.environ, {'JOURNEY_HUB_DB_HOST':'other.invalid'}, clear=True):
                 with self.assertRaises(ValueError):deploy.check_environment(connection_config.validate(config))
 
     def test_interactive_native_setup_hides_password_and_keeps_wizard_side_effect_free(self):

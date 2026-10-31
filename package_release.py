@@ -13,8 +13,8 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='character-hub'
-VERSION='0.1.4'
-ARCHIVE_NAME='azerothcore-character-hub-v'+VERSION
+VERSION='0.1.5'
+ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',
     'docs/screenshots/professions.png','docs/screenshots/auctions.png','docs/screenshots/sql.png',

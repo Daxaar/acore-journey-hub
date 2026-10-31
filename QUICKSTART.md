@@ -1,4 +1,4 @@
-# Install Character Hub
+# Install Journey Hub
 
 Use the **[installation guide in README.md](README.md#install)** for both Docker and non-container AzerothCore servers.
 

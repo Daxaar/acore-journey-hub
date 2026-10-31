@@ -1,5 +1,5 @@
 'use strict';
-window.CharacterHubSkills = (() => {
+window.JourneyHubSkills = (() => {
   const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;};
   const trainingText=skill=>`${skill.name}: ${skill.training.rank} training available (${skill.value}/${skill.max} → cap ${skill.training.cap}; requires skill ${skill.training.required_skill}, level ${skill.training.required_level}).`;
   function bar(skill,interactive=true) {

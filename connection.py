@@ -2,11 +2,11 @@
 import os
 import re
 from deployment_config import container
-from connection_config import load
+from connection_config import environment
 
 
 def env(name, default=None):
-    return os.environ.get('CHARACTER_HUB_' + name, os.environ.get('LEMMINGS_' + name, load().get(name.lower(), default)))
+    return environment(name, default)
 
 
 def schema(name):
@@ -36,6 +36,7 @@ def mysql_command(xml=False):
         if not port.isdigit() or not 1 <= int(port) <= 65535:
             raise ValueError('Choose a valid database port.')
         return ['mysql', '--protocol=TCP', '--host=' + env('DB_HOST', '127.0.0.1'),
+                # Preserve the implicit account used by older direct-mode installations.
                 '--port=' + port, '--user=' + env('DB_USER', 'character_hub')] + options
     if env('DB_MODE', 'docker') != 'docker':
         raise ValueError('DB_MODE must be docker or direct.')

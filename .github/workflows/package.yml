@@ -1,4 +1,4 @@
-name: Character Hub package
+name: Journey Hub package
 on: [push, pull_request, workflow_dispatch]
 jobs:
   package:
@@ -13,7 +13,7 @@ jobs:
       - run: python package_release.py
       - uses: actions/upload-artifact@v4
         with:
-          name: azerothcore-character-hub-v0.1.4
+          name: azerothcore-journey-hub-v0.1.5
           path: |
-            dist/azerothcore-character-hub-v0.1.4.zip
-            dist/azerothcore-character-hub-v0.1.4.zip.sha256
+            dist/azerothcore-journey-hub-v0.1.5.zip
+            dist/azerothcore-journey-hub-v0.1.5.zip.sha256

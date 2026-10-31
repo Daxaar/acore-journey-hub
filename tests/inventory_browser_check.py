@@ -82,7 +82,7 @@ def main():
                             assert page.locator('.page-nav').evaluate('(e) => e.getBoundingClientRect().right <= innerWidth'), (width,route)
                     page.goto(base+'/inventory?name=Aster')
                     expect(page.locator('#character-title')).to_have_text('Aster')
-                    page.screenshot(path='/tmp/character-hub-consistent-tabs.png', full_page=True)
+                    page.screenshot(path='/tmp/journey-hub-consistent-tabs.png', full_page=True)
                     assert not errors, errors
                     browser.close()
             finally:
