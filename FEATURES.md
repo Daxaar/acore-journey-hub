@@ -9,7 +9,7 @@ Journey Hub reads saved data from your AzerothCore WotLK server. It does not con
 | Page | What you can do |
 | --- | --- |
 | Dashboard | Save up to 32 groups of 1–10 characters, compare levels and quests, inspect shared/catch-up objectives and ready hand-ins, plan next actions, and view observed progress. |
-| Playerbot Watch (Dashboard tab) | Watch up to 32 named characters, including ordinary characters, and keep local notes. The watch list is independent of saved groups. |
+| Playerbot Watch (Dashboard tab) | Watch up to 32 named characters, including ordinary characters, and keep local notes with one optional PNG/JPEG image each. The watch list is independent of saved groups. |
 | Armory | Inspect a character's equipment, item details and skills, with optional local-client 3D appearance previews. |
 | Gear Planner | Save combat roles and compare current equipment with owned, quest, crafted and vendor alternatives, including score explanations and group activities. |
 | Inventory | Browse carried bags, personal banks and guild banks with item search and inspection. |
@@ -25,7 +25,7 @@ Journey Hub reads saved data from your AzerothCore WotLK server. It does not con
 
 Create or edit groups under **Dashboard → Manage groups**. Each has up to ten distinct character names in your chosen display order. Saved selection is shared across roster-aware pages. Deleting a group asks for confirmation; it does not delete characters or journal entries. Keep at least one group once groups exist.
 
-Playerbot Watch has its own roster and character notes. Missing characters and source outages are labelled instead of being replaced with sample data. New installations start empty.
+Playerbot Watch has its own roster and character notes. Attach one PNG or JPEG up to 5 MiB to a note, preview it in the editor, or open it at full size. Images can be replaced or removed when saving, and an image can be kept without text. Removing a watched character preserves their note and image for later. Missing characters and source outages are labelled instead of being replaced with sample data. New installations start empty.
 
 Quest comparisons show active/shared/catch-up quests, objectives and hand-ins. **What should we do next?** adds grouped quest activities and advisory routes based on known locations and prerequisites. These are suggestions, not movement or bot commands. Activity history starts when the Hub observes changes; it cannot reconstruct earlier sessions or unsaved gameplay.
 

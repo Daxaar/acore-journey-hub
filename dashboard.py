@@ -35,7 +35,7 @@ from settings import SettingsStore
 from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
 from auctions import AuctionProvider
-from watch_notes import WatchNotes
+from watch_notes import WatchNotes, MAX_NOTE_REQUEST, KEEP_IMAGE
 from professions import SkillsProvider
 from item_tooltips import ItemTooltipProvider
 from training import TrainingProvider
@@ -325,7 +325,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             self.send_header('X-Frame-Options', 'DENY')
             self.send_header('Referrer-Policy', 'no-referrer')
             self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; "
-                             "style-src 'self'; img-src 'self'; connect-src 'self'; "
+                             "style-src 'self'; img-src 'self' blob:; connect-src 'self'; "
                              "frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
             try:
                 self.end_headers()
@@ -361,7 +361,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             try:
                 path = urlsplit(self.path).path
                 length = int(self.headers.get('Content-Length', '0'))
-                limit = MAX_REQUEST if path == '/api/journal' else 20000
+                limit = MAX_REQUEST if path == '/api/journal' else MAX_NOTE_REQUEST if path == '/api/watch-notes' else 20000
                 if not 0 < length <= limit or self.headers.get_content_type() != 'application/json':
                     raise ValueError(f'Send a JSON request no larger than {limit} bytes.')
                 self.connection.settimeout(10)
@@ -389,7 +389,8 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 elif path == '/api/groups':
                     self.json_response(200, {'ok': True, 'groups': cache.update_groups(payload)})
                 elif path == '/api/watch-notes':
-                    self.json_response(200, {'ok':True, 'note':cache.notes.save(payload.get('name'),payload.get('text'))})
+                    if set(payload)-{'name','text','image'}:raise ValueError('Provide a character note and at most one image.')
+                    self.json_response(200, {'ok':True, 'note':cache.notes.save(payload.get('name'),payload.get('text'),payload.get('image',KEEP_IMAGE))})
                 elif path == '/api/watchlist':
                     names = cache.update_bots(payload.get('names'))
                     self.json_response(200, {'ok': True, 'names': names})
@@ -413,7 +414,12 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             if not self.allowed():
                 return
             path = urlsplit(self.path).path
-            if path == '/api/journal' or path.startswith('/journal-images/'):
+            if path.startswith('/watch-note-images/'):
+                try:
+                    mime,data=cache.notes.image(path.removeprefix('/watch-note-images/'))
+                    self.send(200,mime,data)
+                except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
+            elif path == '/api/journal' or path.startswith('/journal-images/'):
                 try:
                     if path.startswith('/journal-images/'):
                         mime,data=journal.image(path.removeprefix('/journal-images/'))
@@ -558,7 +564,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             elif path == '/api/server-identity':
                 self.json_response(200, identity.get())
             elif path == '/api/session':
-                self.json_response(200, {'token': token, 'bots': list(cache.bots), 'groups': cache.groups.data, 'notes':cache.notes.get()})
+                self.json_response(200, {'token': token, 'bots': list(cache.bots), 'groups': cache.groups.data, 'notes':cache.notes.get(),'note_images':cache.notes.get_images()})
             elif path == '/api/sql/catalog':
                 try:
                     self.json_response(200, {'ok': True, 'tables': console.catalog()})

@@ -1,7 +1,7 @@
 "use strict";
 
 const state = { snapshot: null, view: "party", selected: null, filter: "all", search: "", timer: null,
-  busy: false, error: null, lastSuccess: null, token: null, watched: [], notes: {}, groups: null, groupBusy: false, editingGroup: null };
+  busy: false, error: null, lastSuccess: null, token: null, watched: [], notes: {}, noteImages: {}, groups: null, groupBusy: false, editingGroup: null };
 const $ = (id) => document.getElementById(id);
 const labels = { ready: "✓ Ready to hand in", active: "In progress", failed: "Failed",
   rewarded: "✓ Handed in", missing: "—", unavailable: "Offline · unavailable" };
@@ -125,8 +125,9 @@ function renderRoster(data) {
       const note = el('button','watch-note-button','✎ Note'); note.type = 'button';
       note.dataset.noteName = c.name; note.setAttribute('aria-label','Note for '+c.name);
       note.setAttribute('aria-haspopup','dialog'); note.setAttribute('aria-controls','watch-note-dialog');
-      note.classList.toggle('has-note',Boolean(noteFor(c.name)));
-      note.title = noteFor(c.name) ? 'Edit saved note for '+c.name : 'Add a note for '+c.name;
+      note.classList.toggle('has-note',Boolean(noteFor(c.name)||noteImageFor(c.name)));
+      if(noteImageFor(c.name)){note.textContent='✎ Note · image';note.setAttribute('aria-label','View or edit note and image for '+c.name);}
+      note.title = noteFor(c.name)||noteImageFor(c.name) ? 'Edit saved note for '+c.name : 'Add a note for '+c.name;
       note.addEventListener('click',()=>openWatchNote(c));
       wrapper.append(card,note); return wrapper;
     }
@@ -455,6 +456,7 @@ async function loadSession() {
   state.token = data.token;
   state.watched = data.bots;
   state.notes = data.notes || {};
+  state.noteImages = data.note_images || {};
   state.groups = data.groups;
   renderGroups();
 }
@@ -712,10 +714,51 @@ for (const id of ['activity-character','activity-kind']) $(id).addEventListener(
 $('activity-newer').addEventListener('click',()=>{activityOffset=Math.max(0,activityOffset-50);loadActivity();});
 $('activity-older').addEventListener('click',()=>{activityOffset+=50;loadActivity();});
 let watchNoteName = null, watchNoteBusy = false;
+let watchNoteImageFile = null, watchNoteImageRemoved = false, watchNoteImageURL = null;
 function noteFor(name) { return state.notes[name[0].toUpperCase()+name.slice(1).toLowerCase()] || ''; }
+function noteImageFor(name) { return state.noteImages[name[0].toUpperCase()+name.slice(1).toLowerCase()] || null; }
+function clearNoteImageURL() {
+  if(watchNoteImageURL)URL.revokeObjectURL(watchNoteImageURL);
+  watchNoteImageURL=null;
+}
+function renderNoteImage() {
+  const saved=noteImageFor(watchNoteName),file=watchNoteImageFile;
+  const shown=file||(!watchNoteImageRemoved&&saved);
+  $('watch-note-image-preview').hidden=!shown;
+  if(!shown){$('watch-note-image-preview-img').removeAttribute('src');$('watch-note-image-view').removeAttribute('href');return;}
+  const url=file?watchNoteImageURL:saved.url;
+  $('watch-note-image-preview-img').src=url;
+  $('watch-note-image-view').href=url;
+  $('watch-note-image-name').textContent=file?file.name:saved.name;
+}
+function readNoteImage(file) {
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve({name:file.name.slice(0,160),data:reader.result.split(',')[1]});
+    reader.onerror=()=>reject(new Error('Cannot read this image. Choose it again and retry.'));
+    reader.onabort=()=>reject(new Error('Reading the image was cancelled.'));
+    reader.readAsDataURL(file);
+  });
+}
+$('watch-note-image').addEventListener('change',()=>{
+  const files=$('watch-note-image').files;
+  if(!files.length)return;
+  if(files.length!==1||!['image/png','image/jpeg'].includes(files[0].type)||files[0].size>5*1024*1024){
+    $('watch-note-status').textContent='Choose one PNG or JPEG image, up to 5 MiB.';
+    $('watch-note-image').value='';return;
+  }
+  clearNoteImageURL();watchNoteImageFile=files[0];watchNoteImageRemoved=false;
+  watchNoteImageURL=URL.createObjectURL(watchNoteImageFile);
+  $('watch-note-status').textContent='Image ready. Save the note to attach it.';renderNoteImage();
+});
+$('watch-note-image-remove').addEventListener('click',()=>{
+  clearNoteImageURL();watchNoteImageFile=null;watchNoteImageRemoved=true;$('watch-note-image').value='';
+  $('watch-note-status').textContent='Image removed from this draft. Save to apply.';renderNoteImage();
+});
 function noteCount() { $('watch-note-count').textContent = $('watch-note-text').value.length.toLocaleString()+' / 2,000 characters'; }
 function openWatchNote(character) {
   watchNoteName = character.name;
+  clearNoteImageURL();watchNoteImageFile=null;watchNoteImageRemoved=false;$('watch-note-image').value='';renderNoteImage();
   $('watch-note-title').textContent = 'Note for '+character.name;
   $('watch-note-context').textContent = character.found ? `Current saved level ${character.level} ${character.class_name}. Record the level and location you first saw them in your own words.` : 'This name is not in the current saved character data. Your note can still be saved.';
   $('watch-note-text').value = noteFor(character.name);
@@ -727,26 +770,31 @@ $('watch-note-clear').addEventListener('click',()=>{ $('watch-note-text').value=
 $('watch-note-cancel').addEventListener('click',()=>{ if(!watchNoteBusy)$('watch-note-dialog').close(); });
 $('watch-note-dialog').addEventListener('cancel',event=>{ if(watchNoteBusy)event.preventDefault(); });
 $('watch-note-dialog').addEventListener('close',()=>{
+  clearNoteImageURL();watchNoteImageFile=null;watchNoteImageRemoved=false;
   [...document.querySelectorAll('[data-note-name]')].find(button=>button.dataset.noteName===watchNoteName)?.focus({preventScroll:true});
 });
 $('watch-note-form').addEventListener('submit',async event=>{
   event.preventDefault(); if(watchNoteBusy)return;
   watchNoteBusy=true;
   const name=watchNoteName,text=$('watch-note-text').value;
-  const controls=[$('watch-note-save'),$('watch-note-cancel'),$('watch-note-clear'),$('watch-note-text')];
+  const controls=[$('watch-note-save'),$('watch-note-cancel'),$('watch-note-clear'),$('watch-note-text'),$('watch-note-image'),$('watch-note-image-remove')];
   controls.forEach(n=>n.disabled=true);$('watch-note-status').textContent='Saving…';
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
   try {
     if(!state.token)await loadSession();
+    const payload={name,text};
+    if(watchNoteImageFile)payload.image=await readNoteImage(watchNoteImageFile);
+    else if(watchNoteImageRemoved)payload.image=null;
     const response=await fetch('/api/watch-notes',{method:'POST',headers:{'Content-Type':'application/json','X-Dashboard-Token':state.token},
-      body:JSON.stringify({name,text}),signal:controller.signal});
+      body:JSON.stringify(payload),signal:controller.signal});
     const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error||'Could not save this note.');
-    if(result.note.text)state.notes[result.note.name]=result.note.text;else delete state.notes[result.note.name];
+    if(result.note.text||result.note.image)state.notes[result.note.name]=result.note.text;else delete state.notes[result.note.name];
+    if(Object.hasOwn(result.note,'image')){if(result.note.image)state.noteImages[result.note.name]=result.note.image;else delete state.noteImages[result.note.name];}
     if(view())renderRoster(view());
     $('watch-note-dialog').close();
-    $('watch-status').textContent=result.note.text?'Note saved for '+result.note.name+'.':'Note cleared for '+result.note.name+'.';
+    $('watch-status').textContent=result.note.text||result.note.image?'Note saved for '+result.note.name+'.':'Note cleared for '+result.note.name+'.';
   } catch(error) {
-    $('watch-note-status').textContent=error.name==='AbortError'?'Saving timed out. Your text is still here; retry or cancel.':(error.message||'Could not save this note. Your text is still here.');
+    $('watch-note-status').textContent=error.name==='AbortError'?'Saving timed out. Your note and image draft are still here; retry or cancel.':(error.message||'Could not save this note. Your note and image draft are still here.');
   } finally {clearTimeout(timeout);watchNoteBusy=false;controls.forEach(n=>n.disabled=false);}
 });
 loadSession().catch(() => {}).finally(refresh);

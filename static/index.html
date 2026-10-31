@@ -180,6 +180,14 @@
       <label for="watch-note-text">Your note</label>
       <textarea id="watch-note-text" maxlength="2000" rows="7" placeholder="Where you first saw this bot, their level, or anything you want to remember…" aria-describedby="watch-note-count watch-note-status"></textarea>
       <p id="watch-note-count" class="note-context">0 / 2,000 characters</p><p id="watch-note-status" role="status"></p>
+      <label for="watch-note-image">Image <span class="note-context">(optional)</span></label>
+      <input id="watch-note-image" type="file" accept="image/png,image/jpeg" aria-describedby="watch-note-image-help watch-note-status">
+      <p id="watch-note-image-help" class="note-context">One PNG or JPEG, up to 5 MiB. Choose another image to replace it. Changes apply when you save.</p>
+      <div id="watch-note-image-preview" hidden>
+        <a id="watch-note-image-view" target="_blank" rel="noopener"><img id="watch-note-image-preview-img" alt="Image attached to this character note"><span>View full-size image ↗</span></a>
+        <p id="watch-note-image-name" class="note-context"></p>
+        <button id="watch-note-image-remove" class="subtle-button" type="button">Remove image</button>
+      </div>
       <div class="note-actions"><button id="watch-note-save" class="gold-button" type="submit">Save note</button>
       <button id="watch-note-cancel" class="subtle-button" type="button">Cancel</button>
       <button id="watch-note-clear" class="subtle-button" type="button">Clear text</button></div>
