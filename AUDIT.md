@@ -2,7 +2,7 @@
 
 Application branding appeared in page titles, navigation headers, HTTP identity, the startup message, browser component names and release filenames. These now use Character Hub. The historical browser appearance storage key and legacy LEMMINGS_* environment aliases remain deliberately compatible; they do not seed characters or records.
 
-Groups, selected members, GUIDs, accounts, guild membership and inventory are data driven. Groups support 1–6 characters, up to 32 saved groups and 32 watched characters; these are documented bounds, not a fixed five-character roster. Guild-specific deployment discovery was replaced by a requested group name with an optional guild filter. No guild is required.
+Groups, selected members, GUIDs, accounts, guild membership and inventory are data driven. Groups support 1–10 characters, up to 32 saved groups and 32 watched characters; these are documented bounds, not a fixed five-character roster. Guild-specific deployment discovery was replaced by a requested group name with an optional guild filter. No guild is required.
 
 Docker defaults were installation-specific; generic defaults are now database/worldserver, with explicit local configuration or environment overrides. Database schema mapping, direct TCP MySQL credentials and DBC paths are configurable. Legacy Docker mode still uses the container's root credential internally; SELECT-only direct credentials are recommended. No server/database migration is included.
 

@@ -197,7 +197,7 @@ class QuestLogProvider:
         if watch and not names:
             return {'group':{'id':group['id'],'name':group['name']}, 'quest_id':quest_id,
                     'title':f'Quest #{quest_id}', 'allowed_classes':[], 'characters':[]}
-        limit = 32 if watch else 6
+        limit = 32 if watch else 10
         if not 1 <= len(names) <= limit:
             raise ValueError(f'Choose between 1 and {limit} characters.')
         selected = name_filter('c', names)

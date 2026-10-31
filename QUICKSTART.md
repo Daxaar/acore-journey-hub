@@ -77,7 +77,7 @@ bash start.sh
 Leave that terminal open. On the same machine, open **http://localhost:8765** in
 your browser (the Windows browser works for WSL2 too).
 
-On **Dashboard → Manage groups**, create a group with 1–6 existing character names.
+On **Dashboard → Manage groups**, create a group with 1–10 existing character names.
 Click **Refresh Now** to load their saved data. New installations have no groups,
 watched bots or journal entries; add your own as needed.
 

@@ -79,8 +79,8 @@ def read_inventory_sql(sql, timeout=12):
 
 
 def bag_space_sql(names):
-    if not isinstance(names, (list, tuple)) or not 1 <= len(names) <= 6:
-        raise ValueError('Choose between 1 and 6 character names.')
+    if not isinstance(names, (list, tuple)) or not 1 <= len(names) <= 10:
+        raise ValueError('Choose between 1 and 10 character names.')
     selected = name_filter('c', names)
     return f"""SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 SET SESSION TRANSACTION READ ONLY;
@@ -101,7 +101,7 @@ LEFT JOIN acore_characters.character_inventory v ON v.guid=c.guid
 LEFT JOIN acore_characters.character_inventory b ON b.guid=c.guid AND b.item=v.bag AND b.bag=0 AND b.slot BETWEEN 19 AND 22
 LEFT JOIN acore_characters.item_instance bi ON bi.guid=b.item
 LEFT JOIN acore_world.item_template bt ON bt.entry=bi.itemEntry
-WHERE {selected} GROUP BY c.guid,c.name LIMIT 6;
+WHERE {selected} GROUP BY c.guid,c.name LIMIT 10;
 COMMIT;
 """
 

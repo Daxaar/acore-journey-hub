@@ -23,11 +23,11 @@ class BagSpaceTests(unittest.TestCase):
         sql=bag_space_sql(['Aster','Bran'])
         for clause in ['bv.slot BETWEEN 19 AND 22','v.slot BETWEEN 23 AND 38',
                        'b.item=v.bag','v.slot<bt.ContainerSlots','bt.ContainerSlots BETWEEN 0 AND 64',
-                       'COUNT(DISTINCT','LIMIT 6','MAX_EXECUTION_TIME=3000','CONSISTENT SNAPSHOT, READ ONLY','COMMIT;']:
+                       'COUNT(DISTINCT','LIMIT 10','MAX_EXECUTION_TIME=3000','CONSISTENT SNAPSHOT, READ ONLY','COMMIT;']:
             self.assertIn(clause,sql)
         self.assertNotIn('guild_bank',sql)
         self.assertIn('0x4173746572',sql)
-        for names in [[],['Aster']*7,['../Aster'],["Aster'; DROP TABLE x"],None]:
+        for names in [[],['Aster']*11,['../Aster'],["Aster'; DROP TABLE x"],None]:
             with self.assertRaises(ValueError):bag_space_sql(names)
 
     def test_failed_summary_is_not_cached_as_zero_or_substituted_for_other_group(self):
