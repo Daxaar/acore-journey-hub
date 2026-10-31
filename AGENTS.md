@@ -1,5 +1,7 @@
 # Maintaining this dashboard
 
+- **AzerothCore databases, game-server files and game services are always off limits for changes.** The Hub may only issue read-only game queries. Hub backup/update/restore tools must operate solely on the Hub installation and its local databases, never export/restore game databases or modify/restart game servers.
+
 - **Treat `character-hub-live` as ALWAYS read-only. Never create, edit, replace, delete, deploy,
   or otherwise change code, data, configuration, databases, assets or any other files in that folder.**
   Read existing files only to inspect or copy them into an isolated preview. Do not run the application,

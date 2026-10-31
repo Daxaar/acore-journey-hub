@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6 — 2026-10-31
+
+Added automated Hub-only update, full file/SQLite backups, restore and failure rollback through update.py. Updates preserve settings and local data, restart only this Hub and never modify AzerothCore databases or game servers. Deployment ZIPs now contain the acore-journey-hub folder; existing installed folders retain their names. Playerbot Watch notes support one optional image with full-size viewing.
+
 ## 0.1.5 — 2026-10-31
 
 Renamed the product and repository to AzerothCore Journey Hub. Updated page branding, code namespaces, documentation, release names and screenshots. New environment settings use JOURNEY_HUB_; existing CHARACTER_HUB_ and LEMMINGS_ variables remain compatible. Local installation folders, saved configuration and data stay unchanged.

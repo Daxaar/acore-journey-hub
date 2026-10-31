@@ -805,7 +805,7 @@ async function loadServerIdentity() {
     const response = await fetch('/api/server-identity', {cache: 'no-store'});
     if (!response.ok) throw new Error('Identity unavailable');
     const data = await response.json();
-    label.textContent = `${data.realm} · Host: ${data.host}`;
+    label.textContent = `${data.realm} · Host: ${data.host} · Hub ${data.hub_version === 'unknown' ? 'version unavailable' : 'v' + data.hub_version}`;
   } catch (_) {
     label.textContent = 'Realm / host unavailable';
   }

@@ -40,10 +40,10 @@ class PackageTests(unittest.TestCase):
     def test_watcher_rebuilds_source_changes_and_prevents_duplicate_watchers(self):
         with tempfile.TemporaryDirectory() as folder:
             output=Path(folder)/'initial';build(output=output)
-            root=Path(folder)/'watch-app';shutil.copytree(output/'character-hub',root)
+            root=Path(folder)/'watch-app';shutil.copytree(output/'acore-journey-hub',root)
             process=subprocess.Popen([sys.executable,str(root/'package_release.py'),'--watch'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             try:
-                manifest=root/'dist/character-hub/release-manifest.json'
+                manifest=root/'dist/acore-journey-hub/release-manifest.json'
                 deadline=time.monotonic()+10
                 while not manifest.exists() and time.monotonic()<deadline:time.sleep(.1)
                 self.assertTrue(manifest.exists())
@@ -76,23 +76,23 @@ class PackageTests(unittest.TestCase):
             output=Path(folder);archive=build(output=output);first=archive.read_bytes()
             with zipfile.ZipFile(archive) as bundle:
                 self.assertIsNone(bundle.testzip())
-                names={name.removeprefix('character-hub/') for name in bundle.namelist()}
+                names={name.removeprefix('acore-journey-hub/') for name in bundle.namelist()}
                 for name in ['groups.json','watchlist.json','watch-notes.json','settings.json','network.json',
                              'client-models.json','connection.json','deployment.json','gear-planner.json','activity.sqlite3','journal.sqlite3','README.local.md','VALIDATION.md']:
                     self.assertNotIn(name,names)
                 self.assertFalse(any(name.startswith(('assets/','vendor/','backups/','.run/','.qa','.git/')) for name in names))
-                manifest=json.loads(bundle.read('character-hub/release-manifest.json'))
+                manifest=json.loads(bundle.read('acore-journey-hub/release-manifest.json'))
                 self.assertEqual(set(manifest['files'])|{'release-manifest.json'},names)
                 for name,record in manifest['files'].items():
-                    self.assertEqual(hashlib.sha256(bundle.read('character-hub/'+name)).hexdigest(),record['sha256'])
-                self.assertEqual(json.loads(bundle.read('character-hub/examples/network.json')),
+                    self.assertEqual(hashlib.sha256(bundle.read('acore-journey-hub/'+name)).hexdigest(),record['sha256'])
+                self.assertEqual(json.loads(bundle.read('acore-journey-hub/examples/network.json')),
                                  {'listen':'127.0.0.1','allowed_hosts':[]})
-                self.assertNotIn(('/home/'+'private-user').encode(),bundle.read('character-hub/README.md'))
-                self.assertEqual(bundle.getinfo('character-hub/start.sh').external_attr>>16 & 0o777,0o755)
+                self.assertNotIn(('/home/'+'private-user').encode(),bundle.read('acore-journey-hub/README.md'))
+                self.assertEqual(bundle.getinfo('acore-journey-hub/start.sh').external_attr>>16 & 0o777,0o755)
             build(output=output);self.assertEqual(first,archive.read_bytes())
             self.assertTrue(current(output,manifest_for(sources())))
             # A release tree contaminated by a local run is rebuilt cleanly.
-            (output/'character-hub'/'watchlist.json').write_text('["Privatecharacter"]')
+            (output/'acore-journey-hub'/'watchlist.json').write_text('["Privatecharacter"]')
             self.assertFalse(current(output,manifest_for(sources())))
             build(output=output,if_changed=True)
-            self.assertFalse((output/'character-hub'/'watchlist.json').exists())
+            self.assertFalse((output/'acore-journey-hub'/'watchlist.json').exists())

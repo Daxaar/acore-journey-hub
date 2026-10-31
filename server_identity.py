@@ -1,4 +1,5 @@
 """Cached public realm label and the machine hosting this dashboard."""
+from pathlib import Path
 from connection import env
 import os
 import socket
@@ -15,6 +16,8 @@ class ServerIdentity:
         self.lock = threading.Lock()
         self.expires = 0
         self.realm = 'Realm unavailable'
+        try:self.hub_version = Path(__file__).with_name('VERSION').read_text().strip() or 'unknown'
+        except OSError:self.hub_version = 'unknown'
 
     def get(self):
         with self.lock:
@@ -33,4 +36,4 @@ class ServerIdentity:
                 except (DatabaseError, ValueError, TypeError, KeyError):
                     pass
                 self.expires = time.monotonic() + 60
-            return {'realm': self.realm, 'host': env('HOST_NAME') or socket.gethostname()}
+            return {'realm': self.realm, 'host': env('HOST_NAME') or socket.gethostname(), 'hub_version': self.hub_version}

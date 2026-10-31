@@ -6,4 +6,4 @@ The complete flow is: **download the release ZIP → run `python3 deploy.py` →
 That guide contains the prerequisites and connection choices. This file intentionally does not repeat a second set of instructions.
 
 Looking for dashboard capabilities? See [FEATURES.md](FEATURES.md).
-Existing installation? See [Updates and backups](DEPLOYMENT.md#updates-and-backups).
+Existing installation? Run `python3 update.py`; roll back with `python3 update.py restore`. See [Updates and backups](DEPLOYMENT.md#updates-and-backups) for the first upgrade from an older version.
