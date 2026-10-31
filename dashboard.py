@@ -2,6 +2,7 @@
 """Local, read-only quest dashboard. Python standard library; no database/network setup changes."""
 
 import argparse
+import sys
 import ipaddress
 import sqlite3
 from datetime import datetime, timezone
@@ -35,6 +36,7 @@ from settings import SettingsStore
 from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
 from auctions import AuctionProvider
+from hub_runtime import registered
 from watch_notes import WatchNotes, MAX_NOTE_REQUEST, KEEP_IMAGE
 from professions import SkillsProvider
 from item_tooltips import ItemTooltipProvider
@@ -680,7 +682,7 @@ def main():
                 print(f'Allowed address → http://{host}:{args.port}', flush=True)
             print(f'Listening on {args.listen} · read-only MySQL · Ctrl+C to stop', flush=True)
             try:
-                server.serve_forever()
+                with registered(ROOT,server,sys.argv[1:]):server.serve_forever()
             except KeyboardInterrupt:
                 print('\nDashboard stopped. WoW server unaffected.', flush=True)
     except (OSError,sqlite3.Error):

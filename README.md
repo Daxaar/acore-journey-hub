@@ -27,15 +27,15 @@ The game server's `worldserver.conf` identifies the database names and `DataDir`
 ### 1. Download and extract
 
 From the [latest GitHub Release](https://github.com/Daxaar/acore-journey-hub/releases/latest), download the **deployment ZIP** and matching **`.sha256` file** under Assets. GitHub's automatic “Source code” downloads are for development.
-Put both files in the same directory. For v0.1.5:
+Put both files in the same directory. For v0.1.6:
 
 ```bash
-sha256sum -c azerothcore-journey-hub-v0.1.5.zip.sha256
-python3 -m zipfile -e azerothcore-journey-hub-v0.1.5.zip .
-cd character-hub
+sha256sum -c azerothcore-journey-hub-v0.1.6.zip.sha256
+python3 -m zipfile -e azerothcore-journey-hub-v0.1.6.zip .
+cd acore-journey-hub
 ```
 
-The ZIP still extracts into `character-hub/`; existing local installation folder names have not changed.
+The ZIP extracts into `acore-journey-hub/`. Existing installations can stay in their current folder; the updater does not rename them.
 
 Extract into a new directory. To replace an existing installation, follow [Updates and backups](DEPLOYMENT.md#updates-and-backups) instead.
 
@@ -62,6 +62,32 @@ Open **[http://localhost:8765](http://localhost:8765)**. Create your first group
 New installations have no characters, groups, watched bots, notes, history or journal entries.
 
 Leave the terminal open. Stop the Hub with **Ctrl+C**. Next time, run `bash start.sh` from the same directory; you do not need to enter connection settings again.
+
+## Update, back up or restore
+
+From your installed Hub folder:
+
+```bash
+python3 update.py
+```
+
+This downloads and verifies the latest release, stops only the Hub, backs up all its files and local SQLite databases, installs the update and checks the restarted Hub. Existing settings and data are kept. If the update fails, the previous installation is restored automatically. A stopped Hub stays stopped.
+
+To roll back later, including the saved data from before the update:
+
+```bash
+python3 update.py restore
+```
+
+For a backup without updating, use `python3 update.py backup`. Backups are kept privately under `backups/`; restore also saves the current state before replacing it. **These commands never back up or change AzerothCore databases, game-server files or game services.**
+
+Upgrading from a version without `update.py`? Extract the new release, then run its updater once, pointing to your existing installation:
+
+```bash
+python3 acore-journey-hub/update.py --install /path/to/your/existing-hub
+```
+
+After that, use `python3 update.py` inside the existing folder. See [maintenance options](DEPLOYMENT.md#updates-and-backups) for a downloaded ZIP, a specific backup or private-repository access.
 
 ## Finding your native-server settings
 

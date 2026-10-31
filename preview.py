@@ -15,7 +15,7 @@ import time
 from urllib.request import urlopen
 import zipfile
 
-from package_release import ROOT, build
+from package_release import ROOT, NAME, build
 
 STATE_FILES = ('connection.json', 'deployment.json', 'groups.json', 'watchlist.json', 'watch-notes.json',
                'settings.json', 'client-models.json', 'gear-planner.json')
@@ -63,7 +63,7 @@ def main():
     run = ROOT/'.run';run.mkdir(exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix='preview-', dir=run))
     with zipfile.ZipFile(archive) as bundle:bundle.extractall(stage)
-    app = stage/'character-hub'
+    app = stage/NAME
     copy_state(live, app)
     # Always use a separate loopback listener; never copy the live network configuration.
     record = run/f'preview-{args.port}.json'

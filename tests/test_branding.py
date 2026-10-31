@@ -61,9 +61,9 @@ class JourneyBrandingTests(unittest.TestCase):
         with patch.dict(os.environ, {'CHARACTER_HUB_DB_HOST':'another.invalid'}, clear=True):
             with self.assertRaises(ValueError):check_environment({'db_mode':'direct','db_host':'expected.invalid'})
 
-    def test_product_branding_and_archive_change_without_folder_changes(self):
+    def test_product_branding_and_archive_folder(self):
         root = Path(__file__).resolve().parents[1]
-        self.assertEqual(NAME, 'character-hub')
+        self.assertEqual(NAME, 'acore-journey-hub')
         self.assertTrue(ARCHIVE_NAME.startswith('azerothcore-journey-hub-v'))
         for page in (root/'static').glob('*.html'):
             text = page.read_text()

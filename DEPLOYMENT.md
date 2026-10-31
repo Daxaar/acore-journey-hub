@@ -93,35 +93,45 @@ Remote MySQL TLS settings follow the installed client's configuration; no TLS po
 
 ## Updates and backups
 
-Keep the Git checkout (`~/character-hub`) separate from the deployed application
-(`~/character-hub-live`, or a name you choose for your realm). The live folder has no `.git` directory.
-Build and test changes in the checkout; live code changes only when you install a release.
-
-1. Download the new deployment ZIP and checksum from [GitHub Releases](https://github.com/Daxaar/acore-journey-hub/releases). No Git checkout is required.
-2. Stop the live app with Ctrl+C. Stop its optional package watcher with
-   `kill "$(cat ~/character-hub-live/.run/package-watch.pid)"` if that PID is still its watcher.
-3. Back up the entire live installation to a different directory. Include local JSON, `assets/`
-   and **every SQLite database**, especially the independent journal and its screenshot bytes.
-   With the app stopped, an ordinary file backup is safe; for any running SQLite database, use
-   SQLite's online backup API instead. Retain the old source and state for rollback.
-4. Verify the checksum and extract the new archive over the existing live folder:
+The normal update is one command, run as the same OS user who runs the Hub, from its installed folder:
 
 ```bash
-cd /path/to/downloads
-sha256sum -c azerothcore-journey-hub-v0.1.5.zip.sha256
-HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e azerothcore-journey-hub-v0.1.5.zip "$HUB_STAGE"
-cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
+python3 update.py
 ```
 
-5. In the live folder, run `bash setup.sh --skip-assets` to refresh dependencies, then
-   `bash start.sh`. Verify your groups, journal and equipment before retiring the backup.
-   Remove the temporary staging directory after checking the install.
+The script downloads the latest deployment ZIP and SHA-256 checksum from GitHub Releases, validates the archive and every manifest entry, stops only processes verified to belong to this Hub installation, creates a private timestamped backup, updates application files, rebuilds the Hub's Python environment and restarts a previously running Hub with its original arguments and connection environment. A health check verifies the new files are being served. A stopped Hub remains stopped. Failure automatically restores the previous files, dependencies and local databases.
 
-The allowlisted archive contains application files and examples only; it contains no live JSON,
-SQLite databases or generated assets, so extracting it preserves those existing files, including `connection.json`. Never use
-`git clean`, destructive synchronisation or another realm's state against a live installation.
-Adapt the live-folder path above if you use a different name. No update restarts game containers.
+For the first upgrade from an older version without this script, extract the new release and run `python3 acore-journey-hub/update.py --install /path/to/existing-hub`. It uses the verified extracted release beside that updater. The existing folder keeps its name; newly extracted packages use `acore-journey-hub/`.
+
+### Backup and restore commands
+
+| Command | Result |
+| --- | --- |
+| `python3 update.py backup` | Create and verify a backup without updating, restarting a running Hub afterwards. |
+| `python3 update.py restore` | Restore the last update/manual backup, saving the current state first. |
+| `python3 update.py restore --backup backups/SNAPSHOT_NAME` | Restore a specific snapshot from this installation. |
+| `python3 update.py --archive /path/to/release.zip` | Update from a downloaded deployment ZIP and its adjacent `.sha256` file. |
+| `python3 /path/to/new-release/update.py restore --install /path/to/existing-hub` | Recover an installation whose own updater is missing or damaged. |
+
+Restore rolls back **both application files and saved Hub data** to that snapshot. The automatic `before-restore` backup preserves any newer notes, journal entries or screenshots before replacement. When restoring a release that predates the updater, the recovery scripts remain available so `python3 update.py` still works. Backups stay under `backups/`; they are never deleted by update or restore. Copy that directory to another disk if you also need protection from disk failure.
+
+### What is backed up
+
+All installed application files, `.venv`, private configuration, groups, watch lists, notes and attached images, settings, generated Hub assets, and every local SQLite database are included. This includes independent `activity.sqlite3`, `journal.sqlite3` and any other detected SQLite files, even in subdirectories. SQLite's online backup API captures committed WAL data; copied databases and file hashes are verified before a backup is marked complete.
+
+Existing backups, generated release ZIPs under `dist/`, runtime logs/PIDs, caches, `.git` and private development-tool directories are omitted. Symlinks are preserved as links; external client or server directories are never traversed or changed. This is a Hub backup, not a backup of external linked files. The Python environment is rebuilt cleanly during update; rollback restores the previous environment.
+
+**AzerothCore MySQL databases, game-server files and game services are always off limits for changes.** This updater neither exports nor restores game databases, runs metadata generation, edits server configuration, nor starts/stops game containers or services. The Hub's normal game access remains read-only queries.
+
+### Access and recovery details
+
+Public release downloads need only Python and network access. For a private GitHub repository, install/authenticate GitHub CLI once with `gh auth login`; the updater uses it when available. A downloaded ZIP with its checksum also works without GitHub access.
+
+Automatic process control supports Linux/WSL and ordinary `bash start.sh` / `python3 dashboard.py` launches, including older Hub versions without a PID record. Only the matching installation's Python Hub server and package watcher are stopped; PID files alone are not trusted. If a service supervisor immediately restarts the Hub, stop that supervisor for maintenance and start it again afterwards. No game service is ever managed.
+
+An interrupted update leaves a recovery record. Run `python3 update.py restore`; it selects the recorded verified backup. Corrupted or foreign-installation backups are rejected before replacing files. If the current local database is damaged, restore saves its raw bytes in the rescue backup before recovering the healthy snapshot.
+
+The updater refuses a Git checkout or a recognizable AzerothCore game-server directory as its installation target. Keep development in the checkout and run maintenance only on your separately installed Hub copy. It does not migrate another realm's local state into your installation.
 
 ## Troubleshooting
 

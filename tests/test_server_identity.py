@@ -1,3 +1,4 @@
+from pathlib import Path
 import unittest
 from unittest.mock import Mock, patch
 from server_identity import ServerIdentity
@@ -9,7 +10,7 @@ class ServerIdentityTests(unittest.TestCase):
         reader = Mock(return_value=[{'name': 'My Realm'}])
         with patch.dict('os.environ', {}, clear=True), patch('socket.gethostname', return_value='RealmHost'):
             identity = ServerIdentity(reader)
-            self.assertEqual(identity.get(), {'realm': 'My Realm', 'host': 'RealmHost'})
+            self.assertEqual(identity.get(), {'realm': 'My Realm', 'host': 'RealmHost', 'hub_version': Path(__file__).resolve().parents[1].joinpath('VERSION').read_text().strip()})
             identity.get()
             reader.assert_called_once()
             self.assertIn('acore_auth.realmlist', reader.call_args.args[0])
