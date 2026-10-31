@@ -99,10 +99,70 @@ SQL explorer accepts validated SELECTs only in permitted schemas. The Hub has no
 
 ## Screenshots
 
-These show empty setup states or synthetic examples, not private character/journal data. They illustrate the main pages; newer themes and controls may differ.
+Captured from the isolated preview on 31 October 2026 using the owner's Lemmings data with permission. These show a populated Hub; new installations still start empty. Every page except Settings is shown, plus the separate Playerbot Watch view.
 
-![Overview](docs/screenshots/overview.png)
-![Journal](docs/screenshots/journal.png)
-![Armory](docs/screenshots/armory.png)
-![Gear Planner](docs/screenshots/planner.png)
-![What's Training](docs/screenshots/training.png)
+### Dashboard
+
+The Lemmings roster, rested-XP indicators, group totals and quest comparison.
+
+![Dashboard with the six Lemmings characters and their saved quest progress](docs/screenshots/overview.png)
+
+### Playerbot Watch
+
+The Dashboard's independent watch roster and local character-note controls.
+
+![Playerbot Watch roster and saved character progress](docs/screenshots/watch.png)
+
+### Armory
+
+Hui's saved equipment, 3D equipped preview and selected Ashwood Bow details. The optional 3D preview uses a locally supplied compatible game client.
+
+![Hui's Armory with equipped items, character preview and bow inspection](docs/screenshots/armory.png)
+
+### Gear Planner
+
+Suggested activities and equipment rewards that benefit several group members.
+
+![Gear Planner showing quest-reward opportunities for the Lemmings](docs/screenshots/planner.png)
+
+### Inventory
+
+Hui's carried bags, saved item stacks and item inspection panel.
+
+![Inventory showing Hui's backpack, equipped bags and a selected item](docs/screenshots/inventory.png)
+
+### Quest log
+
+Hui's active quest list and the selected quest's objectives and rewards.
+
+![Quest log with In Defense of the King's Lands selected for Hui](docs/screenshots/quest-log.png)
+
+### What's Training
+
+Hui's upcoming hunter abilities, grouped by required level.
+
+![What's Training showing Hui's upcoming hunter abilities and ranks](docs/screenshots/training.png)
+
+### Professions
+
+Pin's saved Tailoring rank, learned recipes and selected recipe details.
+
+![Professions showing Pin's Tailoring recipes and Brown Linen Shirt requirements](docs/screenshots/professions.png)
+
+### Auction House
+
+Current realm listings with item icons, prices, levels and available quantities.
+
+![Auction House with current realm item listings and category filters](docs/screenshots/auctions.png)
+
+### Journal
+
+The populated register and one of the Lemmings' recorded adventures.
+
+![Adventurers' Journal displaying The Light Shall Not Abandon Us](docs/screenshots/journal.png)
+
+### SQL explorer
+
+A read-only SELECT showing the Lemmings' saved names, levels, classes and online states.
+
+![SQL explorer showing a SELECT query and six Lemmings character results](docs/screenshots/sql.png)
