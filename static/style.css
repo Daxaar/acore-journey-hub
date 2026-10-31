@@ -670,3 +670,82 @@ html { scrollbar-gutter: stable; }
 @media(max-width:650px) {
   .topbar .page-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Wrath: original frozen-citadel artwork over dark, bevelled steel. */
+:root[data-theme="wrath"] {
+  color-scheme: dark;
+  --bg: #080f19; --panel: #101d2a; --panel-light: #192c3c;
+  --border: #426078; --gold: #9edff5; --muted: #a5bacb; --text: #e3edf5;
+  --green: #99d8b6; --amber: #e1bd7a; --danger: #f4a0a7;
+  --topbar: #0b1420; --input: #0b1723; --accent-soft: #80d5f51a;
+  --heading: #d4f1fc;
+}
+:root[data-theme="wrath"] body {
+  background: linear-gradient(180deg, #080f1900 150px, var(--bg) 620px),
+    url('/wrath-citadel.svg') center 70px / max(1200px, 100vw) auto no-repeat,
+    var(--bg);
+}
+:root[data-theme="wrath"] .topbar {
+  background: linear-gradient(180deg, #223242, #0b1420 60%, #101e2b);
+  border-bottom: 2px solid #617785;
+  box-shadow: 0 2px 0 #050a11, 0 5px 24px #0009, inset 0 1px #b8eaff22;
+}
+:root[data-theme="wrath"] .brand strong {
+  color: var(--heading); text-shadow: 0 2px 2px #000, 0 0 20px #59c9ff44;
+}
+:root[data-theme="wrath"] h1 { color: var(--heading); text-shadow: 0 2px 4px #000, 0 0 28px #6fd4ff33; }
+:root[data-theme="wrath"] .panel {
+  background: linear-gradient(135deg, #b2dfff08, transparent 45%), var(--panel);
+  border: 1px solid #526b7d; border-radius: 3px;
+  box-shadow: inset 0 0 0 3px #080f1966, inset 0 4px 0 #c0e9ff0d, 0 5px 16px #0006;
+}
+:root[data-theme="wrath"] .panel-heading {
+  background: linear-gradient(180deg, #31485877, #111e2b44);
+  border-bottom: 1px solid #52748b66;
+}
+:root[data-theme="wrath"] .page-switch,
+:root[data-theme="wrath"] .subtle-button {
+  background: linear-gradient(#263d50, #101e2d);
+  border-color: #526b7d; border-radius: 3px;
+  box-shadow: inset 0 1px #d6f5ff18, 0 1px 3px #0008;
+}
+:root[data-theme="wrath"] .page-switch:hover,
+:root[data-theme="wrath"] .subtle-button:hover {
+  border-color: var(--gold); background: linear-gradient(#35546b, #182f43);
+}
+:root[data-theme="wrath"] .gold-button {
+  background: linear-gradient(#c2efff, #76bdd9); color: #091522; border-color: #b2e7fa;
+  box-shadow: inset 0 1px #fff8, 0 0 12px #68d5ff22;
+}
+:root[data-theme="wrath"] .gold-button:hover { background: #d4f1fc; }
+:root[data-theme="wrath"] .theme-preview {
+  background: linear-gradient(90deg, #080f19ed, #080f1966), url('/wrath-citadel.svg') 70% 35% / cover;
+  border-color: #618ba2; box-shadow: inset 0 0 24px #0008;
+}
+:root[data-theme="wrath"] .tab.active { text-shadow: 0 0 12px #77d6ff55; }
+
+/* Match every navigation state to Wrath's frozen steel palette. */
+:root[data-theme="wrath"] .topbar .page-nav { border-bottom-color: var(--border); }
+:root[data-theme="wrath"] .topbar .page-nav .page-switch {
+  color: #bfdae9; border-color: var(--border);
+  background: linear-gradient(#263d50, #101e2d);
+  box-shadow: inset 0 1px #d6f5ff18, inset 0 0 0 3px #080f1966;
+}
+:root[data-theme="wrath"] .topbar .page-nav .page-switch::before {
+  background: #739aaf; box-shadow: none;
+}
+:root[data-theme="wrath"] .topbar .page-nav .page-switch:hover {
+  color: #edfbff; border-color: var(--gold);
+  background: linear-gradient(#35546b, #182f43);
+}
+:root[data-theme="wrath"] .topbar .page-nav .page-switch[aria-current="page"] {
+  color: #edfbff; border-color: var(--gold);
+  background: linear-gradient(#3c647d, #223f55 38%, #142c40);
+  box-shadow: inset 0 1px #c9f2ff, inset 0 -3px var(--gold), 0 0 12px #68d5ff33;
+}
+:root[data-theme="wrath"] .topbar .page-nav .page-switch[aria-current="page"]::before {
+  background: #d4f6ff; box-shadow: 0 0 7px #80dfff;
+}
+:root[data-theme="wrath"] .topbar .page-nav .page-switch:focus-visible {
+  outline-color: var(--gold);
+}

@@ -252,6 +252,7 @@ ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
           '/style.css': ('style.css', 'text/css; charset=utf-8'),
           '/emblem.svg': ('emblem.svg', 'image/svg+xml'),
+          '/wrath-citadel.svg': ('wrath-citadel.svg', 'image/svg+xml'),
           '/sql': ('sql.html', 'text/html; charset=utf-8'),
           '/sql.js': ('sql.js', 'text/javascript; charset=utf-8')}
 ASSETS.update({'/settings': ('settings.html', 'text/html; charset=utf-8'),
