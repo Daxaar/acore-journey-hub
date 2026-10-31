@@ -69,3 +69,12 @@ def save(config, path=None):
         os.replace(temporary, path)
     finally:
         Path(temporary).unlink(missing_ok=True)
+
+
+def environment(name, default=None):
+    """Journey Hub names win; earlier installations keep their environment settings."""
+    for prefix in ('JOURNEY_HUB_', 'CHARACTER_HUB_', 'LEMMINGS_'):
+        key = prefix + name
+        if key in os.environ:
+            return os.environ[key]
+    return load().get(name.lower(), default)

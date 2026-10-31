@@ -17,7 +17,7 @@
     window.dispatchEvent(new CustomEvent("dashboard-settings", { detail: settings }));
   }
   try { preview(JSON.parse(localStorage.getItem(cacheKey))?.appearance); } catch { /* Default theme. */ }
-  window.CharacterHubAppearance = { preview, publish };
+  window.JourneyHubAppearance = { preview, publish };
   window.dashboardSettingsReady = fetch("/api/settings", { cache: "no-store" })
     .then((response) => response.json()).then((data) => {
       if (!data.ok) throw new Error("Could not load saved settings.");

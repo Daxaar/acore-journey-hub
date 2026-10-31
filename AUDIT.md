@@ -1,6 +1,6 @@
 # Refactoring audit
 
-Application branding appeared in page titles, navigation headers, HTTP identity, the startup message, browser component names and release filenames. These now use Character Hub. The historical browser appearance storage key and legacy LEMMINGS_* environment aliases remain deliberately compatible; they do not seed characters or records.
+Application branding appeared in page titles, navigation headers, HTTP identity, the startup message, browser component names and release filenames. These now use Journey Hub. The historical browser appearance storage key and legacy LEMMINGS_* environment aliases remain deliberately compatible; they do not seed characters or records.
 
 Groups, selected members, GUIDs, accounts, guild membership and inventory are data driven. Groups support 1–10 characters, up to 32 saved groups and 32 watched characters; these are documented bounds, not a fixed five-character roster. Guild-specific deployment discovery was replaced by a requested group name with an optional guild filter. No guild is required.
 

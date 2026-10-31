@@ -261,7 +261,7 @@ class ArmoryProvider:
                 raise LookupError('Icon unavailable')
             try:
                 request = urllib.request.Request('https://wow.zamimg.com/images/wow/icons/large/' + name + '.jpg',
-                                                 headers={'User-Agent': 'CharacterHub/1.0'})
+                                                 headers={'User-Agent': 'JourneyHub/1.0'})
                 with urllib.request.urlopen(request, timeout=4) as response:
                     data = response.read(200001)
                 if len(data) > 200000 or not data.startswith(b'\xff\xd8\xff'):

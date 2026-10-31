@@ -310,7 +310,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     identity = ServerIdentity()
     token = secrets.token_urlsafe(32)
     class Handler(BaseHTTPRequestHandler):
-        server_version = 'CharacterHub'
+        server_version = 'JourneyHub'
 
         def log_message(self, fmt, *args):
             # Paths/headers are untrusted; keep the local log small and credential-free.
@@ -669,7 +669,7 @@ def main():
         except (ValueError, OSError):
             parser.exit(1, 'Cannot read settings.json. Restore a valid settings file before starting.\n')
         with ThreadingHTTPServer((args.listen, args.port), handler(cache, args.port, settings=settings, allowed_hosts=args.allow_host, journal=JournalStore(ROOT/'journal.sqlite3'))) as server:
-            print(f'AzerothCore Character Hub → http://localhost:{args.port}', flush=True)
+            print(f'AzerothCore Journey Hub → http://localhost:{args.port}', flush=True)
             for host in args.allow_host:
                 print(f'Allowed address → http://{host}:{args.port}', flush=True)
             print(f'Listening on {args.listen} · read-only MySQL · Ctrl+C to stop', flush=True)

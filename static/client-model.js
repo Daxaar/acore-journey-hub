@@ -99,8 +99,8 @@
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();paperdoll();});
   document.getElementById('model-reset').addEventListener('click',()=>{angle=0;zoom=1;draw();});
   window.addEventListener('resize',()=>draw());
-  document.getElementById('model-weapon-view').addEventListener('change',()=>{if(currentCharacter)window.CharacterHubModel.update(currentCharacter,currentEquipment);});
-  window.CharacterHubModel = {
+  document.getElementById('model-weapon-view').addEventListener('change',()=>{if(currentCharacter)window.JourneyHubModel.update(currentCharacter,currentEquipment);});
+  window.JourneyHubModel = {
     clear() { generation++;lastKey=null;paperdoll(); },
     async update(character, equipment = []) {
       currentCharacter=character;currentEquipment=equipment;

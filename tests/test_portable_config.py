@@ -12,10 +12,10 @@ from journal import JournalStore
 
 class PortableConfigTests(unittest.TestCase):
     def test_direct_connection_keeps_password_out_of_arguments_and_maps_all_schemas(self):
-        with patch.dict(os.environ, {'CHARACTER_HUB_DB_MODE':'direct', 'CHARACTER_HUB_DB_HOST':'example.invalid',
-                'CHARACTER_HUB_DB_USER':'reader', 'CHARACTER_HUB_DB_PASSWORD':'synthetic-secret',
-                'CHARACTER_HUB_CHARACTERS_SCHEMA':'realm_characters', 'CHARACTER_HUB_WORLD_SCHEMA':'realm_world',
-                'CHARACTER_HUB_AUTH_SCHEMA':'realm_auth'}, clear=True):
+        with patch.dict(os.environ, {'JOURNEY_HUB_DB_MODE':'direct', 'JOURNEY_HUB_DB_HOST':'example.invalid',
+                'JOURNEY_HUB_DB_USER':'reader', 'JOURNEY_HUB_DB_PASSWORD':'synthetic-secret',
+                'JOURNEY_HUB_CHARACTERS_SCHEMA':'realm_characters', 'JOURNEY_HUB_WORLD_SCHEMA':'realm_world',
+                'JOURNEY_HUB_AUTH_SCHEMA':'realm_auth'}, clear=True):
             args=mysql_command()
             self.assertIn('--host=example.invalid',args)
             self.assertIn('--user=reader',args)
@@ -26,15 +26,15 @@ class PortableConfigTests(unittest.TestCase):
             self.assertIn('--xml',mysql_command(xml=True))
 
     def test_invalid_schema_and_port_are_rejected(self):
-        with patch.dict(os.environ, {'CHARACTER_HUB_WORLD_SCHEMA':'x;DROP DATABASE x'},clear=True):
+        with patch.dict(os.environ, {'JOURNEY_HUB_WORLD_SCHEMA':'x;DROP DATABASE x'},clear=True):
             with self.assertRaises(ValueError):database_sql('SELECT 1')
-        with patch.dict(os.environ, {'CHARACTER_HUB_DB_MODE':'direct','CHARACTER_HUB_DB_PORT':'0'},clear=True):
+        with patch.dict(os.environ, {'JOURNEY_HUB_DB_MODE':'direct','JOURNEY_HUB_DB_PORT':'0'},clear=True):
             with self.assertRaises(ValueError):mysql_command()
 
     def test_new_environment_names_win_and_legacy_names_still_work(self):
-        with patch.dict(os.environ, {'CHARACTER_HUB_REALM_ID':'2','LEMMINGS_REALM_ID':'1'},clear=True):
+        with patch.dict(os.environ, {'JOURNEY_HUB_REALM_ID':'2','LEMMINGS_REALM_ID':'1'},clear=True):
             self.assertEqual(env('REALM_ID'),'2')
-            del os.environ['CHARACTER_HUB_REALM_ID']
+            del os.environ['JOURNEY_HUB_REALM_ID']
             self.assertEqual(env('REALM_ID'),'1')
 
     def test_requested_group_and_optional_guild_are_not_fixed(self):

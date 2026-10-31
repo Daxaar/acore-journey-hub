@@ -17,9 +17,12 @@ $parsedWsl = [Net.IPAddress]::Parse($wslAddress)
 if ($parsedWsl.AddressFamily -ne [Net.Sockets.AddressFamily]::InterNetwork) { throw 'WSL did not return an IPv4 address.' }
 & netsh interface portproxy add v4tov4 listenaddress=$LanAddress listenport=$Port connectaddress=$wslAddress connectport=$Port
 if ($LASTEXITCODE -ne 0) { throw 'Could not configure dashboard forwarding.' }
-$ruleName = "CharacterHub-LAN-$Port"
-if (Get-NetFirewallRule -Name $ruleName -ErrorAction SilentlyContinue) { Remove-NetFirewallRule -Name $ruleName }
-New-NetFirewallRule -Name $ruleName -DisplayName "Character Hub LAN ($Port)" -Direction Inbound -Action Allow -Protocol TCP -LocalAddress $LanAddress -LocalPort $Port -RemoteAddress LocalSubnet -Profile Any | Out-Null
+$ruleName = "JourneyHub-LAN-$Port"
+# Replace either generation of this Hub's rule for the same port.
+foreach ($existingRule in @($ruleName, "CharacterHub-LAN-$Port")) {
+    if (Get-NetFirewallRule -Name $existingRule -ErrorAction SilentlyContinue) { Remove-NetFirewallRule -Name $existingRule }
+}
+New-NetFirewallRule -Name $ruleName -DisplayName "Journey Hub LAN ($Port)" -Direction Inbound -Action Allow -Protocol TCP -LocalAddress $LanAddress -LocalPort $Port -RemoteAddress LocalSubnet -Profile Any | Out-Null
 Write-Host "Dashboard LAN URL: http://${LanAddress}:$Port"
 Write-Host "Forwarding to WSL ${wslAddress}:$Port; firewall permits LocalSubnet only."
 Write-Host 'Rerun after the WSL IP changes. Existing game/database forwarding rules are unchanged.'

@@ -50,7 +50,7 @@ function renderGroup(){
  if(!group()){$('prof-group').disabled=true;$('prof-skill').disabled=true;$('prof-group-status').textContent='Create your first group on the Dashboard to browse professions.';return;}
  $('prof-group').replaceChildren(...groupConfig.groups.map(g=>{const o=node('option',g.name+' ('+g.members.length+')');o.value=g.id;return o;}));$('prof-group').value=groupConfig.selected;
  $('prof-characters').replaceChildren(...group().members.map(name=>{const b=node('button',name);b.type='button';b.disabled=groupBusy||!summary;b.classList.toggle('active',name.toLowerCase()===currentName?.toLowerCase());b.setAttribute('aria-pressed',String(name.toLowerCase()===currentName?.toLowerCase()));const trainable=summary?.characters.find(c=>c.name.toLowerCase()===name.toLowerCase())?.skills.filter(s=>s.training)||[];
- if(trainable.length){const text=trainable.map(window.CharacterHubSkills.trainingText).join('\n');const badge=node('span','⚒','profession-training-badge');badge.setAttribute('aria-hidden','true');b.append(badge);b.classList.add('has-profession-training');b.setAttribute('aria-label',name+'. '+text);attachTrainingTooltip(b,name,trainable);}
+ if(trainable.length){const text=trainable.map(window.JourneyHubSkills.trainingText).join('\n');const badge=node('span','⚒','profession-training-badge');badge.setAttribute('aria-hidden','true');b.append(badge);b.classList.add('has-profession-training');b.setAttribute('aria-label',name+'. '+text);attachTrainingTooltip(b,name,trainable);}
  b.addEventListener('click',()=>chooseCharacter(name));return b;}));
  $('prof-group').disabled=groupBusy;
 }
@@ -62,7 +62,7 @@ function renderSummary(){
   const skills=c.skills.filter(s=>s.profession);
   if(!c.found)card.append(node('p','No saved character found.','profession-help'));
   else if(!skills.length)card.append(node('p','No saved professions learned.','profession-help'));
-  else for(const skill of skills)card.append(window.CharacterHubSkills.bar(skill,false));
+  else for(const skill of skills)card.append(window.JourneyHubSkills.bar(skill,false));
   return card;
  }));
 }
@@ -117,7 +117,7 @@ function renderProfession(){
  const c=character(),definition=summary.professions.find(s=>s.id===currentSkill),skill=c.skills.find(s=>s.id===currentSkill);
  $('prof-emblem').replaceChildren(icon(definition.icon));
  $('prof-title').textContent=currentSkill===186&&browseMining?'Smelting':definition.name;$('prof-owner').textContent=c.name;
- $('prof-rank').replaceChildren(window.CharacterHubSkills.bar(skill||{id:currentSkill,name:definition.name+' · Not learned',category:11,value:0,max:0},false));
+ $('prof-rank').replaceChildren(window.JourneyHubSkills.bar(skill||{id:currentSkill,name:definition.name+' · Not learned',category:11,value:0,max:0},false));
  const gathering=definition.gathering&&!(currentSkill===186&&browseMining);
  $('prof-gathering').hidden=!gathering;$('prof-recipe-browser').hidden=gathering;
  $('prof-smelting').hidden=currentSkill!==186;

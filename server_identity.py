@@ -29,7 +29,7 @@ class ServerIdentity:
                     if len(rows) == 1 and isinstance(rows[0].get('name'), str) and rows[0]['name'].strip():
                         self.realm = rows[0]['name'].strip()[:120]
                     elif len(rows) > 1:
-                        self.realm = 'Multiple realms: set CHARACTER_HUB_REALM_ID'
+                        self.realm = 'Multiple realms: set JOURNEY_HUB_REALM_ID'
                 except (DatabaseError, ValueError, TypeError, KeyError):
                     pass
                 self.expires = time.monotonic() + 60

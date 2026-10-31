@@ -9,14 +9,14 @@ function fill(settings) {
   $("base-tables").checked = settings.sql.base_tables_only;
   $("query-timeout").checked = settings.sql.execution_timeout;
   $("row-limit").checked = settings.sql.row_limit;
-  window.CharacterHubAppearance.preview(settings.appearance);
+  window.JourneyHubAppearance.preview(settings.appearance);
 }
 function values() {
   return { sql: { base_tables_only: $("base-tables").checked, execution_timeout: $("query-timeout").checked,
     row_limit: $("row-limit").checked }, appearance: { theme: $("theme").value, font: $("font").value } };
 }
 $("settings-form").addEventListener("change", () => {
-  window.CharacterHubAppearance.preview(values().appearance);
+  window.JourneyHubAppearance.preview(values().appearance);
   $("settings-status").textContent = "Previewing your changes. Save settings to apply them.";
 });
 $("settings-reset").addEventListener("click", () => {
@@ -31,7 +31,7 @@ $("settings-form").addEventListener("submit", async (event) => {
       "Content-Type": "application/json", "X-Dashboard-Token": token }, body: JSON.stringify(values()) });
     const result = await response.json();
     if (!result.ok) throw new Error(result.error);
-    window.CharacterHubAppearance.publish(result.settings);
+    window.JourneyHubAppearance.publish(result.settings);
     $("settings-status").textContent = "Settings saved. New queries and pages will use these preferences.";
   } catch (error) {
     $("settings-status").textContent = error.message || "Cannot save settings. Reload and try again.";

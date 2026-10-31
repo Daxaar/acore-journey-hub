@@ -123,7 +123,7 @@ class TrainingProvider:
         sql=training_sql(name);low,high=level_bounds(level)
         if not isinstance(mode,str) or mode not in MODES:raise ValueError('Choose a supported training view.')
         if not isinstance(search,str) or len(search)>100:raise ValueError('Search names with up to 100 characters.')
-        if not self.metadata:raise DatabaseError('Training catalogue unavailable. Run prepare_tooltip_assets.py and restart Character Hub.')
+        if not self.metadata:raise DatabaseError('Training catalogue unavailable. Run prepare_tooltip_assets.py and restart Journey Hub.')
         key=name.lower()
         with self.lock:
             cached=self.cached.get(key)

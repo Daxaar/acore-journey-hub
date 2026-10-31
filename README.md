@@ -1,9 +1,9 @@
-# AzerothCore Character Hub
+# AzerothCore Journey Hub
 
 A private dashboard for your existing **AzerothCore WotLK 3.3.5a** server.
 Game data is read only. The Hub keeps its own groups, notes and journal locally.
 
-**[Features and screenshots](FEATURES.md)** · **[Releases](https://github.com/Daxaar/acore-character-hub/releases)** · **[Advanced configuration and updates](DEPLOYMENT.md)**
+**[Features and screenshots](FEATURES.md)** · **[Releases](https://github.com/Daxaar/acore-journey-hub/releases)** · **[Advanced configuration and updates](DEPLOYMENT.md)**
 
 ## Before you start
 
@@ -26,14 +26,16 @@ The game server's `worldserver.conf` identifies the database names and `DataDir`
 
 ### 1. Download and extract
 
-From the [latest GitHub Release](https://github.com/Daxaar/acore-character-hub/releases/latest), download the **deployment ZIP** and matching **`.sha256` file** under Assets. GitHub's automatic “Source code” downloads are for development.
-Put both files in the same directory. For v0.1.4:
+From the [latest GitHub Release](https://github.com/Daxaar/acore-journey-hub/releases/latest), download the **deployment ZIP** and matching **`.sha256` file** under Assets. GitHub's automatic “Source code” downloads are for development.
+Put both files in the same directory. For v0.1.5:
 
 ```bash
-sha256sum -c azerothcore-character-hub-v0.1.4.zip.sha256
-python3 -m zipfile -e azerothcore-character-hub-v0.1.4.zip .
+sha256sum -c azerothcore-journey-hub-v0.1.5.zip.sha256
+python3 -m zipfile -e azerothcore-journey-hub-v0.1.5.zip .
 cd character-hub
 ```
+
+The ZIP still extracts into `character-hub/`; existing local installation folder names have not changed.
 
 Extract into a new directory. To replace an existing installation, follow [Updates and backups](DEPLOYMENT.md#updates-and-backups) instead.
 
@@ -78,6 +80,6 @@ Relative `DataDir` paths are relative to the server's working directory, not the
 - **No game data yet:** create a group with real character names; a new Hub deliberately starts empty. Game progress reflects database saves.
 - **Custom settings, network access or upgrades:** use [DEPLOYMENT.md](DEPLOYMENT.md).
 - **Using the dashboard:** see [FEATURES.md](FEATURES.md). Installation steps are kept here.
-- **Problems or requests:** open a [GitHub issue](https://github.com/Daxaar/acore-character-hub/issues) without passwords or private configuration.
+- **Problems or requests:** open a [GitHub issue](https://github.com/Daxaar/acore-journey-hub/issues) without passwords or private configuration.
 
 The source is [MIT licensed](LICENSE). Third-party licences are included under `third_party/`. No game client files or generated game assets are distributed.

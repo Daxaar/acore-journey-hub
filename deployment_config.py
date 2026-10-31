@@ -3,7 +3,7 @@ import json
 import os
 import re
 from pathlib import Path
-from connection_config import load
+from connection_config import environment
 
 ROOT = Path(__file__).resolve().parent
 CONFIG = ROOT / 'deployment.json'
@@ -22,4 +22,4 @@ def validate(config):
 
 def container(kind):
     config = validate(json.loads(CONFIG.read_text())) if CONFIG.exists() else DEFAULTS
-    return os.environ.get('CHARACTER_HUB_' + kind.upper(), os.environ.get('LEMMINGS_' + kind.upper(), load().get(kind.lower(), config[kind.lower()])))
+    return environment(kind.upper(), config[kind.lower()])

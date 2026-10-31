@@ -183,7 +183,7 @@ function render() {
   $('character-subtitle').textContent = `Level ${c.level} ${races[c.race] || 'Race #' + c.race} ${classes[c.class] || 'Class #' + c.class}`;
   $('character-quest-log').href = '/quest-log?name=' + encodeURIComponent(c.name);
   if (!inventoryPage) {
-    window.CharacterHubModel?.update(c,data.equipment);
+    window.JourneyHubModel?.update(c,data.equipment);
     $('equipped-count').textContent = `${data.equipment.filter(e => e.item).length}/19 equipped`;
     $('appearance').textContent = `Race ${c.race} · Gender ${c.gender} · Skin ${c.skin} · Face ${c.face} · Hair style ${c.hairStyle} · Hair colour ${c.hairColor} · Facial style ${c.facialStyle}. These saved IDs select the optional equipped client model; the paper-doll is the fallback.`;
     for (const [id, slots] of [['equipment-left',[0,1,2,14,4,3,18,8]],['equipment-right',[9,5,6,7,10,11,12,13]],['equipment-weapons',[15,16,17]]]) {
@@ -225,7 +225,7 @@ function openCharacter(name) {
   if (name.toLowerCase() !== currentName.toLowerCase()) {
     ++skillsRequest; skillsController?.abort(); armorySkillsName = null;
     $('armory-skills')?.replaceChildren(); if ($('armory-skills-status')) $('armory-skills-status').textContent = '';
-    data = null; storage = 'bags'; selectedItem = null; hideTooltip(); window.CharacterHubModel?.clear(); $('inventory').hidden = true;
+    data = null; storage = 'bags'; selectedItem = null; hideTooltip(); window.JourneyHubModel?.clear(); $('inventory').hidden = true;
     $('item-detail').replaceChildren(node('h2','A closer look'), node('p','Select an item to inspect it.'));
     $('refresh-status').textContent = 'Waiting for saved inventory';
     $('change-status').textContent = '';
@@ -336,7 +336,7 @@ async function loadArmorySkills(force = false) {
     const response = await fetch('/api/skills?names=' + encodeURIComponent(name), {cache:'no-store',signal:controller.signal}); const result = await response.json();
     if (request !== skillsRequest || name !== currentName) return;
     if (!response.ok || !result.ok) throw new Error(result.error || 'Skills unavailable');
-    window.CharacterHubSkills.render($('armory-skills'),result.result.characters[0]); armorySkillsName = name.toLowerCase();
+    window.JourneyHubSkills.render($('armory-skills'),result.result.characters[0]); armorySkillsName = name.toLowerCase();
     $('armory-skills-status').textContent = 'Last skill refresh: ' + new Date(result.result.refreshed_at).toLocaleString();
   } catch (error) { if (request === skillsRequest) $('armory-skills-status').textContent = (error.name === 'AbortError' ? 'Skill request timed out.' : error.message) + (armorySkillsName ? ' Showing the last successful saved skills.' : ''); }
   finally { clearTimeout(timeout); }

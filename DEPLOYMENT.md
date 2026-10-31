@@ -25,7 +25,7 @@ Direct-mode keys are `db_mode` (`direct`), `db_host`, `db_port`, `db_user`, `db_
 
 A Docker file instead uses `db_mode: "docker"`, `db_container` and `world_container`; `dbc_path` optionally overrides the path **inside** the worldserver container. Existing `deployment.json` files remain supported without conversion. Running `python3 deploy.py` again reuses the saved connection and reruns setup, preserving groups and local state.
 
-The same environment variables listed below remain supported, with precedence **CHARACTER_HUB_ → legacy LEMMINGS_ → connection.json → existing deployment/default settings**. Setup rejects conflicting overrides to avoid preparing metadata against another server. Runtime environment overrides still work. The legacy `examples/connection.env` is an advanced alternative; the Hub does not automatically execute shell files.
+The same environment variables listed below remain supported, with precedence **JOURNEY_HUB_ → legacy CHARACTER_HUB_ → legacy LEMMINGS_ → connection.json → existing deployment/default settings**. Setup rejects conflicting overrides to avoid preparing metadata against another server. Runtime environment overrides still work. The legacy `examples/connection.env` is an advanced alternative; the Hub does not automatically execute shell files.
 
 Edit the existing `connection.json` to rotate its password or correct a path; keep it private and restart the Hub. A different realm belongs in a fresh installation directory to avoid mixing saved history. Importing a different connection over saved settings is refused.
 
@@ -33,20 +33,20 @@ Edit the existing `connection.json` to rotate its password or correct a path; ke
 
 Setup generates metadata automatically from the world database and extracted server DBCs. In **direct** mode, `dbc_path` is a readable local directory on the Hub machine, normally the server's `DataDir/dbc` (or a copied directory for a remote server). No Docker CLI or running container is needed. Database reachability and SELECT grants are still required.
 
-In **docker** mode, DBCs default to `/azerothcore/env/dist/data/dbc` in the selected worldserver container. For a mixed installation, `dbc_source` can explicitly be `local` or `docker`, independently of the database mode. The equivalent environment override is `CHARACTER_HUB_DBC_SOURCE`.
+In **docker** mode, DBCs default to `/azerothcore/env/dist/data/dbc` in the selected worldserver container. For a mixed installation, `dbc_source` can explicitly be `local` or `docker`, independently of the database mode. The equivalent environment override is `JOURNEY_HUB_DBC_SOURCE`.
 
 After server DBC/spell changes, rerun `python3 deploy.py` and restart the **Hub**. It never changes or restarts game containers. `--skip-assets` installs dependencies without metadata for journal-only/offline use; metadata-dependent catalogues remain unavailable until setup is rerun without it. A fresh Hub still starts with no seeded characters or journal entries.
 
 ## Settings reference
 
-All names below have the prefix `CHARACTER_HUB_`; legacy `LEMMINGS_` names remain fallback aliases.
+All names below have the prefix `JOURNEY_HUB_`; previous `CHARACTER_HUB_` and legacy `LEMMINGS_` names remain fallback aliases. Existing database usernames are unchanged; `journey_hub` is only the default for new direct-connection setup.
 New names win when both are set. Environment overrides the saved connection file.
 
 | Setting | Default / purpose |
 | --- | --- |
 | DB_MODE | `docker`; `direct` uses the local MySQL CLI over TCP |
 | DB_HOST / DB_PORT | `127.0.0.1` / `3306` in direct mode |
-| DB_USER / DB_PASSWORD | `character_hub` / unset; password passed through MYSQL_PWD, never CLI arguments |
+| DB_USER / DB_PASSWORD | New setup suggests `journey_hub`; older direct setups that omit DB_USER retain `character_hub`. Password passed through MYSQL_PWD, never CLI arguments |
 | DB_CONTAINER / WORLD_CONTAINER | `database` / `worldserver`; or values saved by deploy.py |
 | CHARACTERS_SCHEMA / WORLD_SCHEMA / AUTH_SCHEMA | `acore_characters` / `acore_world` / `acore_auth`; SQL identifiers only |
 | DBC_PATH | Local DBC directory for direct mode; `/azerothcore/env/dist/data/dbc` inside the world container for Docker mode |
@@ -79,10 +79,10 @@ transport boundary; the explorer displays logical acore_* aliases.
 Example grants for an administrator to adapt (the application never runs grants):
 
 ```sql
-CREATE USER 'character_hub'@'DASHBOARD_HOST' IDENTIFIED BY 'REPLACE_WITH_STRONG_PASSWORD';
-GRANT SELECT ON acore_characters.* TO 'character_hub'@'DASHBOARD_HOST';
-GRANT SELECT ON acore_world.* TO 'character_hub'@'DASHBOARD_HOST';
-GRANT SELECT ON acore_auth.realmlist TO 'character_hub'@'DASHBOARD_HOST';
+CREATE USER 'journey_hub'@'DASHBOARD_HOST' IDENTIFIED BY 'REPLACE_WITH_STRONG_PASSWORD';
+GRANT SELECT ON acore_characters.* TO 'journey_hub'@'DASHBOARD_HOST';
+GRANT SELECT ON acore_world.* TO 'journey_hub'@'DASHBOARD_HOST';
+GRANT SELECT ON acore_auth.realmlist TO 'journey_hub'@'DASHBOARD_HOST';
 ```
 
 Docker compatibility mode uses the existing MYSQL_ROOT_PASSWORD inside the database container and
@@ -97,7 +97,7 @@ Keep the Git checkout (`~/character-hub`) separate from the deployed application
 (`~/character-hub-live`, or a name you choose for your realm). The live folder has no `.git` directory.
 Build and test changes in the checkout; live code changes only when you install a release.
 
-1. Download the new deployment ZIP and checksum from [GitHub Releases](https://github.com/Daxaar/acore-character-hub/releases). No Git checkout is required.
+1. Download the new deployment ZIP and checksum from [GitHub Releases](https://github.com/Daxaar/acore-journey-hub/releases). No Git checkout is required.
 2. Stop the live app with Ctrl+C. Stop its optional package watcher with
    `kill "$(cat ~/character-hub-live/.run/package-watch.pid)"` if that PID is still its watcher.
 3. Back up the entire live installation to a different directory. Include local JSON, `assets/`
@@ -108,9 +108,9 @@ Build and test changes in the checkout; live code changes only when you install 
 
 ```bash
 cd /path/to/downloads
-sha256sum -c azerothcore-character-hub-v0.1.4.zip.sha256
+sha256sum -c azerothcore-journey-hub-v0.1.5.zip.sha256
 HUB_STAGE=$(mktemp -d)
-python3 -m zipfile -e azerothcore-character-hub-v0.1.4.zip "$HUB_STAGE"
+python3 -m zipfile -e azerothcore-journey-hub-v0.1.5.zip "$HUB_STAGE"
 cp -a "$HUB_STAGE/character-hub/." "$HOME/character-hub-live/"
 ```
 
@@ -131,7 +131,7 @@ Adapt the live-folder path above if you use a different name. No update restarts
   Root Docker mode needs MYSQL_ROOT_PASSWORD and the mysql client inside that container.
 - Missing catalogue: rerun `python3 deploy.py`; check the configured local DBC directory or worldserver container.
 - Missing spell/glyph tooltip details: run `.venv/bin/python prepare_tooltip_assets.py` in the deployed
-  folder and restart Character Hub. This builds local server metadata using read-only access.
+  folder and restart Journey Hub. This builds local server metadata using read-only access.
 - Partial/stale gameplay: MySQL shows saved server state, not unsaved world memory. Refresh cannot force a save.
 - Realm unavailable: auth access is optional; check REALM_ID and SELECT on realmlist.
 - Address already in use: choose `--port`; for LAN use a concrete `--allow-host` IP and trusted firewall rules.

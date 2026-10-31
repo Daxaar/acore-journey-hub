@@ -1,8 +1,8 @@
-# Character Hub features
+# Journey Hub features
 
 [Install the Hub](README.md#install) · [Advanced configuration and maintenance](DEPLOYMENT.md)
 
-Character Hub reads saved data from your AzerothCore WotLK server. It does not control bots, train abilities, equip items, buy auctions or modify game records. Saves can lag behind in-game activity. Its groups, notes, preferences, history and journal are local to the Hub.
+Journey Hub reads saved data from your AzerothCore WotLK server. It does not control bots, train abilities, equip items, buy auctions or modify game records. Saves can lag behind in-game activity. Its groups, notes, preferences, history and journal are local to the Hub.
 
 ## Pages at a glance
 

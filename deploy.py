@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Set up Character Hub for a Docker or native AzerothCore server."""
+"""Set up Journey Hub for a Docker or native AzerothCore server."""
 import argparse
 import getpass
 import os
@@ -40,7 +40,7 @@ def prompt(label, default=None, secret=False):
 
 
 def interactive_config():
-    print('Character Hub setup — connects read-only to your existing AzerothCore server.')
+    print('Journey Hub setup — connects read-only to your existing AzerothCore server.')
     mode = prompt('Server type: docker or direct (no containers)', 'docker').lower()
     if mode == 'docker':
         return validate_connection({'db_mode': mode,
@@ -52,7 +52,7 @@ def interactive_config():
     return validate_connection({'db_mode': mode,
         'db_host': prompt('MySQL host', '127.0.0.1'),
         'db_port': prompt('MySQL port', '3306'),
-        'db_user': prompt('MySQL user', 'character_hub'),
+        'db_user': prompt('MySQL user', 'journey_hub'),
         'db_password': prompt('MySQL password', secret=True),
         'characters_schema': prompt('Characters database', 'acore_characters'),
         'world_schema': prompt('World database', 'acore_world'),
@@ -62,7 +62,7 @@ def interactive_config():
 
 def check_environment(config):
     for key, value in config.items():
-        for prefix in ('CHARACTER_HUB_', 'LEMMINGS_'):
+        for prefix in ('JOURNEY_HUB_', 'CHARACTER_HUB_', 'LEMMINGS_'):
             variable = prefix + key.upper()
             if variable in os.environ and os.environ[variable] != value:
                 raise ValueError('Unset conflicting ' + variable + ' before setup.')

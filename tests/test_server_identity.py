@@ -21,7 +21,7 @@ class ServerIdentityTests(unittest.TestCase):
             self.assertIn('WHERE id=2', reader.call_args.args[0])
 
     def test_ambiguous_missing_and_offline(self):
-        for rows, label in [([], 'Realm unavailable'), ([{'name': 'A'}, {'name': 'B'}], 'Multiple realms: set CHARACTER_HUB_REALM_ID')]:
+        for rows, label in [([], 'Realm unavailable'), ([{'name': 'A'}, {'name': 'B'}], 'Multiple realms: set JOURNEY_HUB_REALM_ID')]:
             with patch.dict('os.environ', {}, clear=True):
                 self.assertEqual(ServerIdentity(Mock(return_value=rows)).get()['realm'], label)
         self.assertEqual(ServerIdentity(Mock(side_effect=DatabaseError('offline'))).get()['realm'], 'Realm unavailable')
