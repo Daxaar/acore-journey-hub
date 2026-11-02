@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import subprocess
 import struct
 import tempfile
 import unittest
@@ -90,6 +91,23 @@ class NativeInstallTests(unittest.TestCase):
             with patch.dict(os.environ, settings, clear=True), patch('dbc_source.subprocess.run', return_value=Mock(stdout=b'DBC')) as run:
                 self.assertEqual(read_dbc_bytes('Spell'), b'DBC')
                 self.assertEqual(run.call_args.args[0], ['docker','exec','test-world','cat','/data/dbc/Spell.dbc'])
+
+    def test_docker_dbc_reader_detects_data_mount(self):
+        settings = {'JOURNEY_HUB_DB_MODE':'docker', 'JOURNEY_HUB_WORLD_CONTAINER':'test-world'}
+        with patch.dict(os.environ, settings, clear=True), patch('dbc_source._docker_dbc_directory', None), \
+             patch('dbc_source.subprocess.run', return_value=Mock(stdout=b'DBC')) as run:
+            self.assertEqual(read_dbc_bytes('Spell'), b'DBC')
+            self.assertEqual(run.call_args.args[0], ['docker','exec','test-world','cat','/data/dbc/Spell.dbc'])
+
+    def test_docker_dbc_reader_falls_back_to_legacy_directory(self):
+        settings = {'JOURNEY_HUB_DB_MODE':'docker', 'JOURNEY_HUB_WORLD_CONTAINER':'test-world'}
+        missing = subprocess.CalledProcessError(1, ['docker','exec'], stderr=b'No such file')
+        with patch.dict(os.environ, settings, clear=True), patch('dbc_source._docker_dbc_directory', None), \
+             patch('dbc_source.subprocess.run', side_effect=[missing, Mock(stdout=b'DBC')]) as run:
+            self.assertEqual(read_dbc_bytes('Spell'), b'DBC')
+            self.assertEqual(run.call_count, 2)
+            self.assertEqual(run.call_args_list[0].args[0][-1], '/data/dbc/Spell.dbc')
+            self.assertEqual(run.call_args_list[1].args[0][-1], '/azerothcore/env/dist/data/dbc/Spell.dbc')
 
     def test_imported_setup_saves_private_file_and_reuses_it_without_prompts(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -23,7 +23,7 @@ Setup saves a private copy as `connection.json`; the original file is not needed
 
 Direct-mode keys are `db_mode` (`direct`), `db_host`, `db_port`, `db_user`, `db_password`, `characters_schema`, `world_schema`, `auth_schema` and `dbc_path`. Standard schema names and port 3306 are defaults. `realm_id` and `host_name` are optional. The password is passed to the MySQL client through `MYSQL_PWD`, never a command-line argument. Use a dedicated SELECT-only account.
 
-A Docker file instead uses `db_mode: "docker"`, `db_container` and `world_container`; `dbc_path` optionally overrides the path **inside** the worldserver container. Existing `deployment.json` files remain supported without conversion. Running `python3 deploy.py` again reuses the saved connection and reruns setup, preserving groups and local state.
+A Docker file instead uses `db_mode: "docker"`, `db_container` and `world_container`. Setup checks `/data/dbc` and then `/azerothcore/env/dist/data/dbc` inside the worldserver container automatically. Set `dbc_path` only when your DBCs are in another directory inside that container. Existing `deployment.json` files remain supported without conversion. Running `python3 deploy.py` again reuses the saved connection and reruns setup, preserving groups and local state.
 
 The same environment variables listed below remain supported, with precedence **JOURNEY_HUB_ → legacy CHARACTER_HUB_ → legacy LEMMINGS_ → connection.json → existing deployment/default settings**. Setup rejects conflicting overrides to avoid preparing metadata against another server. Runtime environment overrides still work. The legacy `examples/connection.env` is an advanced alternative; the Hub does not automatically execute shell files.
 
@@ -33,7 +33,7 @@ Edit the existing `connection.json` to rotate its password or correct a path; ke
 
 Setup generates metadata automatically from the world database and extracted server DBCs. In **direct** mode, `dbc_path` is a readable local directory on the Hub machine, normally the server's `DataDir/dbc` (or a copied directory for a remote server). No Docker CLI or running container is needed. Database reachability and SELECT grants are still required.
 
-In **docker** mode, DBCs default to `/azerothcore/env/dist/data/dbc` in the selected worldserver container. For a mixed installation, `dbc_source` can explicitly be `local` or `docker`, independently of the database mode. The equivalent environment override is `JOURNEY_HUB_DBC_SOURCE`.
+In **docker** mode, setup automatically checks `/data/dbc` and `/azerothcore/env/dist/data/dbc` in the selected worldserver container. If neither path matches your installation, set `dbc_path` to its DBC directory inside the container. For a mixed installation, `dbc_source` can explicitly be `local` or `docker`, independently of the database mode. The equivalent environment override is `JOURNEY_HUB_DBC_SOURCE`.
 
 After server DBC/spell changes, rerun `python3 deploy.py` and restart the **Hub**. It never changes or restarts game containers. `--skip-assets` installs dependencies without metadata for journal-only/offline use; metadata-dependent catalogues remain unavailable until setup is rerun without it. A fresh Hub still starts with no seeded characters or journal entries.
 
@@ -49,7 +49,7 @@ New names win when both are set. Environment overrides the saved connection file
 | DB_USER / DB_PASSWORD | New setup suggests `journey_hub`; older direct setups that omit DB_USER retain `character_hub`. Password passed through MYSQL_PWD, never CLI arguments |
 | DB_CONTAINER / WORLD_CONTAINER | `database` / `worldserver`; or values saved by deploy.py |
 | CHARACTERS_SCHEMA / WORLD_SCHEMA / AUTH_SCHEMA | `acore_characters` / `acore_world` / `acore_auth`; SQL identifiers only |
-| DBC_PATH | Local DBC directory for direct mode; `/azerothcore/env/dist/data/dbc` inside the world container for Docker mode |
+| DBC_PATH | Local DBC directory for direct mode; optional Docker override for the directory inside the world container (auto-detected otherwise) |
 | DBC_SOURCE | `local` for direct mode, `docker` for Docker mode; can override metadata location independently |
 | REALM_ID | unset; choose a positive realm ID for multi-realm auth databases |
 | HOST_NAME | dashboard OS hostname; optional friendly label |

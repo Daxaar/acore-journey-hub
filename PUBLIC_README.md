@@ -47,6 +47,7 @@ python3 deploy.py
 
 Choose **docker** or **direct** (no containers), then answer the prompts.
 Setup saves your choices in a private `connection.json`, installs dependencies and builds the server metadata. Password entry is hidden. It does not alter or restart AzerothCore.
+In Docker mode, setup automatically checks `/data/dbc` and `/azerothcore/env/dist/data/dbc` in the selected worldserver container. If your DBCs are elsewhere in that container, set `dbc_path` in `connection.json` to their directory.
 
 When setup says **Setup ready**, continue. If it reports a missing prerequisite or connection problem, correct it and rerun the same command; saved settings are reused.
 
