@@ -95,6 +95,7 @@ def build_view(rows, names):
             continue
         characters.append({'name': c['name'], 'guid': c['guid'], 'found': True,
                            'level': c['level'], 'xp': c['xp'], 'online': bool(c['online']),
+                           'next_level_xp': c.get('next_level_xp'),
                            'rested': rested_view(c),
                            'class_id': c['class'], 'class_name': CLASSES.get(c['class'], 'Unknown'),
                            'race': RACES.get(c['race'], 'Unknown'), 'zone_id': c['zone'],

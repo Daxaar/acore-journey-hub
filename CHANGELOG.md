@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7 — 2026-11-12
+
+Character roster cards show saved XP and progress toward the next level using the realm’s XP threshold. The bar appears above the quest and rested XP row and is omitted at max level or when XP data is unavailable.
+
 ## 0.1.6 — 2026-10-31
 
 Added automated Hub-only update, full file/SQLite backups, restore and failure rollback through update.py. Updates preserve settings and local data, restart only this Hub and never modify AzerothCore databases or game servers. Deployment ZIPs now contain the acore-journey-hub folder; existing installed folders retain their names. Playerbot Watch notes support one optional image with full-size viewing.

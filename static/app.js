@@ -119,7 +119,20 @@ function renderRoster(data) {
       card.addEventListener('mouseleave', hideRestedTooltip);
       card.setAttribute('aria-label', card.getAttribute('aria-label') + '. ' + restedText);
     }
-    card.append(meta, foot);
+    card.append(meta);
+    const required = c.next_level_xp;
+    if (c.found && c.rested?.state !== 'max_level'
+        && Number.isFinite(c.xp) && c.xp >= 0 && Number.isFinite(required) && required > 0) {
+      const xpText = `XP ${c.xp.toLocaleString()} / ${required.toLocaleString()}`;
+      const bar = el('div', 'character-xp');
+      const fill = el('span', 'character-xp-fill');
+      fill.style.width = `${Math.min(100, c.xp / required * 100)}%`;
+      bar.append(fill, el('span', 'character-xp-label', xpText));
+      bar.setAttribute('aria-hidden', 'true');
+      card.setAttribute('aria-label', card.getAttribute('aria-label') + '. ' + xpText);
+      card.append(bar);
+    }
+    card.append(foot);
     if (state.view === 'bots') {
       const wrapper = el('div','watch-card');
       const note = el('button','watch-note-button','✎ Note'); note.type = 'button';
