@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.6'
+VERSION='0.1.7'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',

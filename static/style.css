@@ -145,6 +145,28 @@ select { background: #1d231b; color: #c6cbbd; padding: 9px; border: 1px solid va
 .character-foot span { color: var(--muted); font-size: 10px; }
 .character-foot b { color: var(--gold); font-weight: 600; }
 .character-foot .ready { color: var(--green); }
+.character-xp {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #11160f;
+  text-align: center;
+}
+.character-xp-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #305575;
+}
+.character-xp-label {
+  position: relative;
+  display: block;
+  padding: 2px 4px;
+  color: #eef4fa;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
 .missing-character { opacity: .65; }
 .loading-card { padding: 35px 20px; color: var(--muted); grid-column: 1 / -1; }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin: 23px 0 26px; }

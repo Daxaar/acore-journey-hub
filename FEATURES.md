@@ -166,3 +166,7 @@ The populated register and one of the Lemmings' recorded adventures.
 A read-only SELECT showing the Lemmings' saved names, levels, classes and online states.
 
 ![SQL explorer showing a SELECT query and six Lemmings character results](docs/screenshots/sql.png)
+
+### Character XP
+
+Roster cards show saved XP toward the next level. Rested XP remains a separate indicator. The progress bar is hidden at max level or when XP data is unavailable.
