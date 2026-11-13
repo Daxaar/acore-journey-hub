@@ -1,0 +1,38 @@
+.combat-panel { margin-block: 18px; padding: clamp(12px, 3vw, 24px); }
+.combat-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.combat-controls label { display: grid; gap: 5px; color: var(--muted); }
+.combat-controls :is(input, select) {
+  max-width: 100%; padding: 7px; background: var(--panel-light);
+  color: var(--text); border: 1px solid var(--border); border-radius: 4px;
+}
+.combat-controls input[type="number"] { width: 8rem; }
+.combat-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; margin-block: 18px; }
+.combat-charts section { padding: 14px; background: var(--panel-light); border: 1px solid var(--border); border-radius: 6px; }
+.combat-charts h3 { color: var(--gold); margin-top: 0; }
+.combat-charts label { display: block; margin-block: 8px; }
+.combat-charts progress { display: block; width: 100%; height: 9px; accent-color: var(--gold); }
+.combat-charts section:nth-child(2) progress { accent-color: #d88975; }
+.combat-charts section:nth-child(3) progress { accent-color: var(--green); }
+.combat-scroll { overflow-x: auto; }
+.combat-scroll table { width: 100%; border-collapse: collapse; }
+.combat-scroll caption { text-align: left; color: var(--gold); margin-bottom: 8px; }
+.combat-scroll :is(td, th) { padding: 8px; border-bottom: 1px solid var(--border); text-align: right; }
+.combat-scroll th:first-child { text-align: left; }
+#combat-events { max-height: 28rem; overflow: auto; padding-left: 28px; }
+#combat-events li { padding-block: 4px; }
+.combat-charts section > div { margin-block: 8px; }
+.combat-source-filter { margin-bottom: 6px; max-width: 100%; }
+.combat-character { color: var(--class, var(--text)); }
+.combat-charts img { vertical-align: text-bottom; margin-right: 5px; border-radius: 3px; }
+button.combat-chart-row {
+  display: block; width: 100%; margin-block: 8px; padding: 4px;
+  background: transparent; border: 0; border-radius: 4px;
+  color: var(--text); text-align: left; text-decoration: none; cursor: pointer;
+}
+button.combat-chart-row:hover { background: var(--accent-soft); }
+button.combat-chart-row:focus-visible { outline: 2px solid var(--gold); }
+.combat-back { margin-right: 8px; }
+.combat-controls .combat-check { display: flex; align-items: center; }
+#log-dialog { max-width: min(90vw, 30rem); background: var(--panel-light); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+#log-dialog::backdrop { background: #0009; }
+#log-dialog .combat-controls { margin-top: 14px; }

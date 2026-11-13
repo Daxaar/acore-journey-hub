@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 — 2026-11-13
+
+Added Combat Log for original Wrath logs, with saved imports, rename and delete, time windows, group and character metrics, interactive charts and Deadmines boss filtering.
+
 ## 0.1.7 — 2026-11-12
 
 Character roster cards show saved XP and progress toward the next level using the realm’s XP threshold. The bar appears above the quest and rested XP row and is omitted at max level or when XP data is unavailable.

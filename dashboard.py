@@ -28,6 +28,7 @@ STATUSES = {1: 'ready', 3: 'active', 5: 'failed'}
 
 
 from rested_xp import rested_view
+from combat_log import CombatLogStore, MAX_REQUEST as MAX_COMBAT_REQUEST
 from server_identity import ServerIdentity
 from mysql_access import DatabaseError, name_filter, snapshot_sql, read_database
 from data_sources import MySQLSource, HttpQuestSource, SourceError
@@ -277,6 +278,10 @@ ASSETS.update({
     '/training': ('training.html', 'text/html; charset=utf-8'),
     '/training.js': ('training.js', 'text/javascript; charset=utf-8'),
     '/training.css': ('training.css', 'text/css; charset=utf-8'),
+    '/combat-log': ('combat-log.html', 'text/html; charset=utf-8'),
+    '/combat-log.js': ('combat-log.js', 'text/javascript; charset=utf-8'),
+    '/combat-metrics.js': ('combat-metrics.js', 'text/javascript; charset=utf-8'),
+    '/combat-log.css': ('combat-log.css', 'text/css; charset=utf-8'),
     '/professions': ('professions.html', 'text/html; charset=utf-8'),
     '/professions.js': ('professions.js', 'text/javascript; charset=utf-8'),
     '/professions.css': ('professions.css', 'text/css; charset=utf-8'),
@@ -310,6 +315,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     quest_log = QuestLogProvider(objectives)
     models = ClientModels()
     journal = journal or JournalStore()
+    combat_logs = CombatLogStore()
     identity = ServerIdentity()
     token = secrets.token_urlsafe(32)
     class Handler(BaseHTTPRequestHandler):
@@ -365,6 +371,8 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 path = urlsplit(self.path).path
                 length = int(self.headers.get('Content-Length', '0'))
                 limit = MAX_REQUEST if path == '/api/journal' else MAX_NOTE_REQUEST if path == '/api/watch-notes' else 20000
+                if path == '/api/combat-logs':
+                    limit = MAX_COMBAT_REQUEST
                 if not 0 < length <= limit or self.headers.get_content_type() != 'application/json':
                     raise ValueError(f'Send a JSON request no larger than {limit} bytes.')
                 self.connection.settimeout(10)
@@ -379,6 +387,18 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     elif payload.get('action','save') == 'save':
                         self.json_response(200, {'ok':True,'entry':journal.save(payload)})
                     else:raise ValueError('Choose save or delete.')
+                elif path == '/api/combat-logs':
+                    if payload.get('action') == 'delete':
+                        combat_logs.delete(int(str(payload.get('id', 0))))
+                        self.json_response(200, {'ok': True})
+                    elif payload.get('action') == 'rename':
+                        combat_logs.rename(int(str(payload.get('id', 0))), payload.get('title'))
+                        self.json_response(200, {'ok': True})
+                    elif payload.get('action') == 'save':
+                        log_id = combat_logs.save(payload.get('title'), payload.get('body'), payload.get('dungeon'))
+                        self.json_response(200, {'ok': True, 'id': log_id})
+                    else:
+                        raise ValueError('Choose save or delete.')
                 elif path == '/api/gear-planner/role':
                     if set(payload)!={'guid','role'}:raise ValueError('Provide a character GUID and role.')
                     with cache.lock:group=json.loads(json.dumps(cache.groups.selected()))
@@ -422,6 +442,20 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     mime,data=cache.notes.image(path.removeprefix('/watch-note-images/'))
                     self.send(200,mime,data)
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
+            elif path == '/api/combat-logs':
+                try:
+                    params = parse_qs(urlsplit(self.path).query)
+                    if 'id' in params:
+                        result = combat_logs.get(int(params['id'][0]))
+                    else:
+                        result = combat_logs.list()
+                    self.json_response(200, {'ok': True, 'result': result})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except LookupError as exc:
+                    self.json_response(404, {'ok': False, 'error': str(exc)})
+                except (OSError, sqlite3.Error):
+                    self.json_response(503, {'ok': False, 'error': 'Combat log storage is unavailable.'})
             elif path == '/api/journal' or path.startswith('/journal-images/'):
                 try:
                     if path.startswith('/journal-images/'):
