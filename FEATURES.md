@@ -170,3 +170,11 @@ A read-only SELECT showing the Lemmings' saved names, levels, classes and online
 ### Character XP
 
 Roster cards show saved XP toward the next level. Rested XP remains a separate indicator. The progress bar is hidden at max level or when XP data is unavailable.
+
+### Combat Log
+
+Import an original Wrath `WoWCombatLog.txt` from the Combat Log tab. Save and revisit up to 25 logs of up to 4 MiB each, or delete a log from the saved list. Filter character totals by a saved group or show all captured players. Set a start and end offset to compare one pull or a session. DPS and HPS use the selected window duration. The timeline shows the first 250 captured events in the window, including enemy activity, regardless of the character filter. Logs only cover events received by the recording client.
+
+The breakdown menu includes all 21 Recount categories, with group or character scope and ability filtering by source or target. Absorbs show recorded damage prevented by recipient. Periodic uptime and activity use estimates from recorded events.
+
+Saved combat logs can be renamed or deleted with confirmation. Select a character directly from the breakdown. The Dungeon run marker labels an import; Boss fights only currently recognizes Deadmines creature entries and estimates encounter windows from captured activity through boss death or last observation.

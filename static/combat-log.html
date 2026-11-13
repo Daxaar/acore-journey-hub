@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Combat Log · AzerothCore Journey Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/combat-log.css">
+<script src="/wowhead.js" defer></script><script src="/appearance.js"></script><script src="/combat-metrics.js" defer></script><script src="/combat-log.js" defer></script></head><body><header class="topbar">
+    <a class="brand" href="/" aria-label="AzerothCore Journey Hub home"><img src="/emblem.svg" alt="" width="44" height="44">
+      <span><strong>AzerothCore Journey Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+    <div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+    <nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/combat-log" aria-current="page">Combat Log</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav>
+  </header>
+<main>
+<h1>Combat Log</h1>
+<section class="panel combat-panel">
+<form id="import-log" class="combat-controls">
+<label>Log name <input id="log-title" maxlength="120" placeholder="Loch Modan patrol"></label>
+<label>Wrath log file <input id="log-file" type="file" accept=".txt,text/plain" required></label>
+<label class="combat-check"><input id="dungeon-run" type="checkbox"> Dungeon run</label>
+<button class="gold-button">Import and save</button>
+</form>
+<p>Toggle <code>/combatlog</code> in WoW and import <code>Logs/WoWCombatLog.txt</code> (up to 4 MiB).</p>
+<div class="combat-controls">
+<label>Saved log <select id="saved-log"></select></label>
+<button id="rename-log" class="subtle-button" disabled>Rename log</button>
+<button id="delete-log" class="subtle-button" disabled>Delete log</button>
+</div>
+<dialog id="log-dialog"><form method="dialog">
+<h2 id="dialog-title"></h2><p id="dialog-message"></p>
+<label id="rename-field">New name <input id="new-log-title" maxlength="120"></label>
+<div class="combat-controls"><button value="cancel" class="subtle-button" autofocus>Cancel</button>
+<button id="dialog-confirm" value="confirm" class="gold-button"></button></div>
+</form></dialog>
+<p id="combat-status" role="status"></p>
+</section>
+<section id="report" class="panel combat-panel" hidden>
+<h2 id="report-title"></h2>
+<form id="window" class="combat-controls">
+<label>From (seconds) <input id="from" type="number" min="0" step="0.001" required></label>
+<label>To (seconds) <input id="to" type="number" min="0" step="0.001" required></label>
+<label>Participants <select id="combat-group"><option value="">All observed players</option></select></label>
+<label class="combat-check"><input id="boss-only" type="checkbox"> Boss fights only</label>
+<button class="subtle-button">Apply window</button>
+</form>
+<p id="boss-summary"></p><p>Time is relative to the first recorded event. Healing excludes overheal and damage excludes overkill.</p>
+<div id="combat-charts" class="combat-charts"></div>
+<div class="combat-scroll"><table><caption>Character totals in this window</caption><thead><tr><th>Character</th><th>Damage</th><th>DPS</th><th>Taken</th><th>Healing</th><th>HPS</th><th>Interrupts</th><th>Deaths</th></tr></thead><tbody id="combat-totals"></tbody></table></div>
+<h2>Combat breakdown</h2>
+<div class="combat-controls">
+<label>Category <select id="breakdown-category"></select></label>
+<label>Scope <select id="breakdown-character"></select></label>
+</div>
+<p id="breakdown-note"></p>
+<div id="breakdown" class="combat-charts"></div>
+<h2>Combat timeline</h2><p id="event-count"></p><ol id="combat-events"></ol>
+</section>
+</main></body></html>

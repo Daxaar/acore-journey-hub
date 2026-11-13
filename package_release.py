@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.7'
+VERSION='0.1.8'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',
@@ -21,7 +21,7 @@ SOURCE_FILES=(
     'docs/screenshots/training.png','training.py','tests/training_browser_check.py','item_tooltips.py','spell_tooltips.py','prepare_tooltip_assets.py','QUICKSTART.md','connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',
     'tests/professions_tooltip_browser_check.py','tests/inventory_browser_check.py',
     'gear_planner.py','gear_sources.py','gear_eligibility.py','prepare_gear_assets.py',
-    'activity_history.py','auctions.py','armory.py','client_models.py','dashboard.py','data_sources.py',
+    'activity_history.py','auctions.py','armory.py','client_models.py','dashboard.py','combat_log.py','data_sources.py',
     'equipment_models.py','groups.py','mysql_access.py','observed_changes.py','planning.py',
     'prepare_armory_assets.py','prepare_profession_assets.py','prepare_quest_assets.py',
     'professions.py','quest_log.py','settings.py','sql_console.py','watch_notes.py','journal.py',
