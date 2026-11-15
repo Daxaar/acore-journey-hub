@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9 — 2026-11-15
+
+Compact guild bank slots, selected-group bag search, and configurable combat sessions. Combat Log also supports direct client-folder import, readable dates and a plain-English timeline.
+
 ## 0.1.8 — 2026-11-13
 
 Added Combat Log for original Wrath logs, with saved imports, rename and delete, time windows, group and character metrics, interactive charts and Deadmines boss filtering.

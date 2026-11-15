@@ -28,7 +28,8 @@ STATUSES = {1: 'ready', 3: 'active', 5: 'failed'}
 
 
 from rested_xp import rested_view
-from combat_log import CombatLogStore, MAX_REQUEST as MAX_COMBAT_REQUEST
+from client_models import client_path
+from combat_log import MAX_LOG, CombatLogStore, MAX_REQUEST as MAX_COMBAT_REQUEST
 from server_identity import ServerIdentity
 from mysql_access import DatabaseError, name_filter, snapshot_sql, read_database
 from data_sources import MySQLSource, HttpQuestSource, SourceError
@@ -394,11 +395,26 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     elif payload.get('action') == 'rename':
                         combat_logs.rename(int(str(payload.get('id', 0))), payload.get('title'))
                         self.json_response(200, {'ok': True})
+                    elif payload.get('action') == 'import-client':
+                        folder = models.get_config()['client_path']
+                        if not folder:
+                            raise ValueError('Set the WoW client folder in Settings, or choose a file to upload.')
+                        root = client_path(folder).resolve()
+                        log = root / 'Logs' / 'WoWCombatLog.txt'
+                        if log.resolve() != log or not log.is_file():
+                            raise ValueError('WoWCombatLog.txt was not found in the configured client Logs folder.')
+                        with log.open('rb') as source:
+                            data = source.read(MAX_LOG + 1)
+                        if len(data) > MAX_LOG:
+                            raise ValueError('The client combat log exceeds 4 MiB. Choose a shorter log.')
+                        log_id = combat_logs.save(payload.get('title') or 'WoWCombatLog.txt',
+                                                  data.decode('utf-8-sig', errors='replace'), payload.get('dungeon'))
+                        self.json_response(200, {'ok': True, 'id': log_id})
                     elif payload.get('action') == 'save':
                         log_id = combat_logs.save(payload.get('title'), payload.get('body'), payload.get('dungeon'))
                         self.json_response(200, {'ok': True, 'id': log_id})
                     else:
-                        raise ValueError('Choose save or delete.')
+                        raise ValueError('Choose upload, client import, rename or delete.')
                 elif path == '/api/gear-planner/role':
                     if set(payload)!={'guid','role'}:raise ValueError('Provide a character GUID and role.')
                     with cache.lock:group=json.loads(json.dumps(cache.groups.selected()))

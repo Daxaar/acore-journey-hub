@@ -77,7 +77,7 @@ def parse_log(text):
             first = moment
         previous = moment
         events.append([round((moment - first).total_seconds(), 3), kind, source, target,
-                       spell, amount, spell_id, row[1], row[4], extra, absorbed, power, detail, friendly])
+                       spell, amount, spell_id, row[1], row[4], extra, absorbed, power, detail, friendly, match[1]])
     if not events:
         raise ValueError('No supported Wrath combat events found in this file.')
     return events
@@ -151,7 +151,7 @@ class CombatLogStore:
 
     def get(self, log_id):
         with closing(self.connect()) as db:
-            row = db.execute('SELECT title, body, dungeon FROM logs WHERE id=?', (log_id,)).fetchone()
+            row = db.execute('SELECT title, body, dungeon, saved FROM logs WHERE id=?', (log_id,)).fetchone()
         if row is None:
             raise LookupError('Saved log not found.')
         events = parse_log(row[1])
@@ -165,7 +165,7 @@ class CombatLogStore:
                 if icon and re.fullmatch(r'[a-zA-Z0-9_]+', icon):
                     icons[spell_id] = icon
         return {'title': row[0], 'events': events, 'dungeon': bool(row[2]),
-                'bosses': boss_windows(events), 'icons': icons}
+                'bosses': boss_windows(events), 'icons': icons, 'saved': row[3]}
 
     def delete(self, log_id):
         with closing(self.connect()) as db, db:
