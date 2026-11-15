@@ -7,6 +7,30 @@ const classes = new Map();
 const classStyle = name => 'combat-character class-' + (classes.get(name) || 0);
 let generation = 0;
 
+const months = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+
+function displayDate(year, month, day, clock) {
+  const suffix = day >= 11 && day <= 13 ? 'th' : ({1: 'st', 2: 'nd', 3: 'rd'}[day % 10] || 'th');
+  return `${day}${suffix} ${months[month - 1]} ${year} ${clock}`;
+}
+
+function importDate(value) {
+  const [date, clock] = value.split(' ');
+  const [year, month, day] = date.split('-').map(Number);
+  return displayDate(year, month, day, clock);
+}
+
+function clientDate(value) {
+  const [date, clock] = value.split(' ');
+  const [month, day] = date.split('/').map(Number);
+  const [year, savedMonth, savedDay] = report.saved.split(' ')[0].split('-').map(Number);
+  const afterImport = month > savedMonth || (month === savedMonth && day > savedDay);
+  let inferredYear = year - Number(afterImport);
+  // The raw log has no year. Use the most recent matching date at import.
+  while (month === 2 && day === 29 && new Date(Date.UTC(inferredYear, 1, 29)).getUTCMonth() !== 1) inferredYear--;
+  return displayDate(inferredYear, month, day, clock.split('.')[0]);
+}
+
 function node(tag, value) {
   const element = document.createElement(tag);
   if (value !== undefined) element.textContent = value;
@@ -39,7 +63,7 @@ async function list(selected) {
   const {result} = await request('/api/combat-logs');
   const select = field('saved-log');
   select.replaceChildren(new Option('Select a saved log', ''),
-    ...result.map(([id, title, date]) => new Option(`${title} · ${date} UTC`, id)));
+    ...result.map(([id, title, date]) => new Option(`${title} · ${importDate(date)} UTC`, id)));
   select.value = selected || '';
   await openLog();
 }
@@ -55,8 +79,8 @@ async function openLog() {
   if (version !== generation) return;
   report = result;
   field('report-title').textContent = report.title;
-  field('from').value = '0';
-  field('to').value = report.events.reduce((latest, event) => Math.max(latest, event[0]), 0);
+  updateSessions();
+  selectSession();
   field('report').hidden = false;
   field('delete-log').disabled = false;
   field('rename-log').disabled = false;
@@ -66,6 +90,35 @@ async function openLog() {
     ? 'Recognized Deadmines pulls: ' + report.bosses.map(boss => boss[2]).join(', ')
     : report.dungeon ? 'No supported boss encounters detected. This preview recognizes Deadmines bosses.' : '';
   render();
+}
+
+function updateSessions() {
+  const threshold = Number(field('combat-gap').value) * 60;
+  if (!Number.isFinite(threshold) || threshold < 60 || threshold > 86400) return;
+  const timestamps = new Map(report.events.map(event => [event[0], event[14]]));
+  const times = [...timestamps.keys()].sort((a, b) => a - b);
+  const sessions = [];
+  let start = times[0], last = start;
+  for (const time of times) {
+    if (time - last >= threshold) {
+      sessions.push([start, last]);
+      start = time;
+    }
+    last = time;
+  }
+  sessions.push([start, last]);
+  const select = field('combat-session');
+  select.replaceChildren(new Option('Entire log', ''),
+    ...sessions.map(([from, to], index) => new Option(
+      `Session ${index + 1} · starts ${clientDate(timestamps.get(from))}`, `${from},${to}`)));
+  select.options[0].dataset.end = last;
+}
+
+function selectSession() {
+  const select = field('combat-session');
+  const [start, end] = select.value ? select.value.split(',') : [0, select.options[0].dataset.end];
+  field('from').value = start;
+  field('to').value = end;
 }
 
 function chart(title, rows, key) {
@@ -98,6 +151,45 @@ function chart(title, rows, key) {
   return section;
 }
 
+function timelineEntry(event) {
+  const [time, kind, source, target, spell, amount, spellId, sourceId, targetId,
+    , absorbed, power, detail] = event;
+  const actor = source || 'An unknown source';
+  const self = source && target && sourceId === targetId;
+  const recipient = self ? 'themself' : target || 'an unknown target';
+  const onTarget = target ? ' on ' + recipient : '';
+  const ability = spellId > 0 ? wowheadLink(spell, 'spell', spellId) : spell;
+  const value = format.format(amount);
+  let parts;
+
+  if (kind === 'ENVIRONMENTAL_DAMAGE') parts = [recipient, ' took ', value, ' damage from ', spell.toLowerCase()];
+  else if (kind === 'SWING_DAMAGE') parts = [actor, ' hit ', recipient, ' for ', value, ' melee damage'];
+  else if (isDamage(kind)) parts = [actor, ' hit ', recipient, ' with ', ability, ' for ', value, ' damage'];
+  else if (kind.endsWith('_HEAL')) parts = [actor, ' healed ', recipient, ' for ', value, ' with ', ability];
+  else if (kind === 'SPELL_CAST_START') parts = [actor, ' began casting ', ability, onTarget];
+  else if (kind === 'SPELL_CAST_SUCCESS') parts = [actor, ' cast ', ability, onTarget];
+  else if (kind === 'SPELL_INTERRUPT') parts = [actor, ' interrupted ', recipient, detail ? ' casting ' + detail : '', ' with ', ability];
+  else if (kind === 'SPELL_AURA_APPLIED' || kind === 'SPELL_AURA_REFRESH') {
+    const verb = kind === 'SPELL_AURA_APPLIED' ? ' applied ' : ' refreshed ';
+    parts = source ? [actor, verb, ability, onTarget] : [recipient, ' gained ', ability];
+  } else if (kind === 'SPELL_AURA_REMOVED') parts = [ability, ' faded from ', target || 'an unknown target'];
+  else if (kind.startsWith('SPELL_AURA_BROKEN')) parts = [actor, ' broke ', kind === 'SPELL_AURA_BROKEN_SPELL' && detail ? detail : ability, onTarget];
+  else if (kind === 'SPELL_DISPEL' || kind === 'SPELL_STOLEN') parts = [actor, kind === 'SPELL_DISPEL' ? ' dispelled ' : ' stole ', detail || 'an effect', ' from ', recipient, ' with ', ability];
+  else if (kind === 'SPELL_RESURRECT') parts = [actor, ' resurrected ', recipient, ' with ', ability];
+  else if (kind === 'UNIT_DIED' || kind === 'UNIT_DESTROYED') parts = [target || 'An unknown unit', kind === 'UNIT_DIED' ? ' died' : ' was destroyed'];
+  else if (kind.endsWith('_ENERGIZE')) {
+    const resource = ({0: 'mana', 1: 'rage', 3: 'energy', 6: 'runic power'})[power] || 'power';
+    parts = [target || 'An unknown unit', ' gained ', value, ' ', resource, ' from ', ability];
+  } else if (kind.endsWith('_MISSED')) {
+    parts = absorbed ? [recipient, ' absorbed ', format.format(absorbed), ' damage from ', actor, ' using ', ability]
+      : [actor, ' did not land ', ability || 'an attack', onTarget];
+  } else parts = [actor, ' triggered ', kind.replaceAll('_', ' ').toLowerCase(), onTarget];
+
+  const item = node('li', time.toFixed(3) + 's · ');
+  item.append(...parts, '.');
+  return item;
+}
+
 function render() {
   if (!report || field('report').hidden) return;
   const start = Number(field('from').value);
@@ -116,6 +208,9 @@ function render() {
   }
   const duration = merged.reduce((sum,[a,b]) => sum+b-a,0);
   reportEvents = report.events.filter(([time]) => merged.some(([a,b]) => time >= a && time <= b));
+  const first = reportEvents.reduce((earliest, event) =>
+    !earliest || event[0] < earliest[0] ? event : earliest, null);
+  field('window-start').textContent = first ? 'First recorded event: ' + clientDate(first[14]) + ' (client time, year inferred)' : '';
   const timeline = [];
   let count = 0;
   const participant = (name, guid) => {
@@ -124,8 +219,8 @@ function render() {
     return totals.get(name);
   };
 
-  for (const [time, kind, source, target, spell, amount, spellId, sourceId, targetId] of reportEvents) {
-    if (time < start || time > end) continue;
+  for (const event of reportEvents) {
+    const [, kind, source, target, , amount, , sourceId, targetId] = event;
     const actor = participant(source, sourceId);
     const victim = participant(target, targetId);
     if (isDamage(kind)) {
@@ -139,11 +234,7 @@ function render() {
     // Retain enemy casts and aura changes even when neither endpoint is a player.
     count++;
     if (timeline.length >= 250) continue;
-    const item = node('li', `${time.toFixed(3)}s · ${source || '—'} → ${target || '—'} · ${kind.replaceAll('_', ' ').toLowerCase()} `);
-    if (spellId > 0) item.append(wowheadLink(spell, 'spell', spellId));
-    else item.append(document.createTextNode(spell));
-    if (amount) item.append(document.createTextNode(` · ${format.format(amount)}`));
-    timeline.push(item);
+    timeline.push(timelineEntry(event));
   }
   const rows = [...totals.values()].sort((a, b) => b.damage - a.damage);
   field('combat-totals').replaceChildren(...rows.map(row => {
@@ -170,16 +261,20 @@ function render() {
 }
 
 field('import-log').addEventListener('submit', handle(async (event) => {
-  const button = event.target.querySelector('button');
-  button.disabled = true;
+  const fromClient = event.submitter?.id === 'import-client-log';
+  const buttons = event.target.querySelectorAll('button');
+  for (const button of buttons) button.disabled = true;
   try {
     const file = field('log-file').files[0];
-    if (!file || file.size > 4 * 1024 * 1024) throw new Error('Choose a combat log up to 4 MiB.');
-    const title = field('log-title').value.trim() || file.name.slice(0, 120);
-    const {id} = await request('/api/combat-logs', {action: 'save', title, body: await file.text(), dungeon: field('dungeon-run').checked});
+    if (!fromClient && (!file || file.size > 4 * 1024 * 1024)) throw new Error('Choose a combat log up to 4 MiB.');
+    const title = field('log-title').value.trim();
+    const options = {title, dungeon: field('dungeon-run').checked};
+    const payload = fromClient ? {...options, action: 'import-client'} :
+      {...options, action: 'save', title: title || file.name.slice(0, 120), body: await file.text()};
+    const {id} = await request('/api/combat-logs', payload);
     await list(id);
     event.target.reset();
-  } finally { button.disabled = false; }
+  } finally { for (const button of buttons) button.disabled = false; }
 }));
 field('saved-log').addEventListener('change', handle(openLog));
 field('window').addEventListener('submit', handle(render));
@@ -223,3 +318,13 @@ handle(async () => {
   }
   render();
 })();
+
+field('combat-session').addEventListener('change', handle(() => { selectSession(); render(); }));
+field('combat-gap').addEventListener('change', handle(() => { updateSessions(); selectSession(); render(); }));
+for (const id of ['from', 'to']) {
+  field(id).addEventListener('input', () => { field('combat-session').selectedIndex = -1; });
+}
+
+request('/api/models/config').then(data => {
+  field('import-client-log').hidden = !data.config?.client_path;
+}).catch(() => {});

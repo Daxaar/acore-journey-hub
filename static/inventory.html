@@ -37,6 +37,16 @@
 <datalist id="character-options"></datalist><button class="gold-button" type="submit">Open inventory</button>
 <span id="shortcuts" class="character-shortcuts"></span></form>
 <div id="error" role="alert" class="error-banner" hidden></div>
+<form id="group-bag-search" class="bag-search-tools">
+<label for="group-item">Search selected group's carried bags</label>
+<input id="group-item" type="search" maxlength="120" placeholder="Item name or ID…" required>
+<button class="subtle-button">Search group</button>
+<p id="group-item-status" role="status"></p>
+<div class="group-item-table-row"><table id="group-item-table" aria-label="Group bag search results" hidden>
+<thead><tr><th scope="col">Item</th><th scope="col">Character</th><th scope="col">Qty</th></tr></thead>
+<tbody id="group-item-results"></tbody>
+</table></div>
+</form>
 <section id="inventory" hidden><header class="panel inventory-character"><h2 id="character-title"></h2><p id="character-subtitle"></p><a id="character-quest-log" class="page-switch" href="/quest-log">Quest log →</a></header>
 <div class="inventory-layout"><section class="bags-section" aria-labelledby="bags-title"><div class="bags-heading"><div><p class="eyebrow">ROOM FOR ONE MORE DROP</p>
 <h2 id="bags-title">Your bags</h2></div><p id="bag-summary"></p></div>

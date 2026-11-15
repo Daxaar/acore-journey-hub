@@ -154,7 +154,7 @@ for (const name of ['bags', 'bank', 'guild']) {
 function renderBags() {
   $('bags').replaceChildren();
   activeBags().forEach((bag, bagIndex) => {
-    const frame = node('section', null, 'bag-frame'); frame.dataset.bag = bag.id;
+    const frame = node('section', null, storage === 'guild' ? 'bag-frame guild-bank-tab' : 'bag-frame'); frame.dataset.bag = bag.id;
     const header = node('header', null, 'bag-header'), copy = node('div');
     if (bag.item) {
       const bagButton = slotButton(bag.item, `${storage === 'bank' ? 'Bank bag' : 'Equipped bag'} ${bagIndex}`, `bagitem:${bag.id}`);
@@ -369,3 +369,76 @@ async function init() {
   syncCharacterLinks(); await refresh(); schedule();
 }
 init();
+
+const groupSearch = $('group-bag-search');
+groupSearch?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const group = selectedGroup();
+  const terms = $('group-item').value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const status = $('group-item-status'), results = $('group-item-results');
+  results.replaceChildren();
+  $('group-item-table').hidden = true;
+  if (!group || !terms.length) {
+    status.textContent = 'Select a group and enter an item name or ID.';
+    return;
+  }
+  const button = groupSearch.querySelector('button');
+  button.disabled = true;
+  status.textContent = 'Searching ' + group.name + '…';
+  let failed = 0, matches = 0;
+  try {
+    for (const name of group.members) {
+      if (selectedGroup()?.id !== group.id) return;
+      let inventory;
+      try {
+        const response = await fetch('/api/armory?name=' + encodeURIComponent(name),
+          {cache: 'no-store', signal: AbortSignal.timeout(10000)});
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error();
+        inventory = result.inventory;
+      } catch {
+        failed++;
+        continue;
+      }
+      if (selectedGroup()?.id !== group.id) return;
+      const counts = new Map();
+      for (const bag of inventory.bags) {
+        for (const item of bag.slots) {
+          if (!item || !terms.every(term => /^\d+$/.test(term)
+            ? String(item.entry) === term : item.name.toLocaleLowerCase().includes(term))) continue;
+          const entry = counts.get(item.entry) || {item, count: 0};
+          entry.count += Number(item.count) || 1;
+          counts.set(item.entry, entry);
+        }
+      }
+      for (const {item, count} of counts.values()) {
+        const row = node('tr');
+        const itemCell = node('td');
+        const link = wowheadLink(item.name, 'item', item.entry);
+        link.setAttribute('aria-label', item.name);
+        link.title = item.name;
+        link.classList.add('group-item-link');
+        link.prepend(icon({...item, count: 1}));
+        itemCell.append(link);
+        row.append(itemCell, node('td', name), node('td', count));
+        $('group-item-table').hidden = false;
+        results.append(row);
+        matches++;
+      }
+    }
+    status.textContent = group.name + ' · ' + (matches ? matches + ' character/item matches' : 'No matches')
+      + (failed ? ' · ' + failed + ' inventories unavailable' : '');
+  } finally {
+    button.disabled = false;
+    if (selectedGroup()?.id !== group.id) {
+      results.replaceChildren();
+      $('group-item-table').hidden = true;
+      status.textContent = 'Group changed. Search again for the selected group.';
+    }
+  }
+});
+$('armory-group')?.addEventListener('change', () => {
+  $('group-item-results')?.replaceChildren();
+  if ($('group-item-table')) $('group-item-table').hidden = true;
+  if ($('group-item-status')) $('group-item-status').textContent = '';
+});

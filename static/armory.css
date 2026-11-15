@@ -37,7 +37,7 @@
 .bag-frame::before,.bag-frame::after { content:'◆'; position:absolute; top:4px; color:#b28e58; font-size:10px; text-shadow:0 1px #000; }.bag-frame::before { left:4px; }.bag-frame::after { right:4px; }
 .bag-header { display:flex; gap:10px; align-items:center; min-height:58px; padding:0 2px 12px; }.bag-header .item-icon { width:34px; height:34px; }
 .bag-header h3 { font-size:14px; margin:0; font-family:var(--heading-font); }.bag-header p { color:#bfa98e; font-size:11px; margin:3px 0 0; }
-.bag-lining { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px; background:#120f0c; border:1px dashed #78614a; border-radius:4px; box-shadow:inset 0 2px 12px #000; }
+.bag-lining { --bag-slot-size: 56px; display:grid; grid-template-columns:repeat(4,minmax(0,var(--bag-slot-size))); gap:6px; padding:10px; background:#120f0c; border:1px dashed #78614a; border-radius:4px; box-shadow:inset 0 2px 12px #000; }
 .bag-cell { display:block; background:transparent; border:0; padding:0; aspect-ratio:1; min-width:0; }.bag-cell .item-icon { width:100%; height:100%; }
 .bag-cell:hover .item-icon,.equipment-slot:hover .item-icon { box-shadow:0 0 9px #e4c78b80; }.item-selected .item-icon { outline:2px solid var(--gold); outline-offset:2px; }
 .stack-count { position:absolute; right:2px; bottom:-1px; font-size:14px; line-height:1.2; font-weight:700; color:#fff; text-shadow:1px 1px 2px #000,-1px -1px 2px #000; }
@@ -92,3 +92,12 @@
 .inventory-layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 22px; align-items: start; }
 .inventory-layout .bags-section { margin-top: 0; min-width: 0; }
 @media(max-width:1000px) { .inventory-layout { grid-template-columns: minmax(0,1fr); } }
+
+.guild-bank-tab .bag-lining { grid-template-columns: repeat(auto-fill, minmax(0, var(--bag-slot-size))); }
+#group-item-status { flex-basis: 100%; margin: 0; }
+.group-item-table-row { flex-basis: 100%; min-width: 0; overflow-x: auto; }
+#group-item-table { width: max-content; max-width: 100%; border-collapse: collapse; }
+.group-item-link { display: inline-flex; align-items: center; gap: 8px; }
+#group-item-table :is(th,td) { padding: 6px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+#group-item-table :is(th,td):last-child { text-align: right; font-variant-numeric: tabular-nums; }
+#group-item-table .item-icon { width: 36px; height: 36px; flex: 0 0 36px; }

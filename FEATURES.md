@@ -178,3 +178,7 @@ Import an original Wrath `WoWCombatLog.txt` from the Combat Log tab. Save and re
 The breakdown menu includes all 21 Recount categories, with group or character scope and ability filtering by source or target. Absorbs show recorded damage prevented by recipient. Periodic uptime and activity use estimates from recorded events.
 
 Saved combat logs can be renamed or deleted with confirmation. Select a character directly from the breakdown. The Dungeon run marker labels an import; Boss fights only currently recognizes Deadmines creature entries and estimates encounter windows from captured activity through boss death or last observation.
+
+Inventory includes a selected-group search for saved carried items by name or exact item ID. Results show stack totals by character. Guild bank grids use compact slots.
+
+Combat Log can select sessions separated by an idle gap, initially 60 minutes. The session dropdown fills the From and To fields while keeping the original import intact.
