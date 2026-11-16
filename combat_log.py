@@ -1,6 +1,8 @@
 """Local storage and parsing for original Wrath combat logs."""
 from contextlib import closing
 import csv
+import json
+import math
 from datetime import datetime
 from pathlib import Path
 import re
@@ -22,7 +24,7 @@ EVENTS = {
 }
 
 
-def parse_log(text):
+def parse_log(text, capture_line=None):
     events = []
     first = previous = None
     year = 2000
@@ -78,6 +80,8 @@ def parse_log(text):
         previous = moment
         events.append([round((moment - first).total_seconds(), 3), kind, source, target,
                        spell, amount, spell_id, row[1], row[4], extra, absorbed, power, detail, friendly, match[1]])
+        if capture_line is not None:
+            capture_line(events[-1][0], line)
     if not events:
         raise ValueError('No supported Wrath combat events found in this file.')
     return events
@@ -119,6 +123,10 @@ class CombatLogStore:
             db.execute('BEGIN IMMEDIATE')
             if 'dungeon' not in {row[1] for row in db.execute('PRAGMA table_info(logs)')}:
                 db.execute('ALTER TABLE logs ADD COLUMN dungeon INTEGER NOT NULL DEFAULT 0')
+            db.execute('CREATE TABLE IF NOT EXISTS log_edits (log_id INTEGER PRIMARY KEY,'
+                       ' excluded TEXT NOT NULL, windows TEXT NOT NULL,'
+                       ' FOREIGN KEY(log_id) REFERENCES logs(id) ON DELETE CASCADE)')
+        db.execute('PRAGMA foreign_keys=ON')
         return db
 
     def list(self):
@@ -149,23 +157,64 @@ class CombatLogStore:
             return db.execute('INSERT INTO logs (title, body, dungeon) VALUES (?, ?, ?)',
                               (title, body, int(dungeon is True))).lastrowid
 
+    def edit(self, log_id, payload):
+        action = payload.get('action')
+        with closing(self.connect()) as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            log = db.execute('SELECT body, dungeon, saved FROM logs WHERE id=?', (log_id,)).fetchone()
+            if log is None:
+                raise LookupError('Saved log not found.')
+            row = db.execute('SELECT excluded, windows FROM log_edits WHERE log_id=?', (log_id,)).fetchone()
+            excluded, windows = map(json.loads, row or ('[]', '[]'))
+            if action == 'exclude-character':
+                name = self.validate_title(payload.get('name')).casefold()
+                if name not in excluded:
+                    excluded.append(name)
+            else:
+                start, end = (payload.get(key) for key in ('start', 'end'))
+                if not all(type(value) in (int, float) and math.isfinite(value) for value in (start, end)) or not 0 <= start <= end:
+                    raise ValueError('Choose a valid time window.')
+                title = self.validate_title(payload.get('title'))
+                lines = []
+                def capture(offset, line):
+                    if start <= offset <= end:
+                        lines.append(line)
+                parse_log(log[0], capture)
+                if not lines:
+                    raise ValueError('No recorded events in this window.')
+                if action == 'copy-window':
+                    if db.execute('SELECT COUNT(*) FROM logs').fetchone()[0] >= 25:
+                        raise ValueError('The saved log limit is 25.')
+                    new_id = db.execute('INSERT INTO logs (title, body, dungeon, saved) VALUES (?, ?, ?, ?)',
+                                        (title, '\n'.join(lines), log[1], log[2])).lastrowid
+                    db.execute('INSERT INTO log_edits VALUES (?, ?, ?)', (new_id, json.dumps(excluded), '[]'))
+                    return new_id
+                windows = [window for window in windows if window[:2] != [start, end]]
+                if len(windows) >= 50:
+                    raise ValueError('The named window limit is 50.')
+                windows.append([start, end, title])
+            db.execute('INSERT OR REPLACE INTO log_edits VALUES (?, ?, ?)',
+                       (log_id, json.dumps(excluded), json.dumps(windows)))
+            return log_id
+
     def get(self, log_id):
         with closing(self.connect()) as db:
             row = db.execute('SELECT title, body, dungeon, saved FROM logs WHERE id=?', (log_id,)).fetchone()
+            edits = db.execute('SELECT excluded, windows FROM log_edits WHERE log_id=?', (log_id,)).fetchone()
         if row is None:
             raise LookupError('Saved log not found.')
+        excluded, windows = map(json.loads, edits or ('[]', '[]'))
         events = parse_log(row[1])
         icons_path = self.path.parent / 'assets/tooltip-metadata.json'
         icons = {}
         if icons_path.is_file():
-            import json
             spells = json.loads(icons_path.read_text()).get('spells', {})
             for spell_id in {event[6] for event in events if event[6]}:
                 icon = spells.get(str(spell_id), {}).get('icon')
                 if icon and re.fullmatch(r'[a-zA-Z0-9_]+', icon):
                     icons[spell_id] = icon
         return {'title': row[0], 'events': events, 'dungeon': bool(row[2]),
-                'bosses': boss_windows(events), 'icons': icons, 'saved': row[3]}
+                'bosses': boss_windows(events), 'icons': icons, 'saved': row[3], 'excluded': excluded, 'windows': windows}
 
     def delete(self, log_id):
         with closing(self.connect()) as db, db:

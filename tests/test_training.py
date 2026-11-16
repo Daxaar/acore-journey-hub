@@ -108,7 +108,7 @@ class TrainingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);(root/'assets').mkdir();(root/'assets/tooltip-metadata.json').write_text(json.dumps(META))
             reader=Mock(return_value=ROWS);provider=TrainingProvider(root,reader)
-            result=provider.get('Aster');self.assertEqual({r['id'] for r in result['abilities']},{285,1160,6572,674})
+            result=provider.get('Aster');self.assertEqual({r['id'] for r in result['abilities']},{285,1160,6572,674,600,601})
             self.assertEqual([r['id'] for r in provider.get('Aster',search='heroic rank 3',level='14-20')['abilities']],[285])
             self.assertEqual({r['id'] for r in provider.get('Aster',level='14')['abilities']},{1160,6572})
             self.assertEqual(len(reader.call_args_list),1)

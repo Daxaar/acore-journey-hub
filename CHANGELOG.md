@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10 — 2026-11-16
+
+Save named combat windows or copy them into separate logs, exclude participants from saved reports, and browse complete breakdowns with class colours and an inline ability filter. What’s Training recognises saved Dual Wield skill and defaults to All unlearned.
+
 ## 0.1.9 — 2026-11-15
 
 Compact guild bank slots, selected-group bag search, and configurable combat sessions. Combat Log also supports direct client-folder import, readable dates and a plain-English timeline.

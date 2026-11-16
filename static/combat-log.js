@@ -3,8 +3,9 @@ const format = new Intl.NumberFormat(undefined, {maximumFractionDigits: 1});
 let session;
 let report;
 let reportEvents = [];
+let includedEvents = [];
 const classes = new Map();
-const classStyle = name => 'combat-character class-' + (classes.get(name) || 0);
+const classStyle = name => 'combat-character class-' + (classes.get(name.toLowerCase()) || 0);
 let generation = 0;
 
 const months = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
@@ -78,6 +79,12 @@ async function openLog() {
   const {result} = await request('/api/combat-logs?id=' + encodeURIComponent(id));
   if (version !== generation) return;
   report = result;
+  for (const [name, classId] of Object.entries(report.classes || {})) {
+    classes.set(name.toLowerCase(), classId);
+  }
+  const excluded = new Set(report.excluded);
+  includedEvents = report.events.filter(event =>
+    ![2, 3].some(index => excluded.has(event[index].toLowerCase())));
   field('report-title').textContent = report.title;
   updateSessions();
   selectSession();
@@ -109,8 +116,10 @@ function updateSessions() {
   sessions.push([start, last]);
   const select = field('combat-session');
   select.replaceChildren(new Option('Entire log', ''),
-    ...sessions.map(([from, to], index) => new Option(
-      `Session ${index + 1} · starts ${clientDate(timestamps.get(from))}`, `${from},${to}`)));
+    ...sessions.filter(([from, to]) => !report.windows.some(window => window[0] === from && window[1] === to))
+      .map(([from, to]) => new Option(
+        `Session ${sessions.findIndex(window => window[0] === from) + 1} · starts ${clientDate(timestamps.get(from))}`, `${from},${to}`)),
+    ...report.windows.map(([from, to, title]) => new Option(title, `${from},${to}`)));
   select.options[0].dataset.end = last;
 }
 
@@ -124,7 +133,7 @@ function selectSession() {
 function chart(title, rows, key) {
   const section = node('section');
   section.append(node('h3', title));
-  const max = Math.max(1, ...rows.map(row => row[key]));
+  const max = rows.reduce((largest, row) => Math.max(largest, row[key]), 1);
   for (const row of [...rows].sort((a, b) => b[key] - a[key])) {
     const label = node(row.select ? 'button' : 'div');
     label.className = 'combat-chart-row';
@@ -207,7 +216,7 @@ function render() {
     else merged.push([a,b]);
   }
   const duration = merged.reduce((sum,[a,b]) => sum+b-a,0);
-  reportEvents = report.events.filter(([time]) => merged.some(([a,b]) => time >= a && time <= b));
+  reportEvents = includedEvents.filter(([time]) => merged.some(([a,b]) => time >= a && time <= b));
   const first = reportEvents.reduce((earliest, event) =>
     !earliest || event[0] < earliest[0] ? event : earliest, null);
   field('window-start').textContent = first ? 'First recorded event: ' + clientDate(first[14]) + ' (client time, year inferred)' : '';
@@ -242,6 +251,17 @@ function render() {
     const rate = (amount) => duration ? format.format(amount / duration) : '—';
     const name = node('th', row.name);
     name.className = classStyle(row.name);
+    const remove = node('button', '×');
+    remove.type = 'button';
+    remove.className = 'combat-remove-character';
+    remove.setAttribute('aria-label', 'Remove ' + row.name + ' from this log');
+    remove.addEventListener('click', () => showLogDialog({
+      title: 'Remove character',
+      message: `Remove ${row.name} and their events from this saved session/log?`,
+      confirmLabel: 'Remove character',
+      onConfirm: () => editWindow({action: 'exclude-character', name: row.name}),
+    }));
+    name.prepend(remove);
     tr.append(name, ...[format.format(row.damage), rate(row.damage),
       format.format(row.taken), format.format(row.healing), rate(row.healing),
       row.interrupts, row.deaths].map(value => node('td', value)));
@@ -279,28 +299,40 @@ field('import-log').addEventListener('submit', handle(async (event) => {
 field('saved-log').addEventListener('change', handle(openLog));
 field('window').addEventListener('submit', handle(render));
 field('combat-group').addEventListener('change', handle(render));
-function editLog(action) {
-  const id = field('saved-log').value;
+function showLogDialog({title, message, confirmLabel, initialName, onConfirm}) {
   const dialog = field('log-dialog');
-  const rename = action === 'rename';
-  field('dialog-title').textContent = rename ? 'Rename log' : 'Delete log';
-  field('dialog-message').textContent = rename ? '' : `Delete “${report.title}”? This cannot be undone.`;
-  field('rename-field').hidden = !rename;
-  field('new-log-title').value = report.title;
-  field('dialog-confirm').textContent = rename ? 'Save name' : 'Delete log';
+  if (dialog.open) return;
+  field('dialog-title').textContent = title;
+  field('dialog-message').textContent = message;
+  field('rename-field').hidden = initialName === undefined;
+  field('new-log-title').value = initialName ?? '';
+  field('dialog-confirm').textContent = confirmLabel;
   dialog.returnValue = '';
   dialog.addEventListener('close', handle(async () => {
-    if (dialog.returnValue !== 'confirm') return;
-    const title = field('new-log-title').value;
-    await request('/api/combat-logs', {action, id, title});
-    if (rename && field('saved-log').value === id) {
-      const option = field('saved-log').selectedOptions[0];
-      option.textContent = title.trim() + ' · ' + option.textContent.split(' · ').at(-1);
-      report.title = title.trim();
-      field('report-title').textContent = report.title;
-    } else await list();
+    if (dialog.returnValue === 'confirm') await onConfirm();
   }), {once: true});
   dialog.showModal();
+}
+
+function editLog(action) {
+  const id = field('saved-log').value;
+  const rename = action === 'rename';
+  showLogDialog({
+    title: rename ? 'Rename log' : 'Delete log',
+    message: rename ? '' : `Delete “${report.title}”? This cannot be undone.`,
+    confirmLabel: rename ? 'Save name' : 'Delete log',
+    initialName: rename ? report.title : undefined,
+    onConfirm: async () => {
+      const title = field('new-log-title').value;
+      await request('/api/combat-logs', {action, id, title});
+      if (rename && field('saved-log').value === id) {
+        const option = field('saved-log').selectedOptions[0];
+        option.textContent = title.trim() + ' · ' + option.textContent.split(' · ').at(-1);
+        report.title = title.trim();
+        field('report-title').textContent = report.title;
+      } else await list();
+    },
+  });
 }
 
 field('delete-log').addEventListener('click', () => editLog('delete'));
@@ -314,7 +346,7 @@ handle(async () => {
   await list();
   const {snapshot} = await request('/api/snapshot');
   for (const view of Object.values(snapshot?.views || {})) {
-    for (const character of view.characters || []) classes.set(character.name, character.class_id);
+    for (const character of view.characters || []) classes.set(character.name.toLowerCase(), character.class_id);
   }
   render();
 })();
@@ -328,3 +360,33 @@ for (const id of ['from', 'to']) {
 request('/api/models/config').then(data => {
   field('import-client-log').hidden = !data.config?.client_path;
 }).catch(() => {});
+
+
+async function editWindow(payload) {
+  const id = field('saved-log').value;
+  const selected = field('combat-session').value;
+  const start = field('from').value, end = field('to').value;
+  const bossOnly = field('boss-only').checked;
+  const result = await request('/api/combat-logs', {id, ...payload});
+  if (field('saved-log').value !== id) return;
+  if (payload.action === 'copy-window') {
+    await list(result.id);
+  } else {
+    await openLog();
+    if (field('saved-log').value !== id) return;
+    field('combat-session').value = payload.action === 'name-window' ? start + ',' + end : selected;
+    field('from').value = start;
+    field('to').value = end;
+    field('boss-only').checked = bossOnly;
+    render();
+  }
+}
+
+for (const action of ['name-window', 'copy-window']) {
+  field(action).addEventListener('click', handle(async () => {
+    if (!field('window').reportValidity()) return;
+    const start = Number(field('from').value), end = Number(field('to').value);
+    const title = prompt(action === 'name-window' ? 'Name this time window' : 'Name the separate log');
+    if (title?.trim()) await editWindow({action, start, end, title: title.trim()});
+  }));
+}
