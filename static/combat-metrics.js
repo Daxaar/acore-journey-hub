@@ -85,7 +85,7 @@ function renderBreakdown(windows, members) {
   const duration = windows.reduce((sum,[a,b]) => sum+b-a,0);
   const metric = category === 'DPS' ? 'Damage Done' : category;
   const values = windows.flatMap(([start,end]) =>
-    combatBreakdown(report.events, metric, start, end, scope ? [scope] : members));
+    combatBreakdown(includedEvents, metric, start, end, scope ? [scope] : members));
   if (category === 'DPS') for (const row of values) row.value = duration ? row.value / duration : 0;
   const total = values.reduce((sum, row) => sum + row.value, 0);
   const units = category.endsWith(' Uptime') ? ' cumulative aura-seconds' :
@@ -124,13 +124,24 @@ function renderBreakdown(windows, members) {
     for (const entry of entries) {
       if (entry[key]) grouped.set(entry[key], (grouped.get(entry[key]) || 0) + entry.value);
     }
-    return chart(title, [...grouped].map(([name, value]) => ({name, value}))
-      .sort((a, b) => b.value - a.value).slice(0, 12)
+    const panel = chart(title, [...grouped].map(([name, value]) => ({name, value}))
+      .sort((a, b) => b.value - a.value)
       .map(row => ({...row,
         character: key === 'name' || key === 'other' ? row.name : '',
         select: select && (() => select(row.name)),
         icon: key === 'spell' ? spellIcons.get(row.name) : '',
         name: `${row.name} (${format.format(subtotal ? 100 * row.value / subtotal : 0)}%)`})), 'value');
+    const header = node('header');
+    header.className = 'combat-chart-header';
+    header.append(panel.firstElementChild);
+    const rows = node('div');
+    rows.className = 'combat-chart-scroll';
+    rows.tabIndex = 0;
+    rows.setAttribute('role', 'region');
+    rows.setAttribute('aria-label', title + ' results');
+    rows.append(...panel.children);
+    panel.append(header, rows);
+    return panel;
   };
   if (!scope) breakdown.append(breakdownChart('By character', 'name', values, name => {
     field('breakdown-character').value = name;
@@ -142,19 +153,20 @@ function renderBreakdown(windows, members) {
   filter.setAttribute('aria-label', 'Filter abilities by source or target');
   filter.append(new Option('All sources and targets', ''));
   for (const name of [...new Set(values.map(row => row.other).filter(Boolean))].sort()) filter.add(new Option(name));
-  const abilities = node('div');
+  const abilities = breakdownChart('By ability', 'spell');
+  abilities.querySelector('header').append(filter);
   function showAbilities() {
     const entries = filter.value ? values.filter(row => row.other === filter.value) : values;
-    abilities.replaceChildren(breakdownChart('By ability · top 12', 'spell', entries));
+    const rows = abilities.querySelector('.combat-chart-scroll');
+    const updated = breakdownChart('By ability', 'spell', entries);
+    rows.replaceChildren(...updated.querySelector('.combat-chart-scroll').children);
+    rows.scrollTop = 0;
   }
   filter.addEventListener('change', showAbilities);
-  const detail = node('div');
-  detail.append(filter, abilities);
-  showAbilities();
-  breakdown.append(breakdownChart('By source or target · top 12', 'other', values, name => {
+  breakdown.append(breakdownChart('By source or target', 'other', values, name => {
     filter.value = name;
     showAbilities();
-  }), detail);
+  }), abilities);
 }
 
 for (const category of categories) document.getElementById('breakdown-category').add(new Option(category));

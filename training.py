@@ -69,6 +69,9 @@ def training_records(rows,metadata):
     ranks={r['id']:r for r in training['ranks']};chains={}
     for r in training['ranks']:chains.setdefault(r['first'],{})[r['rank']]=r['id']
     known_ranks={}
+    # AzerothCore can retain Dual Wield as a skill without a saved spell row.
+    if skills.get(118, 0) > 0:
+        known.add(674)
     for sid in known:
         rank=ranks.get(sid)
         if rank:known_ranks[rank['first']]=max(rank['rank'],known_ranks.get(rank['first'],0))
@@ -119,7 +122,7 @@ class TrainingProvider:
         t=self.metadata.get('training')
         if not isinstance(t,dict) or not all(isinstance(t.get(key),list) for key in ['offers','ranks','requirements','talents','abilities','skill_rules']):self.metadata={}
 
-    def get(self,name,search='',level='',mode='upcoming'):
+    def get(self,name,search='',level='',mode='unlearned'):
         sql=training_sql(name);low,high=level_bounds(level)
         if not isinstance(mode,str) or mode not in MODES:raise ValueError('Choose a supported training view.')
         if not isinstance(search,str) or len(search)>100:raise ValueError('Search names with up to 100 characters.')

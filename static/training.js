@@ -25,7 +25,7 @@
  function selectedGroup(){return session?.groups.groups.find(g=>g.id===session.groups.selected);}
  function renderCharacters(){const group=selectedGroup();$('training-characters').replaceChildren(...(group?.members||[]).map(name=>{const button=el('button',name);button.type='button';button.setAttribute('aria-pressed',String(name.toLowerCase()===$('training-name').value.toLowerCase()));button.addEventListener('click',()=>{$('training-name').value=name;renderCharacters();load();});return button;}));}
  function error(message){$('training-error').textContent=message||'';$('training-error').hidden=!message;}
- function restoreURL(){const p=new URLSearchParams(location.search);$('training-name').value=p.get('name')||'';$('training-search').value=p.get('q')||'';$('training-level').value=p.get('level')||'';$('training-mode').value=['upcoming','unlearned','available','all'].includes(p.get('mode'))?p.get('mode'):'upcoming';}
+ function restoreURL(){const p=new URLSearchParams(location.search);$('training-name').value=p.get('name')||'';$('training-search').value=p.get('q')||'';$('training-level').value=p.get('level')||'';$('training-mode').value=['upcoming','unlearned','available','all'].includes(p.get('mode'))?p.get('mode'):'unlearned';}
  function render(data){
   hideTooltip();$('training-empty').hidden=true;$('training-book').hidden=false;
   const c=data.character;$('training-owner').textContent=c.name+' · Level '+c.level+' '+c.class_name;
@@ -55,7 +55,7 @@
  }
  $('training-character-form').addEventListener('submit',e=>{e.preventDefault();renderCharacters();load();});$('training-filters').addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);load();});
  $('training-search').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(load,250);});$('training-level').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(load,350);});$('training-mode').addEventListener('change',load);$('training-refresh').addEventListener('click',load);
- $('training-reset').addEventListener('click',()=>{clearTimeout(timer);$('training-search').value='';$('training-level').value='';$('training-mode').value='upcoming';load();});
+ $('training-reset').addEventListener('click',()=>{clearTimeout(timer);$('training-search').value='';$('training-level').value='';$('training-mode').value='unlearned';load();});
  $('training-group').addEventListener('change',async()=>{
   if(!session||groupBusy)return;groupBusy=true;$('training-group').disabled=true;
   try{const response=await fetch('/api/groups',{method:'POST',headers:{'Content-Type':'application/json','X-Dashboard-Token':session.token},body:JSON.stringify({action:'select',id:$('training-group').value})});const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error||'Cannot select group.');session.groups=result.groups;$('training-name').value=selectedGroup()?.members[0]||'';renderCharacters();await load();$('training-group-status').textContent='Group selection saved.';}

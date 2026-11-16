@@ -392,6 +392,9 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     if payload.get('action') == 'delete':
                         combat_logs.delete(int(str(payload.get('id', 0))))
                         self.json_response(200, {'ok': True})
+                    elif payload.get('action') in ('exclude-character', 'name-window', 'copy-window'):
+                        log_id = combat_logs.edit(int(str(payload.get('id', 0))), payload)
+                        self.json_response(200, {'ok': True, 'id': log_id})
                     elif payload.get('action') == 'rename':
                         combat_logs.rename(int(str(payload.get('id', 0))), payload.get('title'))
                         self.json_response(200, {'ok': True})
@@ -463,6 +466,21 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     params = parse_qs(urlsplit(self.path).query)
                     if 'id' in params:
                         result = combat_logs.get(int(params['id'][0]))
+                        names = sorted({
+                            event[name] for event in result['events']
+                            for name, guid in ((2, 7), (3, 8))
+                            if re.fullmatch(r'0x0000[0-9a-f]+', event[guid], re.I)
+                            and re.fullmatch(r'[^\W\d_]{2,12}', event[name])
+                        })[:200]
+                        result['classes'] = {}
+                        if names:
+                            literals = ','.join('0x' + name.encode('utf-8').hex() for name in names)
+                            query = ('SELECT name,class FROM acore_characters.characters '
+                                     f'WHERE deleteDate IS NULL AND name IN ({literals})')
+                            try:
+                                result['classes'] = dict(console.executor(query)['rows'])
+                            except QueryError:
+                                pass
                     else:
                         result = combat_logs.list()
                     self.json_response(200, {'ok': True, 'result': result})
@@ -555,7 +573,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
                     if 'name' not in params or set(params)-{'name','q','level','mode'} or any(len(v)!=1 for v in params.values()):
                         raise ValueError('Provide one character name and one value per filter.')
-                    result=training.get(params['name'][0],params.get('q',[''])[0],params.get('level',[''])[0],params.get('mode',['upcoming'])[0])
+                    result=training.get(params['name'][0],params.get('q',[''])[0],params.get('level',[''])[0],params.get('mode',['unlearned'])[0])
                     self.json_response(200,{'ok':True,'result':result})
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})

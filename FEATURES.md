@@ -182,3 +182,5 @@ Saved combat logs can be renamed or deleted with confirmation. Select a characte
 Inventory includes a selected-group search for saved carried items by name or exact item ID. Results show stack totals by character. Guild bank grids use compact slots.
 
 Combat Log can select sessions separated by an idle gap, initially 60 minutes. The session dropdown fills the From and To fields while keeping the original import intact.
+
+Saved combat reports support participant exclusions, named time windows and standalone copies of those windows. What’s Training opens with All unlearned selected.
