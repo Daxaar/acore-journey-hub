@@ -12,3 +12,40 @@
 .market-table .item-link{display:inline-flex;width:calc(100% - 24px);vertical-align:middle}.market-table .wowhead-shortcut{font-size:13px}
 
 .auction-tooltip .tooltip-heading{display:flex;align-items:center;gap:8px;margin-bottom:6px}.auction-tooltip .tooltip-heading .item-icon{width:32px;height:32px;flex:none}.auction-tooltip .tooltip-heading h3{margin:0}
+
+.market-table.wrath-view{min-width:640px;border-spacing:0 3px}
+.market-table.wrath-view thead th:nth-child(1){width:36%}
+.market-table.wrath-view thead th:nth-child(2){width:8%}
+.market-table.wrath-view thead th:nth-child(3){width:16%}
+.market-table.wrath-view thead th:nth-child(4){width:16%}
+.market-table.wrath-view thead th:nth-child(5){width:24%}
+.market-table.wrath-view .wrath-column:not([hidden]){padding-left:5px}
+.market-table.wrath-view td{height:45px;text-align:left;padding:3px 6px;background:#21191955;border-bottom:1px solid #493a30}
+.market-table.wrath-view td:nth-child(2){text-align:center}
+.market-table.wrath-view td:nth-child(3),.market-table.wrath-view td:nth-child(4){font:12px Arial,sans-serif}
+.market-table.wrath-view td small{display:block;color:#b8aca4}
+.wrath-view .stack-count{position:relative;display:inline-flex;align-items:end;justify-content:end;width:33px;height:33px;flex-shrink:0;padding:0 2px;color:#fff;text-shadow:1px 1px 2px #000,-1px -1px 2px #000;isolation:isolate}
+.wrath-view .stack-count img{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+.wrath-price{display:flex;justify-content:space-between;align-items:center;gap:5px;color:#d7c69d;font:11px Arial,sans-serif}
+.wrath-price .money{color:#fff;font-size:15px;white-space:nowrap;max-width:none}
+@media(max-width:650px){
+ .market-table.wrath-view thead th:nth-child(3),.market-table.wrath-view td:nth-child(3){display:table-cell}
+}
+
+@font-face {
+  font-family: WrathClient;
+  src: url('/wrath-client.ttf') format('truetype');
+  font-display: swap;
+}
+
+.market-table.wrath-view {
+  --auction-font: WrathClient, AuctionCondensed, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.market-table.wrath-view thead th,
+.market-table.wrath-view td:nth-child(3),
+.market-table.wrath-view td:nth-child(4),
+.wrath-view .wrath-price {
+  font-family: var(--auction-font);
+}

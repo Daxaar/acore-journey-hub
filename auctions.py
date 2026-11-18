@@ -30,7 +30,7 @@ JOIN acore_world.item_template t ON t.entry=i.itemEntry'''
 
 
 def filters(params, detail=False):
-    allowed = {'house', 'id', 'page'} if detail else {'house', 'q', 'category', 'quality', 'min', 'max', 'sort', 'page', 'subclass', 'slot'}
+    allowed = {'house', 'id', 'page'} if detail else {'house', 'q', 'category', 'quality', 'min', 'max', 'sort', 'page', 'subclass', 'slot', 'view'}
     if set(params) - allowed or any(len(v) != 1 for v in params.values()):
         raise ValueError('Provide one value per auction filter.')
     values = {k: v[0] for k, v in params.items()}
@@ -49,6 +49,8 @@ def filters(params, detail=False):
             raise ValueError('Choose a valid item ID.')
         where.append(f'i.itemEntry={entry}')
     else:
+        if values.get('view', 'grouped') not in ('grouped', 'wrath'):
+            raise ValueError('Choose a valid auction view.')
         term = values.get('q', '')
         if len(term) > 100 or any(ord(c) < 32 or 0xD800 <= ord(c) <= 0xDFFF for c in term):
             raise ValueError('Search with up to 100 printable characters.')
@@ -94,6 +96,28 @@ MIN(GREATEST(a.startbid,a.lastbid)/i.count) AS bid_price{tooltip_columns}
 {JOIN} WHERE {where} GROUP BY i.itemEntry'''
     totals = f'''SELECT JSON_OBJECT('kind','totals','items',COUNT(DISTINCT i.itemEntry),
 'auctions',COUNT(*),'quantity',COALESCE(SUM(i.count),0)) {JOIN} WHERE {where};'''
+    if values.get('view') == 'wrath':
+        sort = values.get('sort', 'name')
+        order = {
+            'price': 'a.buyoutprice=0,a.buyoutprice',
+            'price_desc': 'a.buyoutprice=0,a.buyoutprice DESC',
+            'quantity': 'i.count DESC', 'quantity_asc': 'i.count',
+            'level': 't.RequiredLevel DESC', 'level_asc': 't.RequiredLevel',
+            'skill': 't.RequiredSkillRank DESC', 'skill_asc': 't.RequiredSkillRank',
+            'name_desc': 't.name DESC',
+        }.get(sort, 't.name')
+        tooltip = ''.join(f",'{field}',t.{field}" for field in ITEM_TOOLTIP_FIELDS)
+        return PREFIX + totals + f"""
+SELECT JSON_OBJECT('kind','item','id',i.itemEntry,'name',t.name,'quality',t.Quality,
+'displayid',t.displayid,'level',t.ItemLevel,'required_level',t.RequiredLevel,
+'category',t.class,'subclass',t.subclass,'slot',t.InventoryType,'description',t.description,
+'sell_price',t.SellPrice,'skill_rank',t.RequiredSkillRank,'required_skill',t.RequiredSkill,
+'quantity',i.count,'buyout',NULLIF(a.buyoutprice,0),'bid',GREATEST(a.startbid,a.lastbid),
+'expires',a.time,'house',a.houseid,'seller',COALESCE(c.name,'Unknown seller'){tooltip})
+{JOIN} LEFT JOIN acore_characters.characters c ON c.guid=a.itemowner
+WHERE {where} ORDER BY {order},a.id LIMIT 60 OFFSET {(page-1)*60};
+COMMIT;
+"""
     fields = ','.join(f"'{f}',g.{f}" for f in ('id','name','quality','displayid','level','required_level','category','subclass','slot','description','sell_price','skill_rank','required_skill','auctions','quantity','unit_price','max_price','bid_price',*ITEM_TOOLTIP_FIELDS))
     sql = PREFIX + totals + f"\nSELECT JSON_OBJECT('kind','item',{fields}) FROM ({grouped}) g ORDER BY {SORTS.get(values.get('sort'), SORTS['name'])},id LIMIT {1 if detail else 60} OFFSET {0 if detail else (page-1)*60};\n"
     if detail:

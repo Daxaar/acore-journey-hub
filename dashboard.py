@@ -273,6 +273,7 @@ ASSETS.update({
     '/auction-categories.js': ('auction-categories.js', 'text/javascript; charset=utf-8'),
     '/auctions.css': ('auctions.css', 'text/css; charset=utf-8'),
     '/auction-condensed.ttf': ('auction-condensed.ttf', 'font/ttf'),
+    '/wrath-client.ttf': ('wrath-client.ttf', 'font/ttf'),
     '/journal': ('journal.html', 'text/html; charset=utf-8'),
     '/journal.js': ('journal.js', 'text/javascript; charset=utf-8'),
     '/journal.css': ('journal.css', 'text/css; charset=utf-8'),

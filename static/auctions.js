@@ -20,7 +20,7 @@
  }
  function itemTitle(item){const h=el('h3',undefined,'quality-'+item.quality);h.append(wowheadLink(item.name,'item',item.id));return h;}
  function icon(item){const img=el('img',undefined,'item-icon');img.alt='';img.loading='lazy';img.src=item.icon?'/icons/'+encodeURIComponent(item.icon)+'.jpg':'/item-placeholder.svg';img.addEventListener('error',()=>{if(!img.src.endsWith('/item-placeholder.svg'))img.src='/item-placeholder.svg';});return img;}
- function params(){return new URLSearchParams({house:$('house').value,q:$('search').value,category,subclass,slot,quality:$('quality').value,min:$('min-level').value,max:$('max-level').value,sort:$('sort').value,page:String(page)});}
+ function params(){return new URLSearchParams({view:$('market-view').value,house:$('house').value,q:$('search').value,category,subclass,slot,quality:$('quality').value,min:$('min-level').value,max:$('max-level').value,sort:$('sort').value,page:String(page)});}
  function error(message){$('market-error').textContent=message;$('market-error').hidden=!message;}
  async function request(url,signal){const r=await fetch(url,{cache:'no-store',signal});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'The market is unavailable. Try refreshing.');return data.result;}
  function categoryLabel(){const node=treeNodes.find(n=>n.key===selectedPath);return node?node.names.join(' › '):'All items';}
@@ -72,28 +72,49 @@
  function closeButton(){const button=el('button','‹ Back to results','metal-button detail-close');button.type='button';button.addEventListener('click',()=>{closeDetail();document.querySelector('#items .item-link')?.focus();});return button;}
  function placeholder(text){hideTooltip();$('detail').hidden=false;$('exchange').classList.add('has-detail');$('detail').replaceChildren(closeButton(),el('div',text,'detail-placeholder'));}
  const pairs={price:['price','price_desc'],name:['name','name_desc'],quantity:['quantity','quantity_asc'],level:['level','level_asc'],skill:['skill','skill_asc']};
+ const headers=[...document.querySelectorAll('.market-table thead th')];
  function syncSort(){
-  const recipe=activeParams.get('category')==='9',levelHeader=document.querySelector('.market-table th:nth-child(3)'),levelButton=levelHeader.querySelector('button');
+  const recipe=activeParams.get('category')==='9',levelHeader=headers[2],levelButton=levelHeader.querySelector('button');
   levelHeader.dataset.sort=levelButton.dataset.sort=recipe?'skill':'level';
-  const sort=$('sort').value;
-  for(const th of document.querySelectorAll('.market-table thead th')){
-   const key=th.dataset.sort,button=th.querySelector('button'),label={price:'Price',name:'Name',level:'iLvl',skill:'Skill',quantity:'Available'}[key];
+  const sort=$('sort').value,wrath=activeParams.get('view')==='wrath';
+  for(const th of document.querySelectorAll('.market-table thead th[data-sort]')){
+   const key=th.dataset.sort,button=th.querySelector('button'),label={price:'Price',name:'Name',level:wrath?'Level':'iLvl',skill:'Skill',quantity:wrath?'Stack':'Available'}[key];
    button.replaceChildren(document.createTextNode(label));th.removeAttribute('aria-sort');
    if(pairs[key].includes(sort)){const descending=['price_desc','name_desc','quantity','level','skill'].includes(sort);th.setAttribute('aria-sort',descending?'descending':'ascending');button.append(el('span',descending?' ↓':' ↑'));}
   }
  }
  function renderItems(result){
+  const wrath=activeParams.get('view')==='wrath';
+  $('items').closest('table').classList.toggle('wrath-view',wrath);
+  for(const column of document.querySelectorAll('.wrath-column'))column.hidden=!wrath;
+  const order=wrath?[1,2,4,5,0,3]:[0,1,2,3,4,5];
+  headers[0].parentElement.append(...order.map(index=>headers[index]));
+  headers[3].hidden=wrath;
   $('items').replaceChildren();syncSort();
-  if(result.items.length){const tr=el('tr',undefined,'result-hint'),td=el('td');td.colSpan=4;td.append(el('span','⌁','hint-icon'),document.createTextNode('Click an entry for more information.'),el('span','⌁','hint-icon'));tr.append(td);$('items').append(tr);}
+  if(!wrath&&result.items.length){const tr=el('tr',undefined,'result-hint'),td=el('td');td.colSpan=4;td.append(el('span','⌁','hint-icon'),document.createTextNode('Click an entry for more information.'),el('span','⌁','hint-icon'));tr.append(td);$('items').append(tr);}
   for(const item of result.items){
    const tr=el('tr'),price=el('td'),name=el('td'),button=el('button',undefined,'item-link');tr.dataset.item=String(item.id);
    button.type='button';button.setAttribute('aria-label','View '+item.name);button.append(icon(item),el('span',item.name,'item-name quality-'+item.quality));
    button.addEventListener('mouseenter',event=>showTooltip(item,button,event));button.addEventListener('mousemove',event=>positionTooltip(button,event));button.addEventListener('mouseleave',hideTooltip);button.addEventListener('focus',()=>showTooltip(item,button));button.addEventListener('blur',hideTooltip);
    button.addEventListener('click',()=>{selected=item.id;listingPage=1;for(const row of $('items').children)row.classList.toggle('selected',row===tr);loadDetail();});
-   const external=wowheadLink('↗','item',item.id);external.classList.add('wowhead-shortcut');external.setAttribute('aria-label','View '+item.name+' on Wowhead');name.append(button,external);price.append(money(item.unit_price));
-   tr.append(price,name,el('td',activeParams.get('category')==='9'?item.skill_rank:item.level),el('td',Number(item.quantity).toLocaleString()));$('items').append(tr);
+   const external=wowheadLink('↗','item',item.id);external.classList.add('wowhead-shortcut');external.setAttribute('aria-label','View '+item.name+' on Wowhead');name.append(button,external);
+   const level=el('td',activeParams.get('category')==='9'?item.skill_rank:wrath?item.required_level:item.level);
+   if(wrath){
+    const count=el('span',item.quantity,'stack-count');
+    button.firstChild.replaceWith(count);
+    count.prepend(icon(item));
+    button.setAttribute('aria-label',`View ${item.name}, stack of ${item.quantity}`);
+    const seller=el('td',item.seller);
+    if(activeParams.get('house')==='all')seller.append(el('small',houseName(item.house)));
+    price.append(wrathPrice('Bid',item.bid),wrathPrice('Buyout',item.buyout));
+    tr.append(name,level,el('td',timeLeft(item.expires)),seller,price);
+   }else{
+    price.append(money(item.unit_price));
+    tr.append(price,name,level,el('td',Number(item.quantity).toLocaleString()));
+   }
+   $('items').append(tr);
   }
-  const pages=Math.max(1,Math.ceil(Number(result.totals.items)/result.page_size));
+  const pages=Math.max(1,Math.ceil(Number(wrath?result.totals.auctions:result.totals.items)/result.page_size));
   $('result-count').textContent=`${Number(result.totals.items).toLocaleString()} items · ${Number(result.totals.auctions).toLocaleString()} auctions`;
   $('empty').hidden=!!result.items.length;$('page-count').textContent=`${page} / ${pages}`;$('previous').disabled=page<=1;$('next').disabled=page>=pages;
  }
@@ -105,6 +126,11 @@
  }
  function card(label,value,isMoney=false){const n=el('div',undefined,'price-card'),strong=el('strong');strong.append(isMoney?money(value):document.createTextNode(Number(value).toLocaleString()));n.append(el('span',label),strong);return n;}
  function houseName(id){return id<=3?'Alliance':id<=6?'Horde':'Neutral';}
+ function wrathPrice(label,value){
+  const line=el('div',undefined,'wrath-price');
+  line.append(el('span',label),value===null?el('span','—'):money(value));
+  return line;
+ }
  function timeLeft(expires){const seconds=Number(expires)-Date.now()/1000;return seconds<=0?'Awaiting removal':seconds<1800?'Under 30 minutes':seconds<7200?'30 min – 2 hours':seconds<43200?'2 – 12 hours':'Over 12 hours';}
  function renderDetail(data){const item=data.items[0];if(!item){placeholder('This item no longer has active auctions in this house. Refresh the market to see current stock.');return;}
  const detail=$('detail'),head=el('header',undefined,'detail-heading'),title=el('div');title.append(itemTitle(item),el('p',`Item level ${item.level} · Requires level ${item.required_level} · #${item.id}`));head.append(icon(item),title);const cards=el('div',undefined,'price-cards');cards.append(card('Minimum buyout / item',item.unit_price,true),card('Minimum current bid / item',item.bid_price,true),card('Available quantity',item.quantity),card('Active auctions',item.auctions));detail.replaceChildren(closeButton(),head,cards,el('p','Base item types are grouped together. Random properties and enchantments can differ between individual listings. Tooltips include server effects and set requirements where available; active bonuses and combat totals are not simulated.','detail-note'));
@@ -114,6 +140,20 @@
  async function loadDetail(){const version=++detailVersion;detailController?.abort();detailController=new AbortController();placeholder('Reading listings…');try{const p=new URLSearchParams({house:activeParams.get('house'),id:String(selected),page:String(listingPage)});const result=await request('/api/auctions/item?'+p,detailController.signal);if(version===detailVersion)renderDetail(result);}catch(e){if(e.name!=='AbortError'&&version===detailVersion)placeholder(e.message);}}
  $('search-form').addEventListener('submit',e=>{e.preventDefault();page=1;load();});
  $('house').addEventListener('change',()=>{page=1;load();});
+ function syncViewSort(){
+  const wrath=$('market-view').value==='wrath';
+  for(const option of $('sort').options){
+   if(option.value==='auctions'||option.value==='auctions_asc')option.disabled=wrath;
+   if(option.value==='price')option.textContent=wrath?'Lowest stack buyout':'Lowest price';
+   if(option.value==='price_desc')option.textContent=wrath?'Highest stack buyout':'Highest price';
+   if(option.value==='level')option.textContent=wrath?'Highest required level':'Highest item level';
+   if(option.value==='level_asc')option.textContent=wrath?'Lowest required level':'Lowest item level';
+   if(option.value==='quantity')option.textContent=wrath?'Largest stack':'Most available';
+   if(option.value==='quantity_asc')option.textContent=wrath?'Smallest stack':'Least available';
+  }
+  if($('sort').selectedOptions[0]?.disabled)$('sort').value='price';
+ }
+ $('market-view').addEventListener('change',()=>{syncViewSort();page=1;load();});
  $('sort').addEventListener('change',()=>{page=1;load();});
  for(const button of document.querySelectorAll('.market-table th button'))button.addEventListener('click',()=>{const values=pairs[button.dataset.sort];$('sort').value=$('sort').value===values[0]?values[1]:values[0];page=1;load();});
  $('refresh').addEventListener('click',load);
@@ -133,6 +173,8 @@
  const match=treeNodes.filter(n=>String(n.values.category??'')===(initial.get('category')||'')&&String(n.values.subclass??'')===(initial.get('subclass')||'')&&String(n.values.slot??'')===(initial.get('slot')||'')).at(-1)||treeNodes[0];
  for(const n of treeNodes)if(match.key.startsWith(n.key+'/'))expanded.add(n.key);
  if(match.children)expanded.add(match.key);selectNode(match,false);
+ if(initial.get('view')==='wrath')$('market-view').value='wrath';
+ syncViewSort();
  const initialPage=Number(initial.get('page'));if(Number.isInteger(initialPage)&&initialPage>=1&&initialPage<=10000)page=initialPage;
  if(['quality','min','max'].some(k=>initial.get(k))){$('filters').hidden=false;$('filter-toggle').setAttribute('aria-expanded','true');}load();
 })();
