@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11 — 2026-11-18
+
+Switch between grouped Auction House prices and Wrath listings with individual stacks, bids, buyouts, sellers and time remaining. The Wrath view can use a locally supplied client font.
+
 ## 0.1.10 — 2026-11-16
 
 Save named combat windows or copy them into separate logs, exclude participants from saved reports, and browse complete breakdowns with class colours and an inline ability filter. What’s Training recognises saved Dual Wield skill and defaults to All unlearned.
