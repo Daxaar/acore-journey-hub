@@ -37,6 +37,9 @@ from sql_console import SqlConsole, QueryError
 from settings import SettingsStore
 from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
+from transaction_deletion import TransactionDeletion
+from transaction_monitoring import TransactionMonitoring
+from transactions import get_transactions, export_transactions
 from auctions import AuctionProvider
 from hub_runtime import registered
 from watch_notes import WatchNotes, MAX_NOTE_REQUEST, KEEP_IMAGE
@@ -268,6 +271,9 @@ ASSETS.update({
     '/gear-planner': ('gear-planner.html', 'text/html; charset=utf-8'),
     '/gear-planner.js': ('gear-planner.js', 'text/javascript; charset=utf-8'),
     '/gear-planner.css': ('gear-planner.css', 'text/css; charset=utf-8'),
+    '/transactions': ('transactions.html', 'text/html; charset=utf-8'),
+    '/transactions.js': ('transactions.js', 'text/javascript; charset=utf-8'),
+    '/transactions.css': ('transactions.css', 'text/css; charset=utf-8'),
     '/auctions': ('auctions.html', 'text/html; charset=utf-8'),
     '/auctions.js': ('auctions.js', 'text/javascript; charset=utf-8'),
     '/auction-categories.js': ('auction-categories.js', 'text/javascript; charset=utf-8'),
@@ -311,6 +317,8 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     planner = planner or GearPlanner(preferences=PlannerPreferences(ROOT/'gear-planner.json'))
     armory = ArmoryProvider()
     auctions = AuctionProvider()
+    transaction_monitoring = TransactionMonitoring()
+    transaction_deletion = TransactionDeletion(transaction_monitoring.path)
     skills = SkillsProvider()
     item_tooltips = ItemTooltipProvider()
     training = TrainingProvider()
@@ -429,6 +437,17 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 elif path == '/api/settings':
                     result = settings.save(payload)
                     self.json_response(200, {'ok': True, 'settings': result})
+                elif path == '/api/transactions/remove-history':
+                    action=payload.get('action')
+                    if action=='preview' and set(payload)=={'action','guid'}:
+                        result=transaction_deletion.preview(payload['guid'])
+                    elif action=='confirm' and set(payload)=={'action','ticket'}:
+                        result=transaction_deletion.confirm(payload['ticket'])
+                    else:raise ValueError('Choose a character and confirm its history removal.')
+                    self.json_response(200,{'ok':True,'removal':result})
+                elif path == '/api/transactions/monitoring':
+                    if set(payload)!={'guid','enabled'}:raise ValueError('Provide a character and monitoring switch.')
+                    self.json_response(200,{'ok':True,'monitoring':transaction_monitoring.update(payload['guid'],payload['enabled'])})
                 elif path == '/api/groups':
                     self.json_response(200, {'ok': True, 'groups': cache.update_groups(payload)})
                 elif path == '/api/watch-notes':
@@ -599,6 +618,56 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif path == '/api/transactions/remove-history':
+                try:
+                    params=parse_qs(urlsplit(self.path).query)
+                    if set(params)!={'ticket'} or len(params['ticket'])!=1:raise ValueError('Provide one removal request.')
+                    self.json_response(200,{'ok':True,'removal':transaction_deletion.status(params['ticket'][0])})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except OSError:self.json_response(503,{'ok':False,'error':'History removal status is unavailable.'})
+            elif path == '/api/transactions/monitoring':
+                try:
+                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+                    if set(params)-{'q'} or any(len(v)!=1 for v in params.values()):raise ValueError('Provide one search value.')
+                    with cache.lock:
+                        names=sorted({name for group in cache.groups.data['groups'] for name in group['members']})
+                    self.json_response(200,{'ok':True,'monitoring':transaction_monitoring.characters(names,params.get('q',[''])[0])})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+                except OSError:self.json_response(503,{'ok':False,'error':'Monitoring settings are unavailable.'})
+            elif path in ('/api/transactions','/api/transactions/export'):
+                try:
+                    params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    names = None
+                    if params.get('group', [''])[0]:
+                        with cache.lock:
+                            group = next((g for g in cache.groups.data['groups'] if g['id']==params['group'][0]), None)
+                            if group is None:raise ValueError('Choose a valid group.')
+                            names = list(group['members'])
+                    if path.endswith('/export'):
+                        with export_transactions(params,names,icons=item_tooltips.icons) as download:
+                            size=download.seek(0,2)
+                            download.seek(0)
+                            self.send_response(200)
+                            self.send_header('Content-Type','application/json; charset=utf-8')
+                            self.send_header('Content-Disposition','attachment; filename="transactions.json"')
+                            self.send_header('Content-Length',str(size))
+                            self.send_header('Cache-Control','no-store')
+                            self.send_header('X-Content-Type-Options','nosniff')
+                            self.end_headers()
+                            import shutil
+                            try:shutil.copyfileobj(download,self.wfile)
+                            except (BrokenPipeError,ConnectionResetError):pass
+                    else:
+                        self.json_response(200, {'ok':True, 'result':get_transactions(params,names,icons=item_tooltips.icons)})
+                except ValueError as exc:self.json_response(400, {'ok':False,'error':str(exc)})
+                except DatabaseError as exc:self.json_response(503, {'ok':False,'error':str(exc)})
+            elif path == '/api/transactions/characters':
+                try:
+                    self.json_response(200,{'ok':True,'characters':transaction_monitoring.participants()})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except OSError:self.json_response(503,{'ok':False,'error':'Monitoring settings are unavailable.'})
             elif path in ('/api/auctions', '/api/auctions/item'):
                 try:
                     params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)

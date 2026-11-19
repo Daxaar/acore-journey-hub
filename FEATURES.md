@@ -184,3 +184,6 @@ Inventory includes a selected-group search for saved carried items by name or ex
 Combat Log can select sessions separated by an idle gap, initially 60 minutes. The session dropdown fills the From and To fields while keeping the original import intact.
 
 Saved combat reports support participant exclusions, named time windows and standalone copies of those windows. What’s Training opens with All unlearned selected.
+
+## Transactions
+Optional server-module-backed history for loot, money, vendor trades and AH observations, with opt-in monitoring, participant lists, source/zone filters, item tooltips, coin totals, full JSON exports and confirmed journal-history removal.

@@ -35,3 +35,8 @@ deployment.json
 connection.json
 .connection-*
 !examples/connection.json
+
+transaction-journal.json
+transaction-monitoring.txt
+transaction-monitoring.lock
+transaction-journal-requests/
