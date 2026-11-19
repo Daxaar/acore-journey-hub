@@ -110,3 +110,19 @@ Relative `DataDir` paths are relative to the server's working directory, not the
 - **Problems or requests:** open a [GitHub issue](https://github.com/Daxaar/acore-journey-hub/issues) without passwords or private configuration.
 
 The source is [MIT licensed](LICENSE). Third-party licences are included under `third_party/`. No game client files or generated game assets are distributed.
+
+## Transaction history
+
+The Transactions page works with [mod-transaction-journal](https://github.com/Daxaar/mod-transaction-journal).
+Install the module and apply its journal SQL migrations on your server first. Select monitored characters in the Hub; new characters default to off.
+The module records loot, per-character money shares, vendor trades and Auction House observations. Historical records can be filtered, exported as JSON, or removed for one character after confirmation.
+
+Point the Hub at the shared monitoring file using the JOURNEY_HUB_TRANSACTION_MONITORING environment variable or a local transaction-journal.json file:
+
+```json
+{"monitoring_file": "/path/shared-with-worldserver/transaction-monitoring.txt"}
+```
+
+Configure TransactionJournal.MonitoringFile with the corresponding path visible to worldserver. Both processes need appropriate access to that directory and its transaction-journal-requests subdirectory. The Hub queries game data read-only. Explicit history removal is performed by the module against its own journal table.
+
+Auction records are observations before commit. Vendor refunds, token costs and buyback purchases are outside the current capture coverage. Older records can have unknown loot sources. Loot vendor totals use current base vendor prices and include all matching pages.

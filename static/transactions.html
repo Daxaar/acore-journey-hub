@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transactions · Journey Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/auctions.css"><link rel="stylesheet" href="/transactions.css">
+<script src="/appearance.js"></script><script src="/item-tooltip.js" defer></script><script src="/wowhead.js" defer></script><script src="/transactions.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="AzerothCore Journey Hub home"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Journey Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+<nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/combat-log">Combat Log</a>
+      <a class="page-switch" href="/transactions" aria-current="page">Transactions</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav></header>
+
+<main class="transactions-page">
+<h1>Transactions</h1>
+<p>Recorded loot, vendor trades and Auction House activity for your characters.</p>
+<p class="transaction-note">Auction entries are server observations made before database commit. Settlement amounts include the returned deposit. They represent mail prepared, rather than money collected. Removals alone do not establish a cancellation. Existing auctions may have no recorded listing. Vendor amounts cover copper; token costs, refunds and buyback purchases are outside this version.</p>
+<details class="monitoring-panel"><summary>Character monitoring</summary>
+<p>Characters start unmonitored. Changes take effect within five seconds and apply to the realm. Existing history is kept.</p>
+<form id="monitoring-search"><label>Find a character<input id="monitoring-query" type="search" maxlength="100" placeholder="Leave empty for Hub groups"></label><button class="subtle-button">Search</button></form>
+<div class="monitoring-columns"><section><h2>Choose characters to monitor</h2>
+<p id="monitoring-status" role="status"></p><div id="monitoring-list"></div></section>
+<section><h2>Other recorded participants</h2><p>Unmonitored characters in saved events, including counterparties and previously monitored characters.</p><div id="participant-list" role="list"></div></section></div></details>
+<form id="transaction-filters">
+<label>Group<select id="group"><option value="">All tracked characters</option></select></label>
+<label>Character<select id="character"><option value="">All characters</option></select></label>
+<label>Event<select id="kind"><option value="">All events</option><option value="loot">Item loot</option><option value="loot_money">Money loot</option><option value="vendor_purchase">Vendor purchase</option><option value="vendor_sale_observed">Vendor sale observed</option><option value="listing_observed">AH listing</option><option value="sale_settlement_observed">Sale settlement observed</option><option value="expiration_observed">Expiration observed</option><option value="removal_observed">Removal observed</option></select></label>
+<label>Item<input id="q" type="search" maxlength="100" placeholder="Name or ID"></label>
+<label>Source<input id="source" type="search" maxlength="100" placeholder="Mob name or entry ID"></label><label>Zone<input id="zone" type="search" maxlength="100" placeholder="Zone name or ID"></label>
+<label>From<input id="from" type="datetime-local"></label><label>To<input id="to" type="datetime-local"></label>
+<button type="submit" class="gold-button">Apply / refresh</button><button id="export" class="gold-button" type="button" disabled>Export all results</button>
+<button id="remove-history" type="button" class="gold-button" disabled>Remove character history</button>
+<label class="historical-toggle"><input id="include-historical" type="checkbox">Include historical characters</label>
+</form>
+<dialog id="history-dialog"><form method="dialog"><h2>Remove character history?</h2><p id="history-message"></p><p>This permanently removes the matching journal records, including shared transactions from other characters’ views. Monitoring settings stay as selected. Events recorded after this snapshot are kept.</p><div class="history-actions"><button value="cancel" class="subtle-button" autofocus>Cancel</button><button value="confirm" class="gold-button">Remove history</button></div></form></dialog>
+<p id="history-status" role="status"></p>
+<p id="error" role="alert" hidden></p>
+<div class="transaction-summary" id="summary" aria-live="polite"></div>
+<div class="transaction-scroll"><table><thead><tr><th>Time</th><th>Character / counterparty</th><th>Event</th><th>Source / zone</th><th>Item</th><th>Qty</th><th>Vendor sell price</th><th>Price / proceeds</th><th>Listing</th></tr></thead><tbody id="events"></tbody></table></div>
+<p id="empty" hidden>No matching events yet. Loot an item or use the Auction House with a tracked character, then refresh.</p>
+<div class="transaction-pager"><button id="previous" type="button" class="subtle-button">Previous</button><span id="page"></span><button id="next" type="button" class="subtle-button">Next</button></div>
+<div id="transaction-tooltip" class="auction-tooltip" hidden role="tooltip"></div></main></body></html>

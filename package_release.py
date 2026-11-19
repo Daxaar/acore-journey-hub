@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.11'
+VERSION='0.1.12'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',
@@ -27,7 +27,7 @@ SOURCE_FILES=(
     'professions.py','quest_log.py','settings.py','sql_console.py','watch_notes.py','journal.py',
     'rested_xp.py','server_identity.py','deployment_config.py','deploy.py','package_release.py','requirements.txt','preview.py','start.sh','setup.sh','enable-lan.ps1',
     'update.py','hub_runtime.py','connection_config.py','dbc_source.py','examples/connection.json','FEATURES.md','docs/installation-review.md','AGENTS.md','PUBLIC_README.md','.gitignore','.github/workflows/package.yml',
-    'static/auction-condensed.ttf','third_party/RobotoCondensed-OFL.txt',
+    'tests/test_transaction_monitoring.py','tests/test_transaction_loot_sources.py','tests/test_transaction_export.py','tests/test_transactions.py','tests/test_transaction_deletion.py','transaction_deletion.py','transaction_monitoring.py','transactions.py','static/transactions.html','static/transactions.js','static/transactions.css','static/auction-condensed.ttf','third_party/RobotoCondensed-OFL.txt',
     'third_party/mpyq.py','third_party/MPYQ-LICENSE','third_party/README.md',
 )
 

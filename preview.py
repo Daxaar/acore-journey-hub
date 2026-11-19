@@ -17,7 +17,7 @@ import zipfile
 
 from package_release import ROOT, NAME, build
 
-STATE_FILES = ('connection.json', 'deployment.json', 'groups.json', 'watchlist.json', 'watch-notes.json',
+STATE_FILES = ('transaction-journal.json','connection.json', 'deployment.json', 'groups.json', 'watchlist.json', 'watch-notes.json',
                'settings.json', 'client-models.json', 'gear-planner.json')
 
 

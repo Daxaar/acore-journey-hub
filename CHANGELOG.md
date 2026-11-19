@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.12 — 2026-11-19
+
+Added Transactions with opt-in character monitoring, recorded counterparties, loot and money sources, vendor and Auction House observations, item tooltips/icons, filtered totals, complete JSON export and confirmed character-history removal through the companion module.
+
 ## 0.1.11 — 2026-11-18
 
 Switch between grouped Auction House prices and Wrath listings with individual stacks, bids, buyouts, sellers and time remaining. The Wrath view can use a locally supplied client font.
