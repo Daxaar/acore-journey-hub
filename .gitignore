@@ -40,3 +40,9 @@ transaction-journal.json
 transaction-monitoring.txt
 transaction-monitoring.lock
 transaction-journal-requests/
+
+bot-monitor.json
+bot-monitor/
+
+/static/faction-alliance.png
+/static/faction-horde.png

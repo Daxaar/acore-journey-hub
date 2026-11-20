@@ -13,9 +13,10 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.13'
+VERSION='0.1.14'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
+    'bot_monitor.py','prepare_faction_assets.py',
     'docs/screenshots/watch.png','docs/screenshots/inventory.png','docs/screenshots/quest-log.png',
     'docs/screenshots/professions.png','docs/screenshots/auctions.png','docs/screenshots/sql.png',
     'docs/screenshots/training.png','training.py','tests/training_browser_check.py','item_tooltips.py','spell_tooltips.py','prepare_tooltip_assets.py','QUICKSTART.md','connection.py','VERSION','CHANGELOG.md','AUDIT.md','DEPLOYMENT.md','RELEASE_VALIDATION.md','docs/screenshots/overview.png','docs/screenshots/journal.png','docs/screenshots/armory.png','docs/screenshots/planner.png','LICENSE-PROPOSAL.md','examples/connection.env','tests/test_portable_config.py',

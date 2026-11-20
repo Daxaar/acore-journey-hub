@@ -39,6 +39,7 @@ from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
 from transaction_deletion import TransactionDeletion
 from transaction_monitoring import TransactionMonitoring
+from bot_monitor import BotMonitor
 from mailbox_view import MailboxProvider
 from transactions import get_transactions, export_transactions, transaction_locations
 from auctions import AuctionProvider
@@ -272,6 +273,12 @@ ASSETS.update({
     '/gear-planner': ('gear-planner.html', 'text/html; charset=utf-8'),
     '/gear-planner.js': ('gear-planner.js', 'text/javascript; charset=utf-8'),
     '/gear-planner.css': ('gear-planner.css', 'text/css; charset=utf-8'),
+    '/faction-alliance.png': ('faction-alliance.png', 'image/png'),
+    '/faction-horde.png': ('faction-horde.png', 'image/png'),
+    '/armory-embed': ('armory.html', 'text/html; charset=utf-8'),
+    '/live-world': ('live-world.html', 'text/html; charset=utf-8'),
+    '/live-world.js': ('live-world.js', 'text/javascript; charset=utf-8'),
+    '/live-world.css': ('live-world.css', 'text/css; charset=utf-8'),
     '/mailbox': ('mailbox.html', 'text/html; charset=utf-8'),
     '/mailbox.js': ('mailbox.js', 'text/javascript; charset=utf-8'),
     '/mailbox.css': ('mailbox.css', 'text/css; charset=utf-8'),
@@ -326,6 +333,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     skills = SkillsProvider()
     item_tooltips = ItemTooltipProvider()
     mailboxes = MailboxProvider(icons=item_tooltips.icons)
+    bot_monitor = BotMonitor(classes=CLASSES,races=RACES)
     training = TrainingProvider()
     quest_log = QuestLogProvider(objectives)
     models = ClientModels()
@@ -346,11 +354,12 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             self.send_header('Content-Length', str(len(body)))
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
-            self.send_header('X-Frame-Options', 'DENY')
+            embedded_armory = urlsplit(getattr(self,'path','')).path == '/armory-embed'
+            self.send_header('X-Frame-Options', 'SAMEORIGIN' if embedded_armory else 'DENY')
             self.send_header('Referrer-Policy', 'no-referrer')
             self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; "
-                             "style-src 'self'; img-src 'self' blob:; connect-src 'self'; "
-                             "frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+                             "style-src 'self'; img-src 'self' blob:; connect-src 'self'; " +
+                             ("frame-ancestors 'self'; " if embedded_armory else "frame-ancestors 'none'; ")+"base-uri 'none'; form-action 'none'")
             try:
                 self.end_headers()
                 self.wfile.write(body)
@@ -442,6 +451,8 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 elif path == '/api/settings':
                     result = settings.save(payload)
                     self.json_response(200, {'ok': True, 'settings': result})
+                elif path == '/api/live-world/control':
+                    self.json_response(200,{'ok':True,'control':bot_monitor.update(payload)})
                 elif path == '/api/transactions/remove-history':
                     action=payload.get('action')
                     if action=='preview' and set(payload)=={'action','guid'}:
@@ -623,6 +634,12 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif path == '/api/live-world':
+                try:
+                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+                    self.json_response(200,{'ok':True,'result':bot_monitor.get(params)})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except (OSError,KeyError,TypeError):self.json_response(503,{'ok':False,'error':'Live snapshot unavailable or invalid.'})
             elif path == '/api/transactions/locations':
                 try:self.json_response(200,{'ok':True,'locations':transaction_locations()})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
