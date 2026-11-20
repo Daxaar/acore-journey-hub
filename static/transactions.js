@@ -1,8 +1,8 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const labels={vendor_purchase:'Vendor purchase',vendor_sale_observed:'Vendor sale observed',loot:'Item loot',loot_money:'Money loot',listing_observed:'AH listing',sale_settlement_observed:'Sale settlement observed',expiration_observed:'Expiration observed',removal_observed:'Removal observed'};
-let page=1,version=0,current=null,sessionToken="",monitoringVersion=0,characterRoster=[],rosterVersion=0,appliedFilters=null,exporting=false;
+const labels={mail_sent_observed:'Mail sent observed',vendor_purchase:'Vendor purchase',vendor_sale_observed:'Vendor sale observed',loot:'Item loot',loot_money:'Money loot',listing_observed:'AH listing',sale_settlement_observed:'Sale settlement observed',expiration_observed:'Expiration observed',removal_observed:'Removal observed'};
+let page=1,version=0,current=null,sessionToken="",monitoringVersion=0,characterRoster=[],rosterVersion=0,appliedFilters=null,exporting=false,sortColumn='time',sortDirection='desc';
 function el(tag,text){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;}
 function money(value){const n=Number(value);return Math.floor(n/10000)+'g '+Math.floor(n%10000/100)+'s '+n%100+'c';}
 function coinMoney(value){
@@ -22,40 +22,49 @@ function priceLine(label,value,tag='div'){
  line.append(coinMoney(value));return line;
 }
 function params(){
- const p=new URLSearchParams({page:String(page)});
- for(const key of ['group','character','kind','q','source','zone'])if($(key).value)p.set(key,$(key).value);
+ const p=new URLSearchParams({page:String(page),sort:sortColumn,direction:sortDirection});
+ for(const key of ['group','character','kind','q','source','zone','dungeon'])if($(key).value)p.set(key,$(key).value);
  for(const key of ['from','to'])if($(key).value)p.set(key,new Date($(key).value).toISOString().slice(0,19));
  return p;
 }
-async function load(){
+async function load(requestedParams=null){
  hideTooltip();const token=++version;$('error').hidden=true;$('export').disabled=true;
  $('previous').disabled=$('next').disabled=true;
  try{
-  const requested=params();
+  const requested=requestedParams?new URLSearchParams(requestedParams):params();
   const response=await fetch('/api/transactions?'+requested,{cache:'no-store'}),data=await response.json();
   if(token!==version)return;
   if(!response.ok||!data.ok)throw new Error(data.error||'Transactions unavailable');
-  appliedFilters=new URLSearchParams(requested);current=data.result;$('events').replaceChildren();
+  appliedFilters=new URLSearchParams(requested);
+  sortColumn=requested.get('sort')||'time';sortDirection=requested.get('direction')||'desc';renderSort();
+  current=data.result;$('events').replaceChildren();
   for(const event of current.events){
    const row=el('tr'),actor=el('td',event.character||'Character #'+event.actor_guid);
    if(event.actor_ahbot)actor.append(el('small','AHBot'));
-   if(event.counterparty_guid)actor.append(el('small',(event.counterparty||'Character #'+event.counterparty_guid)+(event.counterparty_ahbot?' · AHBot':'')));
+   if(event.counterparty_guid)actor.append(el('small',(event.event_kind==='mail_sent_observed'?'To ':'')+(event.counterparty||'Character #'+event.counterparty_guid)+(event.counterparty_ahbot?' · AHBot':'')));
    const item=el('td');
-   if(event.item_id){
-   const link=wowheadLink(event.item||'Item #'+event.item_id,'item',event.item_id);
-   link.classList.add('transaction-item-link');
-   const image=el('img');image.alt='';image.loading='lazy';image.width=22;image.height=22;
-   image.src=event.icon?'/icons/'+encodeURIComponent(event.icon)+'.jpg':'/item-placeholder.svg';
-   image.addEventListener('error',()=>{image.src='/item-placeholder.svg';},{once:true});
-   link.prepend(image);item.append(link);
-   link.addEventListener('mouseenter',e=>showTooltip(event,link,e));
-   link.addEventListener('mousemove',e=>ItemTooltip.position($('transaction-tooltip'),link,e));
-   link.addEventListener('mouseleave',hideTooltip);
-   link.addEventListener('focus',()=>showTooltip(event,link));
-   link.addEventListener('blur',hideTooltip);
-   }else item.textContent=event.event_kind==='loot_money'?'Money':'—';
+   const displayItems=event.item_id?[event]:(event.mail_items||[]).map(attachment=>({item_id:attachment.id,item:attachment.name,quantity:attachment.quantity,icon:attachment.icon}));
+   for(const displayed of displayItems){
+    const link=wowheadLink(displayed.item||'Item #'+displayed.item_id,'item',displayed.item_id);
+    link.classList.add('transaction-item-link');
+    const image=el('img');image.alt='';image.loading='lazy';image.width=22;image.height=22;
+    image.src=displayed.icon?'/icons/'+encodeURIComponent(displayed.icon)+'.jpg':'/item-placeholder.svg';
+    image.addEventListener('error',()=>{image.src='/item-placeholder.svg';},{once:true});
+    link.prepend(image);item.append(link);
+    if(!event.item_id)item.append(el('small','×'+displayed.quantity));
+    link.addEventListener('mouseenter',e=>showTooltip(displayed,link,e));
+    link.addEventListener('mousemove',e=>ItemTooltip.position($('transaction-tooltip'),link,e));
+    link.addEventListener('mouseleave',hideTooltip);
+    link.addEventListener('focus',()=>showTooltip(displayed,link));
+    link.addEventListener('blur',hideTooltip);
+   }
+   if(event.event_kind==='mail_sent_observed')item.append(el('small',event.mail_subject||'(No subject)'));
+   else if(!event.item_id)item.textContent=event.event_kind==='loot_money'?'Money':'—';
    const amount=el('td');amount.className='transaction-price';
-   if(event.event_kind==='listing_observed'){
+   if(event.event_kind==='mail_sent_observed'){
+    amount.append(priceLine('Postage',event.mail_postage),priceLine('Gold attached',event.mail_money,'small'));
+    if(event.mail_cod)amount.append(priceLine('COD requested',event.mail_cod,'small'));
+   }else if(event.event_kind==='listing_observed'){
     amount.append(priceLine('Bid',event.start_bid),event.buyout?priceLine('Buyout',event.buyout):el('div','Buyout None'),priceLine('Deposit',event.deposit,'small'));
    }else if(event.event_kind==='sale_settlement_observed'){
     amount.append(priceLine('',event.proceeds),priceLine('Sale',event.gross,'small'),priceLine('Fee',event.fee,'small'),priceLine('Returned deposit',event.deposit,'small'));
@@ -70,7 +79,7 @@ async function load(){
    $('events').append(row);
   }
   $('summary').replaceChildren();
-  for(const [label,value] of [['Events',current.totals.events],['Items looted',current.totals.loot_quantity],['Money looted',coinMoney(current.totals.loot_copper||0)],['Observed settlement proceeds',coinMoney(current.totals.settlement_proceeds)]]){
+  for(const [label,value] of [['Events',current.totals.events],['Items looted',current.totals.loot_quantity],['Postage spent',coinMoney(current.totals.mail_postage||0)],['Gold mailed',coinMoney(current.totals.mail_money||0)],['Money looted',coinMoney(current.totals.loot_copper||0)],['Observed settlement proceeds',coinMoney(current.totals.settlement_proceeds)]]){
    const card=el('div'),amount=el('strong');amount.append(value instanceof Node?value:document.createTextNode(String(value)));card.append(amount,el('span',label));$('summary').append(card);
   }
   const vendorValue=el('div'),vendorAmount=el('strong');
@@ -220,6 +229,39 @@ $('history-dialog').addEventListener('close',async()=>{
  }catch(error){$('history-status').textContent=error.message;}
  finally{$('remove-history').disabled=!$('character').value;}
 });
+function renderSort(){
+ for(const heading of document.querySelectorAll('.transactions-page th[data-sort]')){
+  const button=heading.querySelector('button');
+  if(!button.dataset.label)button.dataset.label=button.textContent;
+  button.replaceChildren(document.createTextNode(button.dataset.label));
+  heading.removeAttribute('aria-sort');
+  if(heading.dataset.sort===sortColumn){
+   heading.setAttribute('aria-sort',sortDirection==='asc'?'ascending':'descending');
+   const arrow=el('span',sortDirection==='asc'?' ↑':' ↓');arrow.setAttribute('aria-hidden','true');button.append(arrow);
+  }
+ }
+}
+for(const button of document.querySelectorAll('.transactions-page th button[data-sort]')){
+ const key=button.dataset.sort;
+ const descriptions={vendor:'Sort by total stack vendor value',price:'Sort by the first displayed amount; listings use starting bid',item:'Sort by item name; mail uses the first alphabetically'};
+ button.title=descriptions[key]||'Sort '+button.textContent;
+ button.addEventListener('click',()=>{
+  const requested=new URLSearchParams(appliedFilters||params());
+  requested.set('sort',key);
+  requested.set('direction',key===sortColumn?(sortDirection==='asc'?'desc':'asc'):(key==='time'?'desc':'asc'));
+  page=1;requested.set('page','1');load(requested);
+ });
+}
+renderSort();
+async function loadLocations(){
+ try{
+  const response=await fetch('/api/transactions/locations'),data=await response.json();
+  if(!response.ok||!data.ok)throw new Error(data.error||'Location suggestions unavailable');
+  $('dungeon-options').replaceChildren();$('zone-options').replaceChildren();
+  for(const dungeon of data.locations.dungeons)$('dungeon-options').append(new Option(dungeon.name,dungeon.name));
+  for(const zone of data.locations.zones)$('zone-options').append(new Option(zone,zone));
+ }catch(error){$('error').textContent=error.message;$('error').hidden=false;}
+}
 async function setup(){
  try{
   const response=await fetch('/api/session'),session=await response.json();
@@ -230,6 +272,7 @@ async function setup(){
  }catch(error){$('error').textContent='Group filters unavailable. '+error.message;$('error').hidden=false;}
  load();
  loadMonitoring();
+ loadLocations();
 }
 setup();
 })();

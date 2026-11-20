@@ -39,7 +39,8 @@ from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
 from transaction_deletion import TransactionDeletion
 from transaction_monitoring import TransactionMonitoring
-from transactions import get_transactions, export_transactions
+from mailbox_view import MailboxProvider
+from transactions import get_transactions, export_transactions, transaction_locations
 from auctions import AuctionProvider
 from hub_runtime import registered
 from watch_notes import WatchNotes, MAX_NOTE_REQUEST, KEEP_IMAGE
@@ -271,6 +272,9 @@ ASSETS.update({
     '/gear-planner': ('gear-planner.html', 'text/html; charset=utf-8'),
     '/gear-planner.js': ('gear-planner.js', 'text/javascript; charset=utf-8'),
     '/gear-planner.css': ('gear-planner.css', 'text/css; charset=utf-8'),
+    '/mailbox': ('mailbox.html', 'text/html; charset=utf-8'),
+    '/mailbox.js': ('mailbox.js', 'text/javascript; charset=utf-8'),
+    '/mailbox.css': ('mailbox.css', 'text/css; charset=utf-8'),
     '/transactions': ('transactions.html', 'text/html; charset=utf-8'),
     '/transactions.js': ('transactions.js', 'text/javascript; charset=utf-8'),
     '/transactions.css': ('transactions.css', 'text/css; charset=utf-8'),
@@ -321,6 +325,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     transaction_deletion = TransactionDeletion(transaction_monitoring.path)
     skills = SkillsProvider()
     item_tooltips = ItemTooltipProvider()
+    mailboxes = MailboxProvider(icons=item_tooltips.icons)
     training = TrainingProvider()
     quest_log = QuestLogProvider(objectives)
     models = ClientModels()
@@ -617,6 +622,25 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     self.json_response(200,{'ok':True,'result':result})
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif path == '/api/transactions/locations':
+                try:self.json_response(200,{'ok':True,'locations':transaction_locations()})
+                except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif path in ('/api/mailbox','/api/mailbox/characters'):
+                try:
+                    params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+                    if path.endswith('/characters'):
+                        if set(params)-{'group','q'} or any(len(v)!=1 for v in params.values()):raise ValueError('Provide one mailbox filter value.')
+                        names=None
+                        if params.get('group',[''])[0]:
+                            with cache.lock:
+                                group=next((g for g in cache.groups.data['groups'] if g['id']==params['group'][0]),None)
+                                if group is None:raise ValueError('Choose a valid group.')
+                                names=list(group['members'])
+                        self.json_response(200,{'ok':True,'characters':mailboxes.characters(names,params.get('q',[''])[0])})
+                    else:
+                        self.json_response(200,{'ok':True,'result':mailboxes.get(params)})
+                except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
             elif path == '/api/transactions/remove-history':
                 try:

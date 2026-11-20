@@ -58,3 +58,7 @@
 
 .transaction-summary .money{font:inherit;color:inherit}
 .transaction-summary .coin{width:12px;height:12px}
+
+.transactions-page th button[data-sort]{display:block;width:100%;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;padding:0;text-align:left;white-space:nowrap}
+.transactions-page th button[data-sort]:hover{color:var(--gold)}
+.transactions-page th[aria-sort] button{color:var(--gold)}
