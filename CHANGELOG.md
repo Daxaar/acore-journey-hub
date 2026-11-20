@@ -1,3 +1,10 @@
+## v0.1.14 — Live World (2026-11-20)
+
+- Selecting a Live World character now opens the existing Armory model/equipment inspector below the table; position refreshes preserve the inspector.
+
+- Optional Bot Monitor integration: zone population, live character coordinates, class colours, XP, movement/combat state and active quest-log drill-down.
+- Runtime capture/interval controls, stale-data handling and per-snapshot overhead metrics; private shared-file transport, no game SQL or new network service.
+
 # Changelog
 
 ## 0.1.13 — 2026-11-20

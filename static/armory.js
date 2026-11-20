@@ -1,5 +1,7 @@
 'use strict';
 const inventoryPage = location.pathname === '/inventory';
+const embeddedArmory = location.pathname === '/armory-embed';
+if(embeddedArmory)document.documentElement.classList.add('armory-embedded');
 const $ = id => document.getElementById(id);
 const races = {1:'Human',2:'Orc',3:'Dwarf',4:'Night Elf',5:'Undead',6:'Tauren',7:'Gnome',8:'Troll',10:'Blood Elf',11:'Draenei'};
 const classes = {1:'Warrior',2:'Paladin',3:'Hunter',4:'Rogue',5:'Priest',6:'Death Knight',7:'Shaman',8:'Mage',9:'Warlock',11:'Druid'};
@@ -277,6 +279,7 @@ function renderGroup() {
   $('armory-group-status').textContent = group?'Pills show free carried-bag slots · Saved inventory':'Create a group on the Dashboard, or open a character by name.';
 }
 async function refreshBagSpace(selectedSnapshot = null) {
+  if(embeddedArmory)return;
   const group = selectedGroup(); if (!group) return;
   const request = ++spaceRequest, groupId = group.id;
   const controller = new AbortController(), timeout = setTimeout(() => controller.abort(),15000);

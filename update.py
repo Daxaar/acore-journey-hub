@@ -25,7 +25,7 @@ ROOT=Path(__file__).resolve().parent
 REPOSITORY='Daxaar/acore-journey-hub'
 PACKAGE_FOLDERS={'acore-journey-hub','character-hub'}
 EXCLUDED={'backups','dist','.run','.git','__pycache__','.pytest_cache','.cache','.codex','.agents','.aws'}
-PRIVATE={'transaction-journal.json','transaction-monitoring.txt','connection.json','deployment.json','groups.json','watchlist.json','watch-notes.json',
+PRIVATE={'bot-monitor.json','transaction-journal.json','transaction-monitoring.txt','connection.json','deployment.json','groups.json','watchlist.json','watch-notes.json',
          'settings.json','network.json','client-models.json','gear-planner.json'}
 MAX_ARCHIVE=128*1024*1024
 MAX_EXPANDED=512*1024*1024

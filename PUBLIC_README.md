@@ -134,3 +134,13 @@ Mailbox provides a read-only inbox and letter view for online and offline charac
 Update mod-transaction-journal and apply its 003_mail_sends.sql migration before upgrading to Hub 0.1.13. New paid sends by or involving monitored characters are recorded as mail_sent_observed. Transactions separates postage paid, attached gold and requested COD. Postage summaries are sender-scoped. These pre-commit observations do not prove delivery or collection, and old postage is not reconstructed from existing inboxes.
 
 Transactions supports editable Dungeon/Zone suggestions and clickable column sorting across the whole filtered result and exported JSON. Location filters require recorded location fields.
+
+### Live World
+
+The optional separate [mod-bot-monitor](https://github.com/Daxaar/mod-bot-monitor) exporter supplies current online population, zone counts, character positions, XP and active quest logs without game-database writes. Open **Live World**, click a zone and then a character. Filters apply to the counts and zone lists. Positions normally refresh every five seconds; quest logs refresh every thirty seconds. Coordinates are raw world coordinates; session age is account-session age, not precise character login duration.
+
+Configure a private `bot-monitor.json` beside the Hub with a `directory` pointing to the exporter's shared directory, or set `JOURNEY_HUB_BOT_MONITOR_DIRECTORY`. The Hub needs read access to `snapshot.json` and write access to the directory for atomic `control.txt` updates. Keep this directory private. No TCP listener is added to the worldserver. Control uses the Hub's existing same-origin/session-token protection; restrict Hub access to trusted users because they can enable or disable monitoring.
+
+The module's startup gate defaults off. Once permitted, the Hub capture checkbox controls sampling; Off stops character scans and recurring snapshot writes, leaving one small control-file check per second. Stale snapshots show a warning instead of live counts or positions. No history is stored in this first version.
+
+Live World faction emblems use the original client `Interface/TargetingFrame/UI-PVP-Alliance.blp` and `UI-PVP-Horde.blp` artwork. Prepare these local-only assets with `python3 prepare_faction_assets.py /path/to/WoW` (use `--output /path/to/hub/static` for another installation). Client artwork is excluded from public source packages. Missing artwork hides the image; the faction remains available in the name tooltip and character details.

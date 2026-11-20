@@ -47,6 +47,7 @@ python3 deploy.py
 
 Choose **docker** or **direct** (no containers), then answer the prompts.
 Setup saves your choices in a private `connection.json`, installs dependencies and builds the server metadata. Password entry is hidden. It does not alter or restart AzerothCore.
+In Docker mode, setup automatically checks `/data/dbc` and `/azerothcore/env/dist/data/dbc` in the selected worldserver container. If your DBCs are elsewhere in that container, set `dbc_path` in `connection.json` to their directory.
 
 When setup says **Setup ready**, continue. If it reports a missing prerequisite or connection problem, correct it and rerun the same command; saved settings are reused.
 
@@ -109,3 +110,37 @@ Relative `DataDir` paths are relative to the server's working directory, not the
 - **Problems or requests:** open a [GitHub issue](https://github.com/Daxaar/acore-journey-hub/issues) without passwords or private configuration.
 
 The source is [MIT licensed](LICENSE). Third-party licences are included under `third_party/`. No game client files or generated game assets are distributed.
+
+## Transaction history
+
+The Transactions page works with [mod-transaction-journal](https://github.com/Daxaar/mod-transaction-journal).
+Install the module and apply its journal SQL migrations on your server first. Select monitored characters in the Hub; new characters default to off.
+The module records loot, per-character money shares, vendor trades and Auction House observations. Historical records can be filtered, exported as JSON, or removed for one character after confirmation.
+
+Point the Hub at the shared monitoring file using the JOURNEY_HUB_TRANSACTION_MONITORING environment variable or a local transaction-journal.json file:
+
+```json
+{"monitoring_file": "/path/shared-with-worldserver/transaction-monitoring.txt"}
+```
+
+Configure TransactionJournal.MonitoringFile with the corresponding path visible to worldserver. Both processes need appropriate access to that directory and its transaction-journal-requests subdirectory. The Hub queries game data read-only. Explicit history removal is performed by the module against its own journal table.
+
+Auction records are observations before commit. Vendor refunds, token costs and buyback purchases are outside the current capture coverage. Older records can have unknown loot sources. Loot vendor totals use current base vendor prices and include all matching pages.
+
+## Mailbox and postage
+
+Mailbox provides a read-only inbox and letter view for online and offline characters, including attachments, money, COD and delivery/expiry times. Viewing messages leaves their recorded read state and contents intact.
+
+Update mod-transaction-journal and apply its 003_mail_sends.sql migration before upgrading to Hub 0.1.13. New paid sends by or involving monitored characters are recorded as mail_sent_observed. Transactions separates postage paid, attached gold and requested COD. Postage summaries are sender-scoped. These pre-commit observations do not prove delivery or collection, and old postage is not reconstructed from existing inboxes.
+
+Transactions supports editable Dungeon/Zone suggestions and clickable column sorting across the whole filtered result and exported JSON. Location filters require recorded location fields.
+
+### Live World
+
+The optional separate [mod-bot-monitor](https://github.com/Daxaar/mod-bot-monitor) exporter supplies current online population, zone counts, character positions, XP and active quest logs without game-database writes. Open **Live World**, click a zone and then a character. Filters apply to the counts and zone lists. Positions normally refresh every five seconds; quest logs refresh every thirty seconds. Coordinates are raw world coordinates; session age is account-session age, not precise character login duration.
+
+Configure a private `bot-monitor.json` beside the Hub with a `directory` pointing to the exporter's shared directory, or set `JOURNEY_HUB_BOT_MONITOR_DIRECTORY`. The Hub needs read access to `snapshot.json` and write access to the directory for atomic `control.txt` updates. Keep this directory private. No TCP listener is added to the worldserver. Control uses the Hub's existing same-origin/session-token protection; restrict Hub access to trusted users because they can enable or disable monitoring.
+
+The module's startup gate defaults off. Once permitted, the Hub capture checkbox controls sampling; Off stops character scans and recurring snapshot writes, leaving one small control-file check per second. Stale snapshots show a warning instead of live counts or positions. No history is stored in this first version.
+
+Live World faction emblems use the original client `Interface/TargetingFrame/UI-PVP-Alliance.blp` and `UI-PVP-Horde.blp` artwork. Prepare these local-only assets with `python3 prepare_faction_assets.py /path/to/WoW` (use `--output /path/to/hub/static` for another installation). Client artwork is excluded from public source packages. Missing artwork hides the image; the faction remains available in the name tooltip and character details.

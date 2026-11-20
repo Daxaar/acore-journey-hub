@@ -101,3 +101,7 @@
 #group-item-table :is(th,td) { padding: 6px 12px; border-bottom: 1px solid var(--border); text-align: left; }
 #group-item-table :is(th,td):last-child { text-align: right; font-variant-numeric: tabular-nums; }
 #group-item-table .item-icon { width: 36px; height: 36px; flex: 0 0 36px; }
+
+/* The Live World inspector shares the normal Armory renderer and tooltips. */
+.armory-embedded .topbar,.armory-embedded .page-heading,.armory-embedded #change-status,.armory-embedded .save-note,.armory-embedded .armory-group-picker,.armory-embedded .character-picker,.armory-embedded .page-footer,.armory-embedded .character-pane-tabs,.armory-embedded #character-quest-log{display:none}
+.armory-embedded main{max-width:none;margin:0;padding:0}.armory-embedded .armory-layout{grid-template-columns:minmax(0,1fr);gap:12px}.armory-embedded .character-pane{margin:0}.armory-embedded .item-details{margin:0}.armory-embedded #error{margin:12px}
