@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mailbox · Journey Hub</title><link rel="icon" href="/emblem.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/auctions.css"><link rel="stylesheet" href="/mailbox.css">
+<script src="/appearance.js"></script><script src="/wowhead.js" defer></script><script src="/item-tooltip.js" defer></script><script src="/mailbox.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="AzerothCore Journey Hub home"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Journey Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+<nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/combat-log">Combat Log</a>
+      <a class="page-switch" href="/transactions">Transactions</a>
+      <a class="page-switch" href="/mailbox" aria-current="page">Mailbox</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav></header>
+
+
+<main class="mailbox-page">
+<div class="mailbox-tools"><label>Group<select id="mail-group"><option value="">All mailboxes</option></select></label>
+<label>Character<select id="mail-character"><option value="">Choose a character</option></select></label>
+<form id="mail-search"><label>Find character<input id="mail-query" type="search" maxlength="100" placeholder="Character name"></label><button class="gold-button">Search</button></form>
+<button id="mail-refresh" class="gold-button" type="button">Refresh</button><a href="/transactions" class="mail-history-link">Transaction history</a></div>
+<p id="mail-error" role="alert" hidden></p><p class="mailbox-note">Read-only saved mailbox view. Delivery and expiry times use the server records.</p>
+<div class="mailbox-layout">
+<section class="mailbox-frame"><header class="mailbox-heading"><span aria-hidden="true">✉</span><h1>Inbox</h1></header>
+<div class="mailbox-owner" id="mailbox-owner">Choose a character</div><div id="mail-list" class="mail-list" aria-label="Messages"></div>
+<div class="mailbox-pager"><button id="mail-previous" class="mail-red-button" type="button">‹ Prev</button><span id="mail-page"></span><button id="mail-next" class="mail-red-button" type="button">Next ›</button></div>
+<p id="mailbox-status" role="status"></p></section>
+<section class="mailbox-frame letter-panel"><header class="mailbox-heading"><span aria-hidden="true">✉</span><h2>Open Mail</h2></header>
+<div id="mail-detail"><p class="mail-placeholder">Select a message to read it.</p></div></section>
+</div><div id="mail-tooltip" class="auction-tooltip" hidden role="tooltip"></div></main></body></html>

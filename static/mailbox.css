@@ -1,0 +1,37 @@
+@font-face{font-family:WrathMailbox;src:url('/wrath-client.ttf') format('truetype');font-display:swap}
+.mailbox-page{max-width:1500px;margin:26px auto;padding:0 24px}
+.mailbox-tools{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
+.mailbox-tools label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.mailbox-tools input,.mailbox-tools select{background:#1c211b;color:var(--text);padding:9px;border:1px solid var(--border);border-radius:4px;max-width:260px}
+#mail-search{display:flex;gap:10px;align-items:end}.mail-history-link{margin-left:auto}
+.mailbox-note{font-size:12px;color:var(--muted)}
+.mailbox-layout{display:grid;grid-template-columns:minmax(360px,1fr) minmax(360px,1fr);gap:24px;align-items:start}
+.mailbox-frame{border:5px ridge #645d4d;border-radius:6px;background:linear-gradient(120deg,#25251f,#11120f);box-shadow:0 4px 15px #0008;overflow:hidden;font-family:WrathMailbox,Georgia,serif}
+.mailbox-heading{display:flex;align-items:center;gap:16px;border-bottom:4px ridge #6d6957;background:linear-gradient(#34352b,#11110f);padding:12px 18px}
+.mailbox-heading>span{font-size:35px;color:#dcc38c}
+.mailbox-heading h1,.mailbox-heading h2{margin:0;color:#f9dc41;text-shadow:1px 2px #000;font:24px WrathMailbox,Georgia,serif}
+.mailbox-owner{padding:10px 16px;color:#d7c08c;min-height:38px;font-size:13px}
+.mail-list{min-height:504px;background:radial-gradient(ellipse at 40% 20%,#d7b775,#b89551 80%);border:5px ridge #674821}
+.mail-row{display:flex;align-items:center;gap:12px;min-height:72px;width:100%;padding:10px 12px;text-align:left;border:0;border-bottom:2px solid #795c2c55;background:transparent;color:#24190e;font:inherit}
+.mail-row:hover,.mail-row[aria-pressed=true]{background:#f5daa46b;box-shadow:inset 0 0 0 2px #e8ce7c}
+.mail-row-info{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.mail-row-info strong,.mail-row-info>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mail-row-info strong{font-size:16px}.mail-row-info>span{font-size:13px}
+.mail-time{align-self:start;color:#22551b;font:12px Arial,sans-serif;text-align:right;white-space:nowrap}
+.mail-slot{width:46px;height:46px;position:relative;flex-shrink:0;border:3px ridge #80755d;border-radius:4px;background:#5d421b;display:flex;align-items:center;justify-content:center;color:#eee1b8;font-size:27px}
+.mail-slot img{width:100%;height:100%;object-fit:cover}.mail-slot .mail-count{position:absolute;right:2px;bottom:0;color:white;text-shadow:1px 1px black;font:15px Arial,sans-serif}
+.mailbox-pager{display:flex;justify-content:space-between;align-items:center;padding:14px 12px;color:#f8dc6c}
+.mail-red-button{font:16px WrathMailbox,Georgia,serif;color:#ffe343;border:3px ridge #82775c;border-radius:5px;background:linear-gradient(#8a1210,#480302);padding:6px 18px}
+.mailbox-frame #mailbox-status{font:11px Arial,sans-serif;color:#bba87d;padding:0 14px 10px;margin:0}
+.mail-empty,.mail-placeholder{padding:36px 22px;line-height:1.6}.mail-empty{color:#332310}.mail-placeholder{color:#d8c39d}
+.mail-address{padding:15px 20px;color:#eee3c8;line-height:1.8;overflow-wrap:anywhere}
+.mail-address p{margin:3px 0}.mail-address strong{color:#f4d452}
+.mail-body{background:radial-gradient(ellipse at 50% 20%,#e6c98f,#bc995f);color:#34230f;margin:0 14px;border:4px ridge #6a4930;padding:22px;min-height:340px;max-height:520px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:17px/1.65 WrathMailbox,Georgia,serif}
+.mail-attachments{padding:16px 18px;color:#e0c994;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;align-items:start}
+.mail-attachment{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:8px;color:inherit;font:13px Arial,sans-serif;max-width:100%}
+.mail-attachment span:last-child{overflow-wrap:anywhere}
+.mail-finance{padding:0 20px 16px;color:#e6d2a0;font:13px Arial,sans-serif}
+.mail-finance p{margin:8px 0}.mailbox-page .money{font:inherit}.mailbox-page .coin{width:10px;height:10px}#mail-error{color:#ffb8a0}
+@media(max-width:900px){.mailbox-layout{grid-template-columns:1fr}.mail-history-link{margin-left:0}}
+
+@media(max-width:500px){.mail-attachments{grid-template-columns:1fr}}

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13 — 2026-11-20
+
+Added a read-only Wrath-style mailbox viewer and sent-mail postage observations. Transactions gains editable dungeon/zone dropdowns and server-side sorting across all pages and exports. Mail attachments align in columns, and the unused Professions Create button is removed. Requires transaction-journal mail migration 003 for the new transaction fields.
+
 ## 0.1.12 — 2026-11-19
 
 Added Transactions with opt-in character monitoring, recorded counterparties, loot and money sources, vendor and Auction House observations, item tooltips/icons, filtered totals, complete JSON export and confirmed character-history removal through the companion module.

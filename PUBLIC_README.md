@@ -126,3 +126,11 @@ Point the Hub at the shared monitoring file using the JOURNEY_HUB_TRANSACTION_MO
 Configure TransactionJournal.MonitoringFile with the corresponding path visible to worldserver. Both processes need appropriate access to that directory and its transaction-journal-requests subdirectory. The Hub queries game data read-only. Explicit history removal is performed by the module against its own journal table.
 
 Auction records are observations before commit. Vendor refunds, token costs and buyback purchases are outside the current capture coverage. Older records can have unknown loot sources. Loot vendor totals use current base vendor prices and include all matching pages.
+
+## Mailbox and postage
+
+Mailbox provides a read-only inbox and letter view for online and offline characters, including attachments, money, COD and delivery/expiry times. Viewing messages leaves their recorded read state and contents intact.
+
+Update mod-transaction-journal and apply its 003_mail_sends.sql migration before upgrading to Hub 0.1.13. New paid sends by or involving monitored characters are recorded as mail_sent_observed. Transactions separates postage paid, attached gold and requested COD. Postage summaries are sender-scoped. These pre-commit observations do not prove delivery or collection, and old postage is not reconstructed from existing inboxes.
+
+Transactions supports editable Dungeon/Zone suggestions and clickable column sorting across the whole filtered result and exported JSON. Location filters require recorded location fields.

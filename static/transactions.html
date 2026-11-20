@@ -18,6 +18,7 @@
       <a class="page-switch" href="/sql">SQL explorer</a>
       <a class="page-switch" href="/combat-log">Combat Log</a>
       <a class="page-switch" href="/transactions" aria-current="page">Transactions</a>
+      <a class="page-switch" href="/mailbox">Mailbox</a>
       <a class="page-switch" href="/settings">Settings</a>
     </nav></header>
 
@@ -34,9 +35,10 @@
 <form id="transaction-filters">
 <label>Group<select id="group"><option value="">All tracked characters</option></select></label>
 <label>Character<select id="character"><option value="">All characters</option></select></label>
-<label>Event<select id="kind"><option value="">All events</option><option value="loot">Item loot</option><option value="loot_money">Money loot</option><option value="vendor_purchase">Vendor purchase</option><option value="vendor_sale_observed">Vendor sale observed</option><option value="listing_observed">AH listing</option><option value="sale_settlement_observed">Sale settlement observed</option><option value="expiration_observed">Expiration observed</option><option value="removal_observed">Removal observed</option></select></label>
+<label>Event<select id="kind"><option value="">All events</option><option value="loot">Item loot</option><option value="loot_money">Money loot</option><option value="mail_sent_observed">Mail sent observed</option><option value="vendor_purchase">Vendor purchase</option><option value="vendor_sale_observed">Vendor sale observed</option><option value="listing_observed">AH listing</option><option value="sale_settlement_observed">Sale settlement observed</option><option value="expiration_observed">Expiration observed</option><option value="removal_observed">Removal observed</option></select></label>
 <label>Item<input id="q" type="search" maxlength="100" placeholder="Name or ID"></label>
-<label>Source<input id="source" type="search" maxlength="100" placeholder="Mob name or entry ID"></label><label>Zone<input id="zone" type="search" maxlength="100" placeholder="Zone name or ID"></label>
+<label>Source<input id="source" type="search" maxlength="100" placeholder="Mob name or entry ID"></label><label>Dungeon<input id="dungeon" type="text" list="dungeon-options" maxlength="100" placeholder="Choose or type a dungeon" autocomplete="off"></label><datalist id="dungeon-options"></datalist>
+<label>Zone<input id="zone" type="text" list="zone-options" maxlength="100" placeholder="Choose or type a zone" autocomplete="off"></label><datalist id="zone-options"></datalist>
 <label>From<input id="from" type="datetime-local"></label><label>To<input id="to" type="datetime-local"></label>
 <button type="submit" class="gold-button">Apply / refresh</button><button id="export" class="gold-button" type="button" disabled>Export all results</button>
 <button id="remove-history" type="button" class="gold-button" disabled>Remove character history</button>
@@ -46,7 +48,7 @@
 <p id="history-status" role="status"></p>
 <p id="error" role="alert" hidden></p>
 <div class="transaction-summary" id="summary" aria-live="polite"></div>
-<div class="transaction-scroll"><table><thead><tr><th>Time</th><th>Character / counterparty</th><th>Event</th><th>Source / zone</th><th>Item</th><th>Qty</th><th>Vendor sell price</th><th>Price / proceeds</th><th>Listing</th></tr></thead><tbody id="events"></tbody></table></div>
+<div class="transaction-scroll"><table><thead><tr><th scope="col" data-sort="time"><button type="button" data-sort="time">Time</button></th><th scope="col" data-sort="character"><button type="button" data-sort="character">Character / counterparty</button></th><th scope="col" data-sort="event"><button type="button" data-sort="event">Event</button></th><th scope="col" data-sort="source"><button type="button" data-sort="source">Source / zone</button></th><th scope="col" data-sort="item"><button type="button" data-sort="item">Item</button></th><th scope="col" data-sort="quantity"><button type="button" data-sort="quantity">Qty</button></th><th scope="col" data-sort="vendor"><button type="button" data-sort="vendor">Vendor sell price</button></th><th scope="col" data-sort="price"><button type="button" data-sort="price">Price / proceeds</button></th><th scope="col" data-sort="listing"><button type="button" data-sort="listing">Listing</button></th></tr></thead><tbody id="events"></tbody></table></div>
 <p id="empty" hidden>No matching events yet. Loot an item or use the Auction House with a tracked character, then refresh.</p>
 <div class="transaction-pager"><button id="previous" type="button" class="subtle-button">Previous</button><span id="page"></span><button id="next" type="button" class="subtle-button">Next</button></div>
 <div id="transaction-tooltip" class="auction-tooltip" hidden role="tooltip"></div></main></body></html>
