@@ -1,3 +1,12 @@
+## v0.1.15 — Live World maps (2026-11-21)
+
+- Browse continent and zone maps with live, class-coloured character dots and zoomable clusters.
+- Optionally display fully explored map tiles from a configured local Wrath client. Use a schematic when artwork is unavailable. Client textures are excluded from releases.
+- Pan by dragging, zoom with Ctrl+wheel, and right-click a zone to return to its continent.
+- See zone population and recommended levels where available. Open a character’s Armory from the map.
+- Sort zone and character tables and track observed XP gains and XP/hour using existing snapshots.
+- Warm common maps in the background using a bounded Hub cache.
+
 ## v0.1.14 — Live World (2026-11-20)
 
 - Selecting a Live World character now opens the existing Armory model/equipment inspector below the table; position refreshes preserve the inspector.

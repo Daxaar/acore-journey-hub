@@ -144,3 +144,17 @@ Configure a private `bot-monitor.json` beside the Hub with a `directory` pointin
 The module's startup gate defaults off. Once permitted, the Hub capture checkbox controls sampling; Off stops character scans and recurring snapshot writes, leaving one small control-file check per second. Stale snapshots show a warning instead of live counts or positions. No history is stored in this first version.
 
 Live World faction emblems use the original client `Interface/TargetingFrame/UI-PVP-Alliance.blp` and `UI-PVP-Horde.blp` artwork. Prepare these local-only assets with `python3 prepare_faction_assets.py /path/to/WoW` (use `--output /path/to/hub/static` for another installation). Client artwork is excluded from public source packages. Missing artwork hides the image; the faction remains available in the name tooltip and character details.
+
+For the optional Live World coordinate maps, run `python3 prepare_live_world_maps.py /path/to/WoW` in the Hub installation. This reads only coordinate bounds from the local Wrath client into `assets/live-world-maps.json`. The schematic continent and zone views use the existing snapshot, group nearby dots into clickable clusters, and open Armory from a character dot. Instance floors are outside this version.
+
+### Optional Live World background images
+
+Place your own WebP images (up to 8 MiB each) in `assets/map-backgrounds/`. Name them `continent-0.webp`, `continent-1.webp`, `continent-530.webp`, `continent-571.webp`, or `zone-<map-id>-<zone-id>.webp` (for example, `zone-0-40.webp` for Westfall). Each image must cover the entire corresponding map bounds without margins. Enable **Use map backgrounds from my WoW client** in Settings and reload Live World. The schematic remains visible where a background is missing. The Hub serves enabled images to its users. Supply artwork you have permission to display. Local images are excluded from Git and releases.
+
+The **Use map backgrounds from my WoW client** setting uses the configured WoW 3.3.5a client folder, independently of whether 3D character models are enabled. The Hub reads existing outdoor map tiles as needed and displays them with the Live World overlay. The WebP folder above remains an optional fallback. No client images are included in the package.
+
+Outdoor backgrounds include the client’s exploration overlays where available, so landmarks appear without requiring character exploration. The overlay is visual only.
+
+Live World warms the four continents and up to eight busy zones once per 20-minute window. The low-priority Hub worker decodes one map at a time. The in-memory cache retains up to 64 MiB of compressed tiles for 20 minutes after use, with older entries evicted when full. It is rebuilt after a Hub restart.
+
+Live World shows XP gained since the Hub first observed each online session. The calculation uses the existing snapshots, including XP carried over a single level-up. A skipped level or XP reset marks the result as partial. Tracking resets when the Hub restarts and samples only while Live World is being read.

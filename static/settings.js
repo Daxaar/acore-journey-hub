@@ -6,6 +6,7 @@ let token;
 function fill(settings) {
   $("theme").value = settings.appearance.theme;
   $("font").value = settings.appearance.font;
+  $("map-backgrounds").checked = settings.map_backgrounds === true;
   $("base-tables").checked = settings.sql.base_tables_only;
   $("query-timeout").checked = settings.sql.execution_timeout;
   $("row-limit").checked = settings.sql.row_limit;
@@ -13,7 +14,7 @@ function fill(settings) {
 }
 function values() {
   return { sql: { base_tables_only: $("base-tables").checked, execution_timeout: $("query-timeout").checked,
-    row_limit: $("row-limit").checked }, appearance: { theme: $("theme").value, font: $("font").value } };
+    row_limit: $("row-limit").checked }, map_backgrounds: $("map-backgrounds").checked, appearance: { theme: $("theme").value, font: $("font").value } };
 }
 $("settings-form").addEventListener("change", () => {
   window.JourneyHubAppearance.preview(values().appearance);
