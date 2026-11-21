@@ -12,8 +12,10 @@ DEFAULTS = {'sql': {'base_tables_only': True, 'execution_timeout': True, 'row_li
 
 
 def validate_settings(value):
-    if not isinstance(value, dict) or set(value) != set(DEFAULTS):
-        raise ValueError('Settings must contain sql and appearance only.')
+    if not isinstance(value, dict) or set(value) not in (set(DEFAULTS), set(DEFAULTS) | {'map_backgrounds'}):
+        raise ValueError('Unsupported dashboard settings.')
+    if type(value.get('map_backgrounds', False)) is not bool:
+        raise ValueError('Map backgrounds must be true or false.')
     sql = value['sql']
     appearance = value['appearance']
     if not isinstance(sql, dict) or set(sql) != set(DEFAULTS['sql']):

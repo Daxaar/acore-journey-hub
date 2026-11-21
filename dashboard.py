@@ -29,6 +29,7 @@ STATUSES = {1: 'ready', 3: 'active', 5: 'failed'}
 
 from rested_xp import rested_view
 from client_models import client_path
+from client_map_tiles import ClientMapTiles
 from combat_log import MAX_LOG, CombatLogStore, MAX_REQUEST as MAX_COMBAT_REQUEST
 from server_identity import ServerIdentity
 from mysql_access import DatabaseError, name_filter, snapshot_sql, read_database
@@ -278,6 +279,8 @@ ASSETS.update({
     '/armory-embed': ('armory.html', 'text/html; charset=utf-8'),
     '/live-world': ('live-world.html', 'text/html; charset=utf-8'),
     '/live-world.js': ('live-world.js', 'text/javascript; charset=utf-8'),
+    '/live-world-map.js': ('live-world-map.js', 'text/javascript; charset=utf-8'),
+    '/live-world-map.css': ('live-world-map.css', 'text/css; charset=utf-8'),
     '/live-world.css': ('live-world.css', 'text/css; charset=utf-8'),
     '/mailbox': ('mailbox.html', 'text/html; charset=utf-8'),
     '/mailbox.js': ('mailbox.js', 'text/javascript; charset=utf-8'),
@@ -337,6 +340,7 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
     training = TrainingProvider()
     quest_log = QuestLogProvider(objectives)
     models = ClientModels()
+    client_maps = ClientMapTiles()
     journal = journal or JournalStore()
     combat_logs = CombatLogStore()
     identity = ServerIdentity()
@@ -348,11 +352,11 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             # Paths/headers are untrusted; keep the local log small and credential-free.
             pass
 
-        def send(self, status, content_type, body):
+        def send(self, status, content_type, body, cache_control='no-store'):
             self.send_response(status)
             self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', str(len(body)))
-            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Cache-Control', cache_control)
             self.send_header('X-Content-Type-Options', 'nosniff')
             embedded_armory = urlsplit(getattr(self,'path','')).path == '/armory-embed'
             self.send_header('X-Frame-Options', 'SAMEORIGIN' if embedded_armory else 'DENY')
@@ -451,6 +455,17 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 elif path == '/api/settings':
                     result = settings.save(payload)
                     self.json_response(200, {'ok': True, 'settings': result})
+                elif path == '/api/live-world/warm-maps':
+                    if payload:
+                        raise ValueError('Map warmup expects an empty object.')
+                    folder = models.get_config()['client_path']
+                    queued = 0
+                    if folder and settings.get().get('map_backgrounds'):
+                        state = bot_monitor.get({})
+                        zones = [(z['map_id'], z['zone_id']) for z in state['zones'][:8]]
+                        queued = client_maps.warm(folder, zones, lambda:
+                            settings.get().get('map_backgrounds') and models.get_config()['client_path'] == folder)
+                    self.json_response(200, {'ok': True, 'queued': queued})
                 elif path == '/api/live-world/control':
                     self.json_response(200,{'ok':True,'control':bot_monitor.update(payload)})
                 elif path == '/api/transactions/remove-history':
@@ -634,6 +649,49 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except LookupError as exc:self.json_response(404,{'ok':False,'error':str(exc)})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
+            elif re.fullmatch(r'/live-world-tiles/[0-9]{1,10}/[0-9]{1,10}/(?:index|(?:[1-9][0-9]{0,2})[.]png)', path):
+                if not settings.get().get('map_backgrounds'):
+                    self.send_error(404)
+                    return
+                _, _, map_id, zone_id, tile = path.split('/')
+                entries = client_maps.get(models.get_config()['client_path'], int(map_id), int(zone_id))
+                if not entries:
+                    self.send_error(404)
+                else:
+                    base_tiles, overlays = entries
+                    if tile == 'index':
+                        self.json_response(200, {'tiles': len(base_tiles),
+                                                 'overlays': [part[:4] for part in overlays]})
+                        return
+                    index = int(tile[:-4])-1
+                    if index >= len(base_tiles) + len(overlays):
+                        self.send_error(404)
+                        return
+                    body = base_tiles[index] if index < len(base_tiles) else overlays[index-len(base_tiles)][-1]
+                    self.send(200, 'image/png', body, cache_control='private, max-age=300')
+            elif re.fullmatch(r'/live-world-background/(?:continent-\d{1,10}|zone-\d{1,10}-\d{1,10})[.]webp', path):
+                root = ROOT / 'assets' / 'map-backgrounds'
+                image = root / path.rsplit('/', 1)[1]
+                if not settings.get().get('map_backgrounds') or root.is_symlink() or image.is_symlink():
+                    self.send_error(404)
+                    return
+                try:
+                    with image.open('rb') as stream:
+                        body = stream.read(8 * 1024 * 1024 + 1)
+                except OSError:
+                    self.send_error(404)
+                    return
+                if not (12 <= len(body) <= 8 * 1024 * 1024 and body.startswith(b'RIFF') and body[8:12] == b'WEBP'):
+                    self.send_error(404)
+                    return
+                self.send(200, 'image/webp', body, cache_control='private, max-age=300')
+            elif path == '/live-world-map-bounds.json':
+                try:
+                    body = (ROOT / 'assets' / 'live-world-maps.json').read_bytes()
+                except OSError:
+                    self.send_error(404)
+                else:
+                    self.send(200, 'application/json', body)
             elif path == '/api/live-world':
                 try:
                     params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)

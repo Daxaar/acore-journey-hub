@@ -25,6 +25,8 @@ class BotMonitor:
         self.cached_key=None
         self.cached=None
         self.cached_size=0
+        self.xp_sessions = {}
+        self.xp_frame = None
 
     def control(self):
         if self.directory is None:return dict(DEFAULT_CONTROL)
@@ -64,6 +66,41 @@ class BotMonitor:
                 if temporary is not None:temporary.unlink(missing_ok=True)
         return dict(payload)
 
+    def _observe_xp(self, snapshot):
+        """Track only the latest observed session per online character."""
+        now = snapshot['generated_at_ms']
+        boot = snapshot.get('exporter_boot_at_ms')
+        frame = (boot, now, snapshot.get('sequence'))
+        if frame == self.xp_frame:
+            return
+        if self.xp_frame is not None and boot == self.xp_frame[0] and now < self.xp_frame[1]:
+            return
+        current = {}
+        for row in snapshot['characters'] if snapshot.get('enabled') else ():
+            guid, started, level, xp, next_xp = (
+                row.get(k) for k in ('guid', 'session_started_at', 'level', 'xp', 'next_level_xp')
+            )
+            if not all(type(v) is int and v >= 0 for v in (guid, started, level, xp, next_xp)) or not started:
+                continue
+            identity = (boot, started)
+            first, gained, partial = now, 0, False
+            previous = self.xp_sessions.get(guid)
+            if previous and previous[0] == identity:
+                _, first, old_level, old_xp, old_next, gained, partial = previous
+                if level == old_level and xp >= old_xp:
+                    gained += xp - old_xp
+                elif level == old_level + 1 and old_next > old_xp:
+                    gained += old_next - old_xp + xp
+                else:
+                    # A skipped level or an external XP reset cannot be reconstructed from these snapshots.
+                    partial = True
+            current[guid] = (identity, first, level, xp, next_xp, gained, partial)
+            row['observed_xp_gained'] = gained
+            row['xp_observed_seconds'] = max(0, (now - first) // 1000)
+            row['xp_partial'] = partial
+        self.xp_sessions = current
+        self.xp_frame = frame
+
     def snapshot(self):
         if self.directory is None:return None
         path=self.directory/'snapshot.json'
@@ -80,16 +117,20 @@ class BotMonitor:
                 raise ValueError('Unsupported Bot Monitor snapshot.')
             if not isinstance(data.get('generated_at_ms'),int) or not isinstance(data.get('interval_ms'),int):
                 raise ValueError('Invalid Bot Monitor timestamp or interval.')
+            self._observe_xp(data)
             self.cached_key=key
             self.cached=data
             self.cached_size=stat.st_size
             return data
 
     def get(self,params):
-        allowed={'zone','map','q','type','faction','min','max'}
+        allowed={'zone','map','q','type','faction','min','max','positions'}
         if set(params)-allowed or any(len(value)!=1 for value in params.values()):
             raise ValueError('Provide one value per Live World filter.')
         values={key:value[0] for key,value in params.items()}
+        positions = values.get('positions', '0')
+        if positions not in ('0', '1'):
+            raise ValueError('Positions must be 0 or 1.')
         query=values.get('q','').strip()
         if len(query)>100 or any(ord(c)<32 or 0xD800<=ord(c)<=0xDFFF for c in query):
             raise ValueError('Search with up to 100 printable characters.')
@@ -108,6 +149,8 @@ class BotMonitor:
         control=self.control()
         result={'configured':self.directory is not None,'control':control,'state':'unconfigured','counts':None,
                 'zones':[],'characters':[],'levels':[],'metadata':{},'age_ms':None,'file_size_bytes':0}
+        if positions == '1':
+            result['map_points'] = []
         if self.directory is None:return result
         snapshot=self.snapshot()
         result['state']='off' if not control['enabled'] else 'starting'
@@ -144,6 +187,9 @@ class BotMonitor:
             zone[bot_type]+=1;zone['total']+=1
             if bot_type!='human':zone['bots']+=1
             if selected==key:result['characters'].append(row)
+            if positions == '1':
+                fields = ('guid','name','class','bot_type','map_id','zone_id','instance_id','x','y')
+                result['map_points'].append({field: row.get(field) for field in fields})
         result['counts']={'total':sum(counts.values()),**counts}
         result['zones']=sorted(zones.values(),key=lambda zone:(-zone['bots'],zone['name'].casefold()))
         result['levels']=[{'range':label,'count':count} for label,count in sorted(levels.items(),key=lambda pair:int(pair[0].split('–')[0]))]

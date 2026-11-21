@@ -1,0 +1,40 @@
+.live-map-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#live-map-surface{display:block;width:100%;height:auto;box-sizing:border-box;aspect-ratio:1000/670;background:#101d21;border:1px solid #41535a;border-radius:8px}
+.live-map-grid{stroke:#304247;stroke-width:1;fill:none;pointer-events:none}
+.live-map-zone rect{fill:#253d40;fill-opacity:.65;stroke:#617d7e;stroke-width:1}
+.live-map-zone text{fill:#f1deb0;font-size:12px;text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#132124;stroke-width:3}
+.live-map-zone,.live-map-dot,.live-map-cluster{cursor:pointer}
+.live-map-zone:hover rect,.live-map-zone:focus rect{fill:#4c6760;stroke:#efcc73}
+.live-map-dot circle{fill:var(--class,#f4df9a);stroke:#0f181a;stroke-width:1;vector-effect:non-scaling-stroke}
+.live-map-cluster circle{fill:#ddba65;stroke:#332815;stroke-width:1;vector-effect:non-scaling-stroke}
+.live-map-dot:hover circle,.live-map-dot:focus circle,.live-map-cluster:hover circle,.live-map-cluster:focus circle{stroke:white;stroke-width:2}
+.live-map-cluster text{fill:#20190f;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+#live-map-cluster-list{display:flex;flex-wrap:wrap;gap:6px}
+#live-map-cluster-list button{color:var(--class,var(--text))}
+
+#live-map-surface image{pointer-events:none}
+#live-map-surface image ~ .live-map-zone rect{fill-opacity:.18}
+
+#live-map-surface > svg[data-map-background]{pointer-events:none;overflow:hidden}
+#live-map-surface > svg[data-map-background] ~ .live-map-zone rect{fill-opacity:.18}
+
+#live-map-surface{user-select:none}
+#live-map-surface.can-pan{cursor:grab}
+#live-map-surface.is-panning,#live-map-surface.is-panning g{cursor:grabbing}
+
+@font-face{font-family:WrathMap;src:url('/wrath-client.ttf') format('truetype');font-display:swap}
+.live-map-frame{position:relative}
+#live-map-hover-name{position:absolute;top:12px;left:0;right:0;text-align:center;pointer-events:none;z-index:1;color:white;font:clamp(20px,3vw,40px)/1.2 WrathMap,Georgia,serif;paint-order:stroke fill;-webkit-text-stroke:3px black;text-shadow:0 1px 3px black}
+.live-map-zone:hover rect,.live-map-zone:focus rect{fill:transparent;stroke:transparent;pointer-events:all}
+
+#live-map-surface .live-map-zone rect{fill:transparent;stroke:none;pointer-events:all}
+
+/* Client artwork provides its own geographic reference. */
+#live-map-surface > svg[data-map-background] ~ .live-map-grid{display:none}
+
+.live-map-frame .live-map-tools{position:absolute;top:10px;left:10px;right:10px;z-index:2;pointer-events:none;gap:6px}
+.live-map-frame .live-map-tools select,.live-map-frame .live-map-tools button{pointer-events:auto;background:var(--panel,#202620);color:var(--text,#fff);border-radius:4px}
+@media (max-width:900px){#live-map-hover-name{top:58px}}
+
+/* The SVG surface is a group. Its interactive children retain their own focus indicators. */
+#live-map-surface:focus{outline:none}
