@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.15'
+VERSION='0.1.16'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'bot_monitor.py','prepare_faction_assets.py','prepare_live_world_maps.py','client_map_tiles.py',
