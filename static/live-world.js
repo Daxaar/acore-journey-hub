@@ -118,7 +118,58 @@ if (scrollToArmory && $('character-detail').dataset.guid === String(selectedGuid
 $('level-summary').textContent=data.levels.map(l=>'Level '+l.range+': '+l.count).join(' · ');
 const m=data.metadata;$('world-metrics').textContent=data.state==='running'?'Capture '+Number(m.capture_ms).toFixed(2)+' ms · JSON '+Number(m.serialize_ms).toFixed(2)+' ms · previous write '+Number(m.previous_write_ms).toFixed(2)+' ms · '+(data.file_size_bytes/1024).toFixed(0)+' KiB · skipped snapshots '+m.dropped_snapshots+' · updated '+new Date(m.generated_at_ms).toLocaleTimeString():'';}
 async function load(){if(busy)return;busy=true;try{const params=new URLSearchParams(filters);params.set('positions','1');if(selected){params.set('map',selected[0]);params.set('zone',selected[1]);}const data=await request('/api/live-world?'+params);if (!reloadForSelection) render(data.result);error('');}catch(e){error(e.message);}finally{busy=false;if(reloadForSelection){reloadForSelection=false;load();}}}
-$('filter-form').addEventListener('submit',e=>{e.preventDefault();filters=new URLSearchParams();for(const key of ['type','faction','min','max'])if($(key).value)filters.set(key,$(key).value);if($('search').value.trim())filters.set('q',$('search').value.trim());load();});
+let guildOptions = [];
+function updateGuildOptions() {
+  const dropdown = $('guild');
+  const current = dropdown.value;
+  const faction = $('faction').value;
+  const suffix = {Alliance: ' (A)', Horde: ' (H)'};
+  const visible = guildOptions.filter(guild => !faction || guild.faction === faction);
+  dropdown.replaceChildren(new Option('All guilds', ''), ...visible.map(guild =>
+    new Option(guild.name + (suffix[guild.faction] || ''), guild.id)));
+  if (visible.some(guild => String(guild.id) === current)) dropdown.value = current;
+}
+
+request('/api/live-world/guilds').then(({guilds}) => {
+  guildOptions = guilds;
+  updateGuildOptions();
+}).catch(err => {
+  $('guild').options[0].textContent = err.message;
+  $('guild').disabled = true;
+});
+const filterForm = $('filter-form');
+function applyFilters() {
+  const next = new URLSearchParams();
+  for (const key of ['type', 'faction', 'guild']) {
+    if ($(key).value) next.set(key, $(key).value);
+  }
+  for (const [key, fallback] of [['min', '1'], ['max', '80']]) {
+    const value = $(key).value;
+    if (value && value !== fallback) next.set(key, value);
+  }
+  const query = $('search').value.trim();
+  if (query) next.set('q', query);
+  if (next.toString() === filters.toString()) return;
+  filters = next;
+  refreshSelection();
+}
+
+filterForm.addEventListener('submit', event => {
+  event.preventDefault();
+  applyFilters();
+});
+filterForm.addEventListener('change', event => {
+  if (event.target.id === 'faction' && !$('guild').disabled) updateGuildOptions();
+  if (event.target.matches('select')) applyFilters();
+});
+filterForm.addEventListener('focusout', event => {
+  if (event.target.matches('input')) applyFilters();
+});
+filterForm.addEventListener('keydown', event => {
+  if (event.key !== 'Enter' || event.isComposing || !event.target.matches('input')) return;
+  event.preventDefault();
+  applyFilters();
+});
 $('capture-form').addEventListener('submit',async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{if(!token)token=(await request('/api/session')).token;await request('/api/live-world/control',{method:'POST',headers:{'Content-Type':'application/json','X-Dashboard-Token':token},body:JSON.stringify({enabled:$('capture').checked,interval_ms:Number($('interval').value),include_quests:$('quests').checked})});await load();}catch(e){error(e.message);}finally{button.disabled=false;}});
 load();setInterval(()=>{if(!document.hidden)load();},5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
 })();

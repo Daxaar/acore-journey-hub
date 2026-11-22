@@ -40,8 +40,10 @@ from armory import ArmoryProvider
 from gear_planner import GearPlanner,PlannerPreferences
 from transaction_deletion import TransactionDeletion
 from transaction_monitoring import TransactionMonitoring
-from bot_monitor import BotMonitor
+from bot_monitor import BotMonitor, live_world_guilds
 from mailbox_view import MailboxProvider
+from guild_tax import get_guild_tax, current_guilds
+from guild_tax_config import save_rates
 from transactions import get_transactions, export_transactions, transaction_locations
 from auctions import AuctionProvider
 from hub_runtime import registered
@@ -285,6 +287,8 @@ ASSETS.update({
     '/mailbox': ('mailbox.html', 'text/html; charset=utf-8'),
     '/mailbox.js': ('mailbox.js', 'text/javascript; charset=utf-8'),
     '/mailbox.css': ('mailbox.css', 'text/css; charset=utf-8'),
+    '/guild-tax': ('guild-tax.html', 'text/html; charset=utf-8'),
+    '/guild-tax.js': ('guild-tax.js', 'text/javascript; charset=utf-8'),
     '/transactions': ('transactions.html', 'text/html; charset=utf-8'),
     '/transactions.js': ('transactions.js', 'text/javascript; charset=utf-8'),
     '/transactions.css': ('transactions.css', 'text/css; charset=utf-8'),
@@ -408,7 +412,14 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 if not isinstance(payload, dict):
                     raise ValueError('Expected a JSON object.')
                 path = urlsplit(self.path).path
-                if path == '/api/journal':
+                if path == '/api/guild-tax/rate':
+                    try:
+                        count = save_rates(payload, current_guilds)
+                    except PermissionError as exc:
+                        self.json_response(403, {'ok': False, 'error': str(exc)})
+                    else:
+                        self.json_response(200, {'ok': True, 'count': count})
+                elif path == '/api/journal':
                     if payload.get('action') == 'delete':
                         journal.delete(payload.get('id'),payload.get('revision'))
                         self.json_response(200, {'ok':True})
@@ -692,12 +703,26 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                     self.send_error(404)
                 else:
                     self.send(200, 'application/json', body)
+            elif path == '/api/live-world/guilds':
+                try:
+                    self.json_response(200, {'ok': True, 'guilds': live_world_guilds()})
+                except DatabaseError:
+                    self.json_response(503, {'ok': False, 'error': 'Guild names are unavailable.'})
             elif path == '/api/live-world':
                 try:
                     params=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
                     self.json_response(200,{'ok':True,'result':bot_monitor.get(params)})
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
+                except DatabaseError:self.json_response(503,{'ok':False,'error':'Guild membership is unavailable.'})
                 except (OSError,KeyError,TypeError):self.json_response(503,{'ok':False,'error':'Live snapshot unavailable or invalid.'})
+            elif path == '/api/guild-tax':
+                try:
+                    params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    self.json_response(200, {'ok': True, 'result': get_guild_tax(params)})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except DatabaseError:
+                    self.json_response(503, {'ok': False, 'error': 'Guild tax ledger is unavailable.'})
             elif path == '/api/transactions/locations':
                 try:self.json_response(200,{'ok':True,'locations':transaction_locations()})
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})

@@ -1,5 +1,6 @@
-"""Read a shared live snapshot and control the optional exporter. No game database access."""
+"""Read a shared live snapshot and control the optional exporter. Guild filters read cached membership data."""
 import fcntl
+from functools import lru_cache
 import json
 import os
 from pathlib import Path
@@ -9,6 +10,29 @@ import time
 
 BOT_TYPES=('human','random_bot','alt_bot','unknown_bot')
 DEFAULT_CONTROL={'enabled':False,'interval_ms':5000,'include_quests':True}
+
+def guild_query(sql):
+    from armory import read_inventory_sql
+    return read_inventory_sql(
+        'SET SESSION TRANSACTION READ ONLY; SET SESSION MAX_EXECUTION_TIME=3000; '
+        "SELECT JSON_OBJECT('kind','meta','read_only',@@SESSION.transaction_read_only); " + sql
+    )
+
+
+def live_world_guilds():
+    return guild_query("""SELECT JSON_OBJECT('id',g.guildid,'name',g.name,
+        'faction',CASE WHEN c.race IN (1,3,4,7,11) THEN 'Alliance'
+                       WHEN c.race IN (2,5,6,8,10) THEN 'Horde' ELSE 'Unknown' END)
+        FROM acore_characters.guild g LEFT JOIN acore_characters.characters c ON c.guid=g.leaderguid
+        ORDER BY g.name,g.guildid;""")
+
+
+@lru_cache(maxsize=64)
+def guild_members(guild, minute):
+    return frozenset(row['guid'] for row in guild_query(
+        f"SELECT JSON_OBJECT('guid',guid) FROM acore_characters.guild_member WHERE guildid={guild};"
+    ))
+
 
 class BotMonitor:
     def __init__(self,directory=None,classes=None,races=None,clock=None):
@@ -124,7 +148,7 @@ class BotMonitor:
             return data
 
     def get(self,params):
-        allowed={'zone','map','q','type','faction','min','max','positions'}
+        allowed={'zone','map','q','type','faction','min','max','positions','guild'}
         if set(params)-allowed or any(len(value)!=1 for value in params.values()):
             raise ValueError('Provide one value per Live World filter.')
         values={key:value[0] for key,value in params.items()}
@@ -138,6 +162,9 @@ class BotMonitor:
         faction=values.get('faction','')
         if kind and kind not in BOT_TYPES:raise ValueError('Choose a valid character type.')
         if faction and faction not in ('Alliance','Horde'):raise ValueError('Choose a valid faction.')
+        guild = int(values.get('guild') or 0)
+        if not 0 <= guild <= 4294967295:
+            raise ValueError('Choose a valid guild.')
         minimum=int(values.get('min') or 1)
         maximum=int(values.get('max') or 80)
         if not 1<=minimum<=maximum<=80:raise ValueError('Choose a level range from 1 to 80.')
@@ -164,11 +191,14 @@ class BotMonitor:
             result['state']='stale'
             return result
         result['state']='running'
+        members = guild_members(guild, int(time.monotonic() // 60)) if guild else None
         counts={kind:0 for kind in BOT_TYPES}
         zones={}
         levels={}
         needle=query.casefold()
         for original in snapshot['characters']:
+            if members is not None and original.get('guid') not in members:
+                continue
             row=dict(original)
             row['class_name']=self.classes.get(row.get('class'),'Class #'+str(row.get('class')))
             row['race_name']=self.races.get(row.get('race'),'Race #'+str(row.get('race')))
