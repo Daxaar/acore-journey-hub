@@ -24,7 +24,7 @@
 
 @font-face{font-family:WrathMap;src:url('/wrath-client.ttf') format('truetype');font-display:swap}
 .live-map-frame{position:relative}
-#live-map-hover-name{position:absolute;top:12px;left:0;right:0;text-align:center;pointer-events:none;z-index:1;color:white;font:clamp(20px,3vw,40px)/1.2 WrathMap,Georgia,serif;paint-order:stroke fill;-webkit-text-stroke:3px black;text-shadow:0 1px 3px black}
+#live-map-hover-name{position:absolute;top:12px;left:0;right:0;text-align:center;pointer-events:none;z-index:1;color:white;font:clamp(16px,2vw,26px)/1.2 WrathMap,Georgia,serif;paint-order:stroke fill;-webkit-text-stroke:2px black;text-shadow:0 1px 3px black}
 .live-map-zone:hover rect,.live-map-zone:focus rect{fill:transparent;stroke:transparent;pointer-events:all}
 
 #live-map-surface .live-map-zone rect{fill:transparent;stroke:none;pointer-events:all}
@@ -38,3 +38,7 @@
 
 /* The SVG surface is a group. Its interactive children retain their own focus indicators. */
 #live-map-surface:focus{outline:none}
+
+/* Keep the zone hit area invisible when focused by a pointer. */
+#live-map-surface .live-map-zone:focus:not(:focus-visible),
+#live-map-surface .live-map-zone:active:not(:focus-visible){outline:none}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guild Tax · Journey Hub</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/auctions.css"><link rel="stylesheet" href="/transactions.css">
+<script src="/appearance.js"></script><script src="/guild-tax.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="AzerothCore Journey Hub home"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Journey Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+<nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/combat-log">Combat Log</a>
+      <a class="page-switch" href="/transactions">Transactions</a>
+      <a class="page-switch" href="/mailbox">Mailbox</a>
+      <a class="page-switch" href="/live-world">Live World</a>
+      <a class="page-switch" href="/guild-tax" aria-current="page">Guild Tax</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav></header>
+
+<main class="transactions-page">
+<h1>Guild Tax</h1>
+<form id="transaction-filters">
+<label>Guild<select id="tax-guild"><option value="0">All guilds</option></select></label>
+<label>Period<select id="tax-period"><option value="today">Today</option><option value="7d" selected>Last 7 days</option><option value="30d">Last 30 days</option><option value="all">All time</option></select></label>
+<button class="subtle-button">Refresh</button>
+</form>
+<details id="tax-rates" hidden><summary>Manage rates</summary>
+<form id="tax-rate-form">
+<div class="tax-rate-controls">
+<label>Find a guild <input id="tax-guild-search" type="search"></label>
+<label>Rate for selected guilds (%) <input id="tax-bulk-rate" type="number" min="0" max="100" step="1"></label>
+<button id="tax-apply-selected" class="subtle-button" type="button">Apply to selected</button>
+</div>
+<div class="tax-guild-table">
+<table><thead><tr><th><input id="tax-select-all" type="checkbox" aria-label="Select all visible guilds"></th><th>Guild</th><th>Faction</th><th>Members</th><th>Saved rate (%)</th></tr></thead>
+<tbody id="tax-guild-rows"></tbody></table>
+</div>
+<div class="tax-rate-controls">
+<label>Guild Tax admin key <input id="tax-admin-key" type="password" autocomplete="off" required></label>
+<button class="subtle-button">Save changed rates</button>
+</div>
+</form>
+<p>Enter 0% to disable tax for this guild. After saving, run <code>.reload config</code> in game to apply the change.</p>
+<p id="rate-status" role="status"></p>
+</details>
+<p id="tax-status" role="status"></p>
+<p id="tax-total"></p>
+<table>
+<thead><tr><th id="tax-name-heading">Guild</th><th id="tax-level-heading" hidden>Level</th><th id="tax-rate-heading">Saved tax rate</th><th>Tax paid</th></tr></thead>
+<tbody id="tax-ranks"></tbody>
+</table>
+<section id="tax-details" hidden>
+<h2 id="tax-character"></h2>
+<table><thead><tr><th>Time</th><th>Source entry</th><th>Gross</th><th>Tax</th><th>Net</th><th>Status</th></tr></thead>
+<tbody id="tax-history"></tbody></table>
+</section>
+</main></body></html>

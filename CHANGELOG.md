@@ -1,3 +1,10 @@
+## v0.1.16 - Guild Tax and Live World filters (2026-11-22)
+
+- View guild contribution totals, character breakdowns and transfer diagnostics.
+- Manage guild tax rates individually or in bulk with a separate admin key. Run the in-game config reload after saving.
+- Filter Live World by guild and faction. Filters apply on dropdown change, Enter or leaving an input.
+- Reduce the map hover label size and hide the zone outline on pointer focus.
+
 ## v0.1.15 — Live World maps (2026-11-21)
 
 - Browse continent and zone maps with live, class-coloured character dots and zoomable clusters.

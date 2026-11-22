@@ -62,3 +62,15 @@
 .transactions-page th button[data-sort]{display:block;width:100%;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;padding:0;text-align:left;white-space:nowrap}
 .transactions-page th button[data-sort]:hover{color:var(--gold)}
 .transactions-page th[aria-sort] button{color:var(--gold)}
+
+#tax-ranks .tax-character{background:none;border:0;padding:0;color:var(--class,var(--text));font:inherit;font-weight:700;cursor:pointer}
+#tax-ranks .tax-character:hover{text-decoration:underline}
+#tax-ranks .money,#tax-history .money,#tax-total .money{font:inherit}
+
+.tax-rate-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:12px 0}
+.tax-guild-table{max-height:28rem;overflow:auto}
+.tax-guild-table thead th{position:sticky;top:0;background:var(--panel,#201c18);z-index:1}
+.tax-guild-table input[type=number],#tax-bulk-rate{width:6rem}
+#tax-guild-rows tr[hidden]{display:none}
+
+.tax-faction-icon{width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px}
