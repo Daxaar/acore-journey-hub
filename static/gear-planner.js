@@ -3,7 +3,7 @@
  const $=id=>document.getElementById(id);
  const classes={1:'Warrior',2:'Paladin',3:'Hunter',4:'Rogue',5:'Priest',6:'Death Knight',7:'Shaman',8:'Mage',9:'Warlock',11:'Druid'};
  const availability={now:'Saved checks pass',check:'Requirements to check',soon:'Soon',later:'Later'};
- const sourceLabels={owned:'Already owned',guild:'Guild bank',quest:'Quest reward',craft:'Crafting',vendor:'Vendor'};
+ const sourceLabels={owned:'Already owned',guild:'Guild bank',quest:'Quest reward',craft:'Crafting',vendor:'Vendor',dungeon:'Dungeon loot'};
  let session=null,data=null,serial=0,controller=null,busy=false,sessionBusy=false,fingerprint='',shown=new Map(),activityLimit=6;
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
  const number=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
@@ -28,7 +28,7 @@
  }
  window.addEventListener('resize',hideItemTooltip);document.addEventListener('scroll',hideItemTooltip,true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape')hideItemTooltip();});
- function sourceLink(source){if(source.kind==='vendor')return wowheadLink(sourceLabel(source),'npc',source.npc);if(source.kind==='quest')return questLinks(source.label,source.id);if(source.kind==='craft')return wowheadLink(source.label,'spell',source.id);return el('span',sourceLabel(source));}
+ function sourceLink(source){if(['vendor','dungeon'].includes(source.kind))return wowheadLink(sourceLabel(source),'npc',source.npc);if(source.kind==='quest')return questLinks(source.label,source.id);if(source.kind==='craft')return wowheadLink(source.label,'spell',source.id);return el('span',sourceLabel(source));}
  function icon(item){const img=el('img',undefined,'planner-item-icon');img.alt='';img.loading='lazy';img.src=item.icon?'/icons/'+encodeURIComponent(item.icon)+'.jpg':'/item-placeholder.svg';img.addEventListener('error',()=>{if(!img.src.endsWith('/item-placeholder.svg'))img.src='/item-placeholder.svg';});return img;}
  async function request(url,options={}){const response=await fetch(url,{cache:'no-store',...options});const payload=await response.json();if(!response.ok||payload.ok===false)throw new Error(payload.error||'Planner unavailable. Try refreshing.');return payload;}
  function group(){return session?.groups.groups.find(g=>g.id===session.groups.selected);}
@@ -44,18 +44,34 @@
   try{const latest=await request('/api/session');const next=JSON.stringify(latest.groups);session=latest;renderGroups();if(force||next!==fingerprint){fingerprint=next;shown.clear();await load();}}
   catch(e){error(e.message);}finally{sessionBusy=false;}
  }
- function matches(rec){const source=$('planner-source').value,when=$('planner-availability').value;return (!source||(source==='owned'?['owned','guild'].includes(rec.source.kind):rec.source.kind===source))&&(!when||rec.availability===when);}
+ function matchesWhen(entry,when){return when==='equip-now'?entry.can_equip_now===true:(!when||entry.availability===when);}
+ function matches(rec){const source=$('planner-source').value,when=$('planner-availability').value;return (!source||(source==='owned'?['owned','guild'].includes(rec.source.kind):rec.source.kind===source))&&matchesWhen(rec,when);}
  function statTable(values,contributions=null){
   const table=el('table',undefined,'planner-stat-table'),head=el('tr');
   for(const text of contributions?['Stat change','Amount','Score contribution']:['Stat','Amount']){const th=el('th',text);th.scope='col';head.append(th);}const thead=el('thead');thead.append(head);table.append(thead);const body=el('tbody');
   for(const [key,value] of Object.entries(values).sort((a,b)=>a[0].localeCompare(b[0]))){if(!value)continue;const row=el('tr'),amount=el('td',(contributions&&value>0?'+':'')+number(value),contributions?(value>0?'planner-positive':'planner-negative'):'');row.append(el('td',label(key)),amount);if(contributions){const score=contributions[key]||0;row.append(el('td',(score>0?'+':'')+number(score)));}body.append(row);}table.append(body);return table;
  }
- function recommendation(rec){
+ function equippedComparison(rec, equipment){
+  const comparison=el('div',undefined,'planner-equipped-comparison');
+  comparison.append(el('small','Currently equipped'));
+  for(const slotId of rec.replace_slots){
+   const slot=equipment.find(entry=>entry.slot===slotId);
+   const row=el('div',undefined,'planner-equipped-item');
+   if(slot?.item){
+    const name=el('span',undefined,'planner-quality-'+slot.item.quality);
+    name.append(itemLink(slot.item));
+    row.append(icon(slot.item),name);
+   }else row.append(el('span',slot ? slot.label+' empty' : 'Slot unavailable'));
+   comparison.append(row);
+  }
+  return comparison;
+ }
+ function recommendation(rec, equipment){
   const details=el('details',undefined,'planner-upgrade'),summary=el('summary'),copy=el('div',undefined,'planner-item-copy'),gain=el('div','+'+number(rec.gain),'planner-gain');
   gain.append(el('small',rec.gain_percent===null?'empty-slot score':number(rec.gain_percent)+'% score gain'));
   const name=el('strong',undefined,'planner-quality-'+rec.item.quality);name.append(itemLink(rec.item));const source=el('small',rec.slot_name+' · ');source.append(sourceLink(rec.source));copy.append(name,source);
   const tags=el('div');tags.append(pill(sourceLabels[rec.source.kind],['owned','guild'].includes(rec.source.kind)?'owned':''),pill(availability[rec.availability],rec.availability));if(rec.confidence==='review')tags.append(pill('Review effects','review'));copy.append(tags);
-  summary.append(icon(rec.item),copy,gain);details.append(summary);const content=el('div',undefined,'planner-upgrade-detail');
+  summary.append(icon(rec.item),copy,equippedComparison(rec,equipment),gain);details.append(summary);const content=el('div',undefined,'planner-upgrade-detail');
   const replaced=el('p','Replaces: ');if(rec.replaced_items?.length)rec.replaced_items.forEach((item,i)=>{if(i)replaced.append(document.createTextNode(' + '));replaced.append(itemLink(item));});else replaced.append(document.createTextNode(rec.replaces.join(' + ')));
   content.append(itemLink(rec.item),replaced,el('p','Weighted score '+number(rec.baseline_score)+' → '+number(rec.score)+' · Item level '+rec.item.level+' · Requires level '+rec.item.required_level));
   if(rec.item.required_skill){const p=el('p','Requires ','planner-requirements');p.append(wowheadLink('skill #'+rec.item.required_skill,'skill',rec.item.required_skill),document.createTextNode(' at '+rec.item.required_skill_rank));content.append(p);}
@@ -86,7 +102,7 @@
   body.append(equipment(char));
   if(char.role){const matchesList=char.recommendations.filter(matches),limit=shown.get(char.guid)||6;body.append(el('p',matchesList.length+' displayed-source alternatives'+(char.recommendation_count>char.recommendations.length?' · '+char.recommendation_count+' total; best 120 retained per character':'')+' · Alternatives may replace the same slot.','planner-quiet'));
    if(!matchesList.length)body.append(el('p','No worthwhile upgrades match these filters and the five-level lookahead. Try a lower minimum gain or another source.','planner-quiet'));
-   const cards=el('div',undefined,'planner-recommendations');for(const rec of matchesList.slice(0,limit))cards.append(recommendation(rec));body.append(cards);
+   const cards=el('div',undefined,'planner-recommendations');for(const rec of matchesList.slice(0,limit))cards.append(recommendation(rec,char.equipment));body.append(cards);
    if(matchesList.length>limit){const more=el('button','Show '+Math.min(matchesList.length-limit,6)+' more alternatives','subtle-button planner-show-more');more.type='button';more.addEventListener('click',()=>{shown.set(char.guid,limit+6);renderMembers();});body.append(more);}
   }
   const method=el('details',undefined,'planner-weights');method.append(el('summary','Role weights used for this character'));if(char.role)method.append(statTable(char.weights||{}));else method.append(el('p','No role is assumed from class or talents.'));body.append(method);section.append(body);return section;
@@ -96,7 +112,7 @@
  function renderActivities(){
   hideItemTooltip();
   $('planner-plan-title').textContent=data.characters.length===1?'Your next worthwhile steps':'The next worthwhile steps';const container=$('planner-activities');container.replaceChildren();
-  const source=$('planner-source').value,when=$('planner-availability').value,activities=data.activities.filter(a=>!source||(source==='owned'?['owned','guild'].includes(a.kind):a.kind===source)).map(a=>{const beneficiaries=a.beneficiaries.filter(b=>!when||b.availability===when);return {...a,beneficiaries,members:beneficiaries.length};}).filter(a=>a.members);
+  const source=$('planner-source').value,when=$('planner-availability').value,activities=data.activities.filter(a=>!source||(source==='owned'?['owned','guild'].includes(a.kind):a.kind===source)).map(a=>{const beneficiaries=a.beneficiaries.filter(b=>matchesWhen(b,when));return {...a,beneficiaries,members:beneficiaries.length};}).filter(a=>a.members);
   for(const activity of activities.slice(0,activityLimit)){const card=el('article',undefined,'planner-activity');card.append(pill(sourceLabels[activity.kind],['owned','guild'].includes(activity.kind)?'owned':''),activityHeading(activity),el('p',activity.members+' group '+(activity.members===1?'member benefits':'members benefit')));const list=el('ul');for(const row of activity.beneficiaries){const li=el('li');li.append(el('strong',row.character),itemLink(row.item_details||{id:row.item_id,name:row.item}),document.createTextNode(' · +'+number(row.gain)+' score'),el('p',availability[row.availability]));list.append(li);}if(activity.location)card.append(el('p',activity.location));card.append(el('p',activity.effort+' estimated effort · Relative group gains and number of members determine value.'),list,el('p',activity.notes));container.append(card);}
   if(activities.length>activityLimit){const more=el('button','Show all '+activities.length+' activities','subtle-button planner-activity-more');more.type='button';more.addEventListener('click',()=>{activityLimit=activities.length;renderActivities();});container.append(more);}
   if(!activities.length)container.append(el('p',data.characters.some(c=>c.role)?'No fully scored activities match this source yet. Check the individual alternatives, including items whose effects need review.':'Set each character’s intended role below to rank the group’s opportunities.','planner-quiet'));

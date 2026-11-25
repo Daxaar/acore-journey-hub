@@ -6,3 +6,14 @@
 .planner-activity-more{grid-column:1/-1;justify-self:start}
 
 .planner-upgrade{align-self:start}
+
+.planner-equipped-comparison{flex:0 1 34%;min-width:0}
+.planner-equipped-comparison>small{display:block;color:var(--muted);margin-bottom:4px}
+.planner-equipped-item{display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.planner-equipped-item+.planner-equipped-item{margin-top:4px}
+.planner-equipped-item .planner-item-icon{width:24px;height:24px;flex:0 0 24px}
+@media(max-width:600px){
+ .planner-upgrade summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto}
+ .planner-equipped-comparison{grid-column:2;grid-row:2}
+ .planner-upgrade summary>.planner-gain{grid-column:3;grid-row:1 / span 2}
+}
