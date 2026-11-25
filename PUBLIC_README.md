@@ -158,3 +158,11 @@ Outdoor backgrounds include the client’s exploration overlays where available,
 Live World warms the four continents and up to eight busy zones once per 20-minute window. The low-priority Hub worker decodes one map at a time. The in-memory cache retains up to 64 MiB of compressed tiles for 20 minutes after use, with older entries evicted when full. It is rebuilt after a Hub restart.
 
 Live World shows XP gained since the Hub first observed each online session. The calculation uses the existing snapshots, including XP carried over a single level-up. A skipped level or XP reset marks the result as partial. Tracking resets when the Hub restarts and samples only while Live World is being read.
+
+## Optional auction market integration
+
+The Forever Auction House tab browses archived WoW Forever EU PvE Alliance listings. Market Preview shows feed freshness, coverage, import history and estimated sales activity. Exact listing-price matches cannot identify which feed originally priced an auction.
+
+The optional hourly market worker archives Forever and Anniversary snapshots outside the installation. It can publish an item ID and copper-per-unit CSV for an AHBot Plus build with market-file support. Eligible Forever prices take precedence, and Anniversary fallback requires regional sales activity. The publisher can use history when Forever is stale. Items without an override retain formula pricing.
+
+For an existing collector, set JOURNEY_HUB_MARKET_DATA to its archive directory if it differs from the default, JOURNEY_HUB_MARKET_PRICE_DIR to its published-price directory and JOURNEY_HUB_MARKET_BOT_IDS to the comma-separated seller GUIDs for coverage reporting. Start the worker with its own installation-specific policy using market_worker.py --policy PATH. The policy defines mode, output, freshness_hours, optional pilot and bot_ids. The worker and Hub require their usual read-only game database access for local metrics. Keep policy, archives and credentials local.
