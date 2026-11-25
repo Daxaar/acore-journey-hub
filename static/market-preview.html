@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Market Preview</title><link rel="icon" href="/emblem.svg">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/auctions.css"><link rel="stylesheet" href="/transactions.css">
+<script src="/appearance.js"></script><script src="/market-preview.js" defer></script><script src="/market-analytics.js" defer></script></head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="AzerothCore Journey Hub home"><img src="/emblem.svg" alt="" width="44" height="44"><span><strong>AzerothCore Journey Hub</strong><small>YOUR PARTY’S ADVENTURE HUB</small></span></a>
+<div class="realm"><span class="dot gold"></span> AZEROTHCORE <span class="realm-version">WOTLK 3.3.5a</span></div>
+<nav class="page-nav" aria-label="Pages">
+      <a class="page-switch" href="/">Dashboard</a>
+      <a class="page-switch" href="/armory">Armory</a>
+      <a class="page-switch" href="/gear-planner">Gear Planner</a>
+      <a class="page-switch" href="/inventory">Inventory</a>
+      <a class="page-switch" href="/quest-log">Quest log</a>
+      <a class="page-switch" href="/training">What’s Training</a>
+      <a class="page-switch" href="/professions">Professions</a>
+      <a class="page-switch" href="/auctions">Auction House</a>
+      <a class="page-switch" href="/forever-auctions">Forever Auction House</a>
+      <a class="page-switch" href="/journal">Journal</a>
+      <a class="page-switch" href="/sql">SQL explorer</a>
+      <a class="page-switch" href="/combat-log">Combat Log</a>
+      <a class="page-switch" href="/transactions">Transactions</a>
+      <a class="page-switch" href="/mailbox">Mailbox</a>
+      <a class="page-switch" href="/live-world">Live World</a>
+      <a class="page-switch" href="/guild-tax">Guild Tax</a>
+      <a class="page-switch" href="/market-preview" aria-current="page">Market Preview</a>
+      <a class="page-switch" href="/settings">Settings</a>
+    </nav></header>
+
+<main class="transactions-page">
+<h1>Market Preview</h1>
+<p>WoW Forever and TBC Anniversary reference prices for Azeroth-2. All prices are copper per item.</p>
+<section class="monitoring-panel" aria-labelledby="market-analytics-heading">
+<h2 id="market-analytics-heading">Market analytics</h2>
+<label>History <select id="market-range">
+<option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option>
+</select></label>
+<p id="market-analytics-status" role="status"></p>
+<div class="market-charts">
+<article><h3>AHBot Plus listing coverage</h3>
+<p id="market-coverage-chart-summary"></p>
+<canvas id="market-coverage-chart" aria-label="Bot listing coverage by source over time" role="img"></canvas>
+<p class="market-chart-legend"><span class="market-forever">Forever price match</span><span class="market-anniversary">Anniversary price match</span><span class="market-covered">Item has a published price</span></p>
+<p>Exact buyout matches are estimates of feed-priced listings. An older listing may match by coincidence or use a different published price.</p>
+</article>
+<article><h3>Import size</h3>
+<p id="market-import-chart-summary"></p>
+<canvas id="market-import-chart" aria-label="Archived and published item counts over time" role="img"></canvas>
+<p class="market-chart-legend"><span class="market-forever">Forever snapshot items</span><span class="market-covered">Published prices</span><span class="market-anniversary">Anniversary prices</span></p>
+</article>
+</div>
+<div class="market-charts">
+<article><h3>Top sellers on Forever</h3><p>Ranked by estimated units sold in the latest 24-hour snapshot window.</p><ol id="market-top"></ol></article>
+<article><h3>Slow movers on Forever</h3><p>Lowest estimated sales per unit listed, with at least 10 units listed.</p><ol id="market-slow"></ol></article>
+</div>
+</section>
+<form id="market-search"><label>Item name or ID <input id="market-item" type="search" maxlength="80"></label>
+<button class="subtle-button">Search</button></form>
+<section class="monitoring-panel" aria-labelledby="ahbot-status-heading">
+<h2 id="ahbot-status-heading">AHBot Plus pricing status</h2>
+<p id="market-mode">Checking status...</p>
+<p id="market-reset"></p>
+<p id="market-status" role="status"></p>
+<ul id="market-feeds" aria-label="Market feed status"></ul>
+</section>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Item</th><th>Forever ask</th><th>Forever listed median</th><th>Listed units</th><th>24h inferred sales</th><th>24h confirmed units</th><th>Last inferred sale (c/unit)</th><th>Last inferred sale time</th><th>Azeroth-2 ask</th><th>Forever proposal</th><th>Published price</th><th>Published source</th></tr></thead>
+<tbody id="market-rows"></tbody></table></div>
+<p>Last sale prices are inferred from market snapshots. The price shown is the mean unit price in that sale hour.</p>
+<p>Proposed prices use the median of hourly cheapest asks in the latest 24-hour window, with at least six observations. Regular bags use the latest inferred sale price if at least five units sold in the last 24 hours. Both use the local vendor sell-price floor.</p>
+<details class="monitoring-panel" id="market-coverage">
+<summary>Price coverage</summary>
+<p id="market-coverage-scope" role="status"></p>
+<p>Coverage shows which prices could be imported. Only qualifying prices are published.</p>
+<dl id="market-coverage-counts"></dl>
+</details>
+<details class="monitoring-panel" id="market-archive">
+<summary>Download archived snapshots</summary>
+<p id="market-archive-status" role="status"></p>
+<table><thead><tr><th>Snapshot time</th><th>Items</th><th>Original API response</th></tr></thead>
+<tbody id="market-archive-rows"></tbody></table>
+<button id="market-archive-more" class="subtle-button" type="button" hidden>Older snapshots</button>
+</details>
+<p>Anniversary fallback requires a Thunderstrike Alliance buyout and EU regional activity of at least three sales per day and a 10% sale rate. The price is the lower of Thunderstrike market value and EU average sale price, subject to local safety checks.</p>
+<p><a href="https://auctionhouse.tk.gg/data/">Forever data documentation</a> | <a href="https://tradeskillmaster.com/public-data">Anniversary data documentation</a></p>
+</main></body></html>

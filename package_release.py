@@ -13,7 +13,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parent
 NAME='acore-journey-hub'
-VERSION='0.1.17'
+VERSION='0.1.18'
 ARCHIVE_NAME='azerothcore-journey-hub-v'+VERSION
 SOURCE_FILES=(
     'bot_monitor.py','prepare_faction_assets.py','prepare_live_world_maps.py','client_map_tiles.py',
@@ -28,7 +28,7 @@ SOURCE_FILES=(
     'professions.py','quest_log.py','settings.py','sql_console.py','watch_notes.py','journal.py',
     'rested_xp.py','server_identity.py','deployment_config.py','deploy.py','package_release.py','requirements.txt','preview.py','start.sh','setup.sh','enable-lan.ps1',
     'update.py','hub_runtime.py','connection_config.py','dbc_source.py','examples/connection.json','FEATURES.md','docs/installation-review.md','AGENTS.md','PUBLIC_README.md','.gitignore','.github/workflows/package.yml',
-    'tests/test_transaction_monitoring.py','tests/test_transaction_loot_sources.py','tests/test_transaction_export.py','tests/test_transaction_dungeons.py','tests/test_transaction_sorting.py','tests/test_transactions.py','tests/test_transaction_deletion.py','transaction_deletion.py','transaction_monitoring.py','tests/test_mailbox_view.py','mailbox_view.py','static/mailbox.html','static/mailbox.js','static/mailbox.css','guild_tax_config.py','guild_tax.py','static/guild-tax.html','static/guild-tax.js','transactions.py','static/transactions.html','static/transactions.js','static/transactions.css','static/auction-condensed.ttf','third_party/RobotoCondensed-OFL.txt',
+    'tests/test_transaction_monitoring.py','tests/test_transaction_loot_sources.py','tests/test_transaction_export.py','tests/test_transaction_dungeons.py','tests/test_transaction_sorting.py','tests/test_transactions.py','tests/test_transaction_deletion.py','transaction_deletion.py','transaction_monitoring.py','tests/test_mailbox_view.py','mailbox_view.py','static/mailbox.html','static/mailbox.js','static/mailbox.css','guild_tax_config.py','forever_auctions.py','static/forever-auctions.html','market_coverage.py','anniversary_market.py','market_analytics.py','static/market-analytics.js','market_history.py','market_policy.py','market_local_history.py','market_worker.py','market_preview.py','static/market-preview.html','static/market-preview.js','guild_tax.py','static/guild-tax.html','static/guild-tax.js','transactions.py','static/transactions.html','static/transactions.js','static/transactions.css','static/auction-condensed.ttf','third_party/RobotoCondensed-OFL.txt',
     'third_party/mpyq.py','third_party/MPYQ-LICENSE','third_party/README.md',
 )
 

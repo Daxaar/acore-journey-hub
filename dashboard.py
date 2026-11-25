@@ -46,6 +46,10 @@ from guild_tax import get_guild_tax, current_guilds
 from guild_tax_config import save_rates
 from transactions import get_transactions, export_transactions, transaction_locations
 from auctions import AuctionProvider
+from forever_auctions import get_forever_auctions
+from market_analytics import analytics as market_analytics
+from market_coverage import coverage as market_coverage
+from market_preview import get_market_preview, list_snapshots, download_snapshot
 from hub_runtime import registered
 from watch_notes import WatchNotes, MAX_NOTE_REQUEST, KEEP_IMAGE
 from professions import SkillsProvider
@@ -292,6 +296,10 @@ ASSETS.update({
     '/transactions': ('transactions.html', 'text/html; charset=utf-8'),
     '/transactions.js': ('transactions.js', 'text/javascript; charset=utf-8'),
     '/transactions.css': ('transactions.css', 'text/css; charset=utf-8'),
+    '/market-preview': ('market-preview.html', 'text/html; charset=utf-8'),
+    '/market-analytics.js': ('market-analytics.js', 'text/javascript; charset=utf-8'),
+    '/market-preview.js': ('market-preview.js', 'text/javascript; charset=utf-8'),
+    '/forever-auctions': ('forever-auctions.html', 'text/html; charset=utf-8'),
     '/auctions': ('auctions.html', 'text/html; charset=utf-8'),
     '/auctions.js': ('auctions.js', 'text/javascript; charset=utf-8'),
     '/auction-categories.js': ('auction-categories.js', 'text/javascript; charset=utf-8'),
@@ -356,11 +364,13 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
             # Paths/headers are untrusted; keep the local log small and credential-free.
             pass
 
-        def send(self, status, content_type, body, cache_control='no-store'):
+        def send(self, status, content_type, body, cache_control='no-store', attachment=None):
             self.send_response(status)
             self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', str(len(body)))
             self.send_header('Cache-Control', cache_control)
+            if attachment:
+                self.send_header('Content-Disposition', f'attachment; filename="{attachment}"')
             self.send_header('X-Content-Type-Options', 'nosniff')
             embedded_armory = urlsplit(getattr(self,'path','')).path == '/armory-embed'
             self.send_header('X-Frame-Options', 'SAMEORIGIN' if embedded_armory else 'DENY')
@@ -792,6 +802,65 @@ def handler(cache, port, console=None, settings=None, allowed_hosts=(), journal=
                 except DatabaseError as exc:self.json_response(503,{'ok':False,'error':str(exc)})
                 except ValueError as exc:self.json_response(400,{'ok':False,'error':str(exc)})
                 except OSError:self.json_response(503,{'ok':False,'error':'Monitoring settings are unavailable.'})
+            elif path in ('/api/market-preview/snapshots', '/api/market-preview/download'):
+                params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                try:
+                    if path.endswith('/snapshots'):
+                        if set(params) - {'before'} or any(len(values) != 1 for values in params.values()):
+                            raise ValueError('Invalid snapshot cursor.')
+                        result = list_snapshots(int(params.get('before', ['9223372036854775807'])[0]))
+                        self.json_response(200, {'ok': True, 'result': result})
+                    else:
+                        if set(params) != {'stamp', 'format'} or any(len(values) != 1 for values in params.values()):
+                            raise ValueError('Choose a snapshot and format.')
+                        stamp = int(params['stamp'][0])
+                        extension = params['format'][0]
+                        if extension not in ('json','json.gz'):
+                            raise ValueError('Choose JSON or compressed JSON.')
+                        compressed = extension == 'json.gz'
+                        body = download_snapshot(stamp, compressed)
+                        mime = 'application/gzip' if compressed else 'application/json'
+                        self.send(200, mime, body, attachment=f'eu-2-111-{stamp}.{extension}')
+                except FileNotFoundError:
+                    self.json_response(404, {'ok': False, 'error': 'Archived snapshot not found.'})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except (OSError, sqlite3.Error, EOFError):
+                    self.json_response(503, {'ok': False, 'error': 'Market archive unavailable.'})
+            elif path == '/api/market-preview/analytics':
+                params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                try:
+                    if set(params) - {'range'} or any(len(value)!=1 for value in params.values()):
+                        raise ValueError('Choose one market range.')
+                    self.json_response(200, {'ok': True, 'result': market_analytics(params.get('range',['24h'])[0])})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except (OSError, sqlite3.Error):
+                    self.json_response(503, {'ok': False, 'error': 'Market history unavailable.'})
+            elif path == '/api/market-preview/coverage':
+                try:
+                    self.json_response(200, {'ok': True, 'result': market_coverage()})
+                except (DatabaseError, ValueError, OSError):
+                    self.json_response(503, {'ok': False, 'error': 'Market coverage is unavailable.'})
+            elif path == '/api/market-preview':
+                params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                try:
+                    if set(params) - {'q'} or any(len(value) != 1 for value in params.values()):
+                        raise ValueError('Provide one search value.')
+                    self.json_response(200, {'ok': True, 'result': get_market_preview(params.get('q', [''])[0].strip())})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except DatabaseError as exc:
+                    self.json_response(503, {'ok': False, 'error': str(exc)})
+            elif path in ('/api/forever-auctions', '/api/forever-auctions/item'):
+                params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                try:
+                    result = get_forever_auctions(params, detail=path.endswith('/item'))
+                    self.json_response(200, {'ok': True, 'result': result})
+                except ValueError as exc:
+                    self.json_response(400, {'ok': False, 'error': str(exc)})
+                except DatabaseError as exc:
+                    self.json_response(503, {'ok': False, 'error': str(exc)})
             elif path in ('/api/auctions', '/api/auctions/item'):
                 try:
                     params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)

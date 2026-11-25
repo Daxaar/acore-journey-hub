@@ -1,3 +1,9 @@
+## v0.1.18 - Auction House market integration (2026-11-25)
+
+- Browse the Forever Auction House and open Market Preview from the navigation.
+- See feed freshness, price coverage, sales activity, and import trends, and download archived Forever snapshots.
+- Publish eligible Forever prices with an Anniversary fallback and keep archived prices available during outages.
+
 ## v0.1.17 - Gear Planner upgrades (2026-11-25)
 
 - Show equipped items alongside suggested upgrades.
