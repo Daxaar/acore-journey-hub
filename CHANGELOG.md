@@ -1,3 +1,9 @@
+## v0.1.17 - Gear Planner upgrades (2026-11-25)
+
+- Show equipped items alongside suggested upgrades.
+- Filter for upgrades a character can equip immediately.
+- Include dungeon boss loot with a dungeon source filter and level checks.
+
 ## v0.1.16 - Guild Tax and Live World filters (2026-11-22)
 
 - View guild contribution totals, character breakdowns and transfer diagnostics.

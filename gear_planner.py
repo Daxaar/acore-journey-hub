@@ -7,7 +7,7 @@ from pathlib import Path
 import threading
 import time
 from armory import EQUIPMENT,read_inventory_sql,ITEM_TOOLTIP_FIELDS
-from gear_sources import ROOT,read_snapshot,read_sources,read_items,load_json
+from gear_sources import ROOT,read_snapshot,read_sources,read_dungeon_sources,read_items,load_json
 from mysql_access import DatabaseError
 from professions import applicable
 from gear_eligibility import QuestEligibility,read_eligibility,npc_faction_access
@@ -151,7 +151,13 @@ def source_state(source,char,item,metadata=None):
     notes=[];availability='now';required=max(item.get('RequiredLevel',0),source.get('min_level',0))
     if required>char['level']:availability='soon' if required<=char['level']+2 else 'later';notes.append('Requires level '+str(required))
     kind=source['kind']
-    if kind=='quest':
+    if kind=='dungeon':
+        if required>char['level']:
+            availability='soon' if required<=char['level']+2 else 'later'
+        else:
+            availability='check'
+        notes.append('Boss drop; verify dungeon access and group readiness')
+    elif kind=='quest':
         q=source['quest'];qid=q['ID'];status=char['quests'].get(qid);repeat=q['SpecialFlags']&17 or q['Flags']&(4096|32768)
         if qid in char['rewarded'] and not repeat:return None
         if char.get('quest_eligibility') and char['quest_eligibility'](qid) is not True:return None
@@ -202,6 +208,7 @@ def effort_points(source,char):
     kind=source['kind']
     if kind=='owned':return 1 if source.get('owner')==char['guid'] else 2
     if kind=='guild':return 2
+    if kind=='dungeon':return 8
     if kind=='quest':
         status=char['quests'].get(source['id'])
         return 1 if status==1 else 3 if status else 6
@@ -255,7 +262,7 @@ def compare_candidate(item,instance,char,source,metadata,threshold):
             'replaces':old or ['Empty slot'],'replaced_items':[{'id':equipped[slot]['template']['entry'],'name':equipped[slot]['template']['name']} for slot in replace if slot in equipped],'replace_slots':replace,'score':round(new_score,2),'baseline_score':round(base_score,2),
             'gain':round(gain,2),'gain_percent':round(gain/base_score*100,1) if base_score>0 else None,
             'delta':delta,'contributions':{key:round(value*w.get(key,0),2) for key,value in delta.items() if w.get(key,0)},
-            'availability':availability,'required_level':required,'confidence':'review' if review else 'scored',
+            'availability':availability,'can_equip_now':checks['level']<=char['level'] and not checks['notes'],'required_level':required,'confidence':'review' if review else 'scored',
             'notes':note_list,'source':{key:value for key,value in source.items() if key not in ('quest','crafter')}|{'effort_points':effort_points(source,char),'eligibility':{'faction':'Alliance' if char['race'] in (1,3,4,7,11) else 'Horde','class':CLASSES.get(char['class'],'Unknown')} if source['kind']=='quest' else None},
             'resource':str(instance['guid']) if instance else None})
     return max(choices,key=lambda c:c['gain']) if choices else None
@@ -281,7 +288,7 @@ def adventure_plans(characters):
         chosen={};resources=set()
         for char,rec in sorted(values,key=lambda pair:pair[1]['gain']/max(10,pair[1]['baseline_score']),reverse=True):
             if char['name'] in chosen or rec['resource'] and rec['resource'] in resources:continue
-            chosen[char['name']]={'character':char['name'],'item':rec['item']['name'],'item_id':rec['item']['id'],'item_details':rec['item'],'gain':rec['gain'],'availability':rec['availability'],'relative_gain':rec['gain']/max(10,rec['baseline_score']),'effort':rec['source'].get('effort_points',6)}
+            chosen[char['name']]={'character':char['name'],'item':rec['item']['name'],'item_id':rec['item']['id'],'item_details':rec['item'],'gain':rec['gain'],'availability':rec['availability'],'can_equip_now':rec['can_equip_now'],'relative_gain':rec['gain']/max(10,rec['baseline_score']),'effort':rec['source'].get('effort_points',6)}
             if rec['resource']:resources.add(rec['resource'])
         if not chosen:continue
         source=values[0][1]['source'];owned=source['kind'] in OWNED
@@ -331,13 +338,18 @@ class GearPlanner:
                 char['materials']={r['entry']:r['count'] for r in rows if r['kind']=='material' and r['guid']==guid}
                 chars.append(char)
             active=[c for c in chars if c['found']];cap=min(85,max((c['level'] for c in active),default=1)+5)
-            ready=any(c['role'] for c in active);world_quests=[];vendors=[];recipes=[]
+            ready=any(c['role'] for c in active);world_quests=[];vendors=[];dungeons=[];recipes=[];dungeon_warning=False
             if ready:
                 catalog=self.catalog.get(cap)
                 if not catalog or time.monotonic()-catalog[0]>300:
-                    world_quests,vendors=read_sources(cap,self.reader);self.catalog[cap]=(time.monotonic(),world_quests,vendors)
+                    world_quests,vendors=read_sources(cap,self.reader)
+                    try:
+                        dungeons=read_dungeon_sources(cap,self.reader)
+                    except (OSError, ValueError, DatabaseError):
+                        dungeon_warning=True
+                    self.catalog[cap]=(time.monotonic(),world_quests,vendors,dungeons,dungeon_warning)
                     if len(self.catalog)>8:self.catalog.pop(next(iter(self.catalog)))
-                else:_,world_quests,vendors=catalog
+                else:_,world_quests,vendors,dungeons,dungeon_warning=catalog
                 craft_equipment={int(k) for k,v in self.professions.get('items',{}).items() if v.get('class') in (2,4)}
                 for skill,records in self.professions.get('recipes',{}).items():
                     for rec in records.values():
@@ -345,10 +357,12 @@ class GearPlanner:
             ids={i['entry'] for i in instances}
             ids.update(i for q in world_quests for i in q['rewards'] if i)
             ids.update(v['entry'] for v in vendors)
+            ids.update(drop['entry'] for drop in dungeons)
             ids.update(o['id'] for _,rec in recipes for o in rec['outputs'])
             items=read_items(ids,self.reader)
             for item in items.values():item['icon']=self.item_metadata.get('icons',{}).get(str(item['displayid']))
             warnings=[]
+            if dungeon_warning:warnings.append("Dungeon loot catalogue unavailable.")
             if not self.metadata:warnings.append('Effect metadata unavailable: affected items are marked for review rather than treated as guaranteed upgrades.')
             if not self.professions:warnings.append('Profession catalogue unavailable; crafting opportunities are not included.')
             for char in active:
@@ -384,6 +398,14 @@ class GearPlanner:
                 source={**vendor,'label':vendor['name']+' · '+str(vendor['cost'])+' copper / '+str(vendor['buy_count'])+' items',
                     'activity':'vendor:'+str(vendor['npc']),'activity_name':'Visit '+vendor['name'],'url':'https://www.wowhead.com/wotlk/npc='+str(vendor['npc'])}
                 sources[vendor['entry']].append((source,None))
+            for drop in dungeons:
+                difficulty='Heroic' if drop['difficulty']==1 else 'Normal'
+                dungeon=drop['dungeon']+' ('+difficulty+')'
+                source={**drop,'kind':'dungeon','label':drop['name']+' / '+dungeon,
+                    'activity':'dungeon:'+str(drop['map'])+':'+str(drop['difficulty']),
+                    'activity_name':'Run '+dungeon,'zone':dungeon,
+                    'url':'https://www.wowhead.com/wotlk/npc='+str(drop['npc'])}
+                sources[drop['entry']].append((source,None))
             for skill,rec in recipes:
                 for crafter in active:
                     matches=[a for a in rec['abilities'] if applicable(a,crafter)]
@@ -435,7 +457,7 @@ class GearPlanner:
                 public.append({k:char[k] for k in ('guid','name','class','race','level','role','found','recommendations','recommendation_count')}|{'equipment':equipment,'weights':weights(char['role'],char['class'])})
             result={'group':copy.deepcopy(group),'characters':public,'activities':activities,'roles':ROLES,'threshold':threshold,
                 'refreshed_at':datetime.now(timezone.utc).isoformat(),'warnings':warnings,'owner_count':sum(r['kind']=='owner' for r in rows),
-                'coverage':'Owned gear, quest rewards, crafting and vendors. Dungeon/world-drop acquisition and full combat simulation are later phases.',
+                'coverage':'Owned gear, quest rewards, crafting, vendors and five-player dungeon boss drops.',
                 'scope':'Other characters on group accounts plus configured groups/watch list; group guild banks. Equipped donor items may displace their existing gear.'}
             if len(self.cached)>=8:self.cached.pop(next(iter(self.cached)))
             self.cached[key]=(time.monotonic(),result);return copy.deepcopy(result)

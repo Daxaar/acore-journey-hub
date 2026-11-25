@@ -130,6 +130,59 @@ ORDER BY v.entry,v.item LIMIT 15001;'''
     return quests,vendors
 
 
+def read_dungeon_sources(level_cap, reader=read_inventory_sql):
+    from prepare_quest_assets import read_dbc
+
+    maps, text = read_dbc('Map')
+    names = {row[0]: text(row[5]) for row in maps if row[2] == 1 and text(row[5])}
+    encounters, _ = read_dbc('DungeonEncounter')
+    lfg, _ = read_dbc('LFGDungeons')
+    minimums = {}
+    for row in lfg:
+        key = (row[23], row[24])
+        if row[18]:
+            minimums[key] = min(minimums.get(key, row[18]), row[18])
+    records = [[row[0], row[1], row[2], minimums.get((row[1], row[2]))]
+               for row in encounters if row[1] in names and row[2] in (0, 1)]
+    catalog = json.dumps(records, separators=(',', ':'))
+    rows = query(f"""
+WITH RECURSIVE boss AS (
+    SELECT d.map_id,d.difficulty,e.creditEntry AS npc,t.name,
+           COALESCE(h.lootid,t.lootid) AS loot,
+           COALESCE(NULLIF(a.min_level,0),d.lfg_min,IF(d.difficulty=1,80,NULL)) AS min_level
+    FROM JSON_TABLE('{catalog}', '$[*]' COLUMNS(encounter INT PATH '$[0]',
+      map_id INT PATH '$[1]',difficulty INT PATH '$[2]',lfg_min INT PATH '$[3]')) d
+    JOIN acore_world.instance_encounters e ON e.entry=d.encounter AND e.creditType=0
+    JOIN acore_world.creature_template t ON t.entry=e.creditEntry
+    LEFT JOIN acore_world.creature_template h ON d.difficulty=1 AND h.entry=t.difficulty_entry_1
+    LEFT JOIN acore_world.dungeon_access_template a ON a.map_id=d.map_id AND a.difficulty=d.difficulty
+    WHERE COALESCE(NULLIF(a.min_level,0),d.lfg_min,IF(d.difficulty=1,80,NULL))<={level_cap}
+), drops AS (
+    SELECT b.map_id,b.difficulty,b.npc,b.name,b.min_level,l.Item,l.Reference,
+           CASE WHEN l.Reference>0 THEN l.GroupId ELSE 0 END AS ref_group,0 AS depth
+    FROM boss b JOIN acore_world.creature_loot_template l ON l.Entry=b.loot
+    WHERE l.QuestRequired=0 AND (l.LootMode & 1)<>0
+    UNION ALL
+    SELECT d.map_id,d.difficulty,d.npc,d.name,d.min_level,l.Item,l.Reference,
+           CASE WHEN l.Reference>0 THEN l.GroupId ELSE 0 END,d.depth+1
+    FROM drops d JOIN acore_world.reference_loot_template l ON l.Entry=d.Reference
+    WHERE d.Reference>0 AND d.depth<8 AND l.QuestRequired=0 AND (l.LootMode & 1)<>0
+      AND (d.ref_group=0 OR l.GroupId=d.ref_group)
+)
+SELECT JSON_OBJECT('entry',x.Item,'map',x.map_id,'difficulty',x.difficulty,
+                   'npc',x.npc,'name',x.name,'min_level',x.min_level)
+FROM (SELECT DISTINCT d.Item,d.map_id,d.difficulty,d.npc,d.name,d.min_level FROM drops d
+      JOIN acore_world.item_template t ON t.entry=d.Item
+      WHERE d.Reference=0 AND t.class IN (2,4) AND t.InventoryType NOT IN (0,4,18,19)
+        AND t.RequiredLevel<={level_cap}) x LIMIT 15001;
+""", reader)
+    if len(rows) >= 15001:
+        raise DatabaseError('Dungeon loot catalogue exceeds the planner limit.')
+    for row in rows:
+        row['dungeon'] = names[row['map']]
+    return rows
+
+
 def load_json(name,root=ROOT):
     try:
         value=json.loads((root/'assets'/name).read_text())
